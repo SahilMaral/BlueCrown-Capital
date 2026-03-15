@@ -35,7 +35,7 @@ const LoanView = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/v1/loans', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/loans`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setLoans(res.data.data);
@@ -50,7 +50,7 @@ const LoanView = () => {
   const fetchBanks = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/v1/banks', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/banks`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setBanks(res.data.data);
@@ -70,7 +70,7 @@ const LoanView = () => {
   const handleViewSchedule = async (loan) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(`http://localhost:5000/api/v1/loans/${loan._id}`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/loans/${loan._id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSelectedLoan(res.data.data); // { loan, reminders }
@@ -108,7 +108,7 @@ const LoanView = () => {
         bankId: formData.bankId
       };
 
-      const endpoint = `http://localhost:5000/api/v1/loans/${selectedLoan.loan._id}/${actionType}`;
+      const endpoint = `${import.meta.env.VITE_API_URL}/loans/${selectedLoan.loan._id}/${actionType}`;
       await axios.post(endpoint, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -145,67 +145,69 @@ const LoanView = () => {
           </div>
         </div>
 
-        <div className="elite-table-container">
-          <table className="elite-table">
-            <thead>
-              <tr>
-                <th>Sr. No.</th>
-                <th>Loan Number</th>
-                <th>Company Name</th>
-                <th>Principal</th>
-                <th>ROI</th>
-                <th>Bank</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                [1, 2, 3, 4, 5].map((i) => (
-                  <tr key={`sk-row-${i}`}>
-                    <td colSpan="7" style={{ padding: '24px 32px' }}>
-                      <Skeleton height="60px" borderRadius="12px" />
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                filteredLoans.map((loan, idx) => (
-                  <tr key={loan._id}>
-                    <td style={{ fontWeight: 600 }}>{idx + 1}.</td>
-                    <td style={{ fontWeight: 600, color: 'var(--elite-blue)' }}>{loan.loanNumber}</td>
-                    <td style={{ fontWeight: 800 }}>{loan.companyId?.companyName || 'N/A'}</td>
-                    <td style={{ fontWeight: 700 }}>₹{loan.principalAmount?.toLocaleString()}</td>
-                    <td><span className="status-badge pending">{loan.rateOfInterest}%</span></td>
-                    <td>{loan.bankId?.bankName || 'Cash'}</td>
-                    <td>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <button className="btn-elite-ghost" style={{ padding: '8px 12px', fontSize: '11px' }} onClick={() => handleViewSchedule(loan)}>
-                          Reminders
-                        </button>
-                        {loan.totalBalanceAmount > 0 && !loan.isForeClosure && (
-                          <>
-                            <button className="btn-elite-ghost" style={{ padding: '8px 12px', fontSize: '11px', color: 'var(--elite-blue)' }} onClick={() => openActionModal(loan, 'lumpsum')}>
-                              Lumpsum
-                            </button>
-                            <button className="btn-elite-ghost" style={{ padding: '8px 12px', fontSize: '11px', color: '#ef4444' }} onClick={() => openActionModal(loan, 'foreclose')}>
-                              Foreclose
-                            </button>
-                          </>
-                        )}
-                        {loan.isForeClosure && <span className="status-badge success" style={{ fontSize: '10px' }}>Closed</span>}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-              {!loading && filteredLoans.length === 0 && (
+        <div className="table-responsive-elite">
+          <div className="elite-table-container">
+            <table className="elite-table">
+              <thead>
                 <tr>
-                  <td colSpan="7" style={{ padding: '60px', textAlign: 'center', color: 'var(--elite-text-secondary)' }}>
-                    No loans matching "{searchTerm}"
-                  </td>
+                  <th>Sr. No.</th>
+                  <th>Loan Number</th>
+                  <th>Company Name</th>
+                  <th>Principal</th>
+                  <th>ROI</th>
+                  <th>Bank</th>
+                  <th>Actions</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {loading ? (
+                  [1, 2, 3, 4, 5].map((i) => (
+                    <tr key={`sk-row-${i}`}>
+                      <td colSpan="7" style={{ padding: '24px 32px' }}>
+                        <Skeleton height="60px" borderRadius="12px" />
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  filteredLoans.map((loan, idx) => (
+                    <tr key={loan._id}>
+                      <td style={{ fontWeight: 600 }}>{idx + 1}.</td>
+                      <td style={{ fontWeight: 600, color: 'var(--elite-blue)' }}>{loan.loanNumber}</td>
+                      <td style={{ fontWeight: 800 }}>{loan.companyId?.companyName || 'N/A'}</td>
+                      <td style={{ fontWeight: 700 }}>₹{loan.principalAmount?.toLocaleString()}</td>
+                      <td><span className="status-badge pending">{loan.rateOfInterest}%</span></td>
+                      <td>{loan.bankId?.bankName || 'Cash'}</td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button className="btn-elite-ghost" style={{ padding: '8px 12px', fontSize: '11px' }} onClick={() => handleViewSchedule(loan)}>
+                            Reminders
+                          </button>
+                          {loan.totalBalanceAmount > 0 && !loan.isForeClosure && (
+                            <>
+                              <button className="btn-elite-ghost" style={{ padding: '8px 12px', fontSize: '11px', color: 'var(--elite-blue)' }} onClick={() => openActionModal(loan, 'lumpsum')}>
+                                Lumpsum
+                              </button>
+                              <button className="btn-elite-ghost" style={{ padding: '8px 12px', fontSize: '11px', color: '#ef4444' }} onClick={() => openActionModal(loan, 'foreclose')}>
+                                Foreclose
+                              </button>
+                            </>
+                          )}
+                          {loan.isForeClosure && <span className="status-badge success" style={{ fontSize: '10px' }}>Closed</span>}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+                {!loading && filteredLoans.length === 0 && (
+                  <tr>
+                    <td colSpan="7" style={{ padding: '60px', textAlign: 'center', color: 'var(--elite-text-secondary)' }}>
+                      No loans matching "{searchTerm}"
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 

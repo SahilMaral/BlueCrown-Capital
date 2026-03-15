@@ -34,7 +34,7 @@ const ReceiptPrint = () => {
     const fetchReceipt = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get(`http://localhost:5000/api/v1/receipts/${id}`, {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/receipts/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setReceipt(res.data.data);
@@ -59,7 +59,7 @@ const ReceiptPrint = () => {
     try {
       setSending(true);
       const token = localStorage.getItem('token');
-      const url = `http://localhost:5000/api/v1/receipts/${id}/send-email`;
+      const url = `${import.meta.env.VITE_API_URL}/receipts/${id}/send-email`;
       await axios.post(url, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });

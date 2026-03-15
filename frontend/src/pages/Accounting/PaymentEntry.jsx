@@ -49,10 +49,10 @@ const PaymentEntry = () => {
         const token = localStorage.getItem('token');
         const config = { headers: { Authorization: `Bearer ${token}` } };
         const [clients, companies, ledgers, banks] = await Promise.all([
-          axios.get('http://localhost:5000/api/v1/clients', config),
-          axios.get('http://localhost:5000/api/v1/companies', config),
-          axios.get('http://localhost:5000/api/v1/ledgers', config),
-          axios.get('http://localhost:5000/api/v1/banks', config)
+          axios.get(`${import.meta.env.VITE_API_URL}/clients`, config),
+          axios.get(`${import.meta.env.VITE_API_URL}/companies`, config),
+          axios.get(`${import.meta.env.VITE_API_URL}/ledgers`, config),
+          axios.get(`${import.meta.env.VITE_API_URL}/banks`, config)
         ]);
         
         setMasters({
@@ -145,7 +145,7 @@ const PaymentEntry = () => {
         isInternal: formData.isInternal,
         reminderId: formData.reminderId
       };
-      await axios.post('http://localhost:5000/api/v1/payments', payload, {
+      await axios.post(`${import.meta.env.VITE_API_URL}/payments`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
       navigate('/accounting/payments');

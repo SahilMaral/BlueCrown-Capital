@@ -40,7 +40,7 @@ const SelfTransfer = () => {
   const fetchInitialData = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/v1/reports/self-transfer-data', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/reports/self-transfer-data`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setData(res.data.data);
@@ -64,7 +64,7 @@ const SelfTransfer = () => {
     try {
       setSubmitting(true);
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:5000/api/v1/transactions/self-transfer', form, {
+      await axios.post(`${import.meta.env.VITE_API_URL}/transactions/self-transfer`, form, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert('Self-transfer completed successfully');

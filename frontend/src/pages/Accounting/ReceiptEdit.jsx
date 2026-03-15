@@ -42,11 +42,11 @@ const ReceiptEdit = () => {
         const config = { headers: { Authorization: `Bearer ${token}` } };
         
         // Fetch ledgers for the dropdown
-        const ledgersRes = await axios.get('http://localhost:5000/api/v1/ledgers', config);
+        const ledgersRes = await axios.get(`${import.meta.env.VITE_API_URL}/ledgers`, config);
         setMasters({ ledgers: ledgersRes.data.data });
 
         // Fetch the specific receipt details
-        const receiptRes = await axios.get(`http://localhost:5000/api/v1/receipts/${id}`, config);
+        const receiptRes = await axios.get(`${import.meta.env.VITE_API_URL}/receipts/${id}`, config);
         const receiptData = receiptRes.data.data;
         
         setOriginalReceipt(receiptData);
@@ -84,7 +84,7 @@ const ReceiptEdit = () => {
         paymentDetails: formData.paymentDetails,
         narration: formData.narration
       };
-      await axios.put(`http://localhost:5000/api/v1/receipts/${id}`, payload, {
+      await axios.put(`${import.meta.env.VITE_API_URL}/receipts/${id}`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
       navigate('/accounting/receipts');

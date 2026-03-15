@@ -22,7 +22,7 @@ const LedgerManagement = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/v1/ledgers', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/ledgers`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setLedgers(res.data.data);
@@ -47,7 +47,7 @@ const LedgerManagement = () => {
     try {
       setDeleting(true);
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/v1/ledgers/${deleteModal.id}`, {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/ledgers/${deleteModal.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setDeleteModal({ show: false, id: null });

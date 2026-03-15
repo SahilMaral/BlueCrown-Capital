@@ -22,7 +22,7 @@ const BankManagement = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/v1/banks', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/banks`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setBanks(res.data.data);
@@ -47,7 +47,7 @@ const BankManagement = () => {
     try {
       setDeleting(true);
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/v1/banks/${deleteModal.id}`, {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/banks/${deleteModal.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setDeleteModal({ show: false, id: null });

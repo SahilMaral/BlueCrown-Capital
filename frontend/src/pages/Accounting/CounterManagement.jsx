@@ -22,7 +22,7 @@ const CounterManagement = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/v1/counters', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/counters`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCounters(res.data.data);
@@ -47,7 +47,7 @@ const CounterManagement = () => {
     try {
       setDeleting(true);
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/v1/counters/${deleteModal.id}`, {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/counters/${deleteModal.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setDeleteModal({ show: false, id: null });

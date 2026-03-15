@@ -37,7 +37,7 @@ const Dashboard = () => {
   const fetchDashboardStats = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/v1/reports/dashboard-stats', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/reports/dashboard-stats`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setStats(res.data.data);
@@ -51,7 +51,7 @@ const Dashboard = () => {
   const fetchTransactionHistory = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/v1/reports/transaction-history', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/reports/transaction-history`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Format dates for display (e.g., "15 Mar")

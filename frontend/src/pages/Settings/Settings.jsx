@@ -21,7 +21,7 @@ const Settings = () => {
         designation: user?.designation || '',
     });
     const [photo, setPhoto] = useState(null);
-    const [preview, setPreview] = useState(user?.photo ? `http://localhost:5000/uploads/${user.photo}` : null);
+    const [preview, setPreview] = useState(user?.photo ? `${import.meta.env.VITE_API_URL.replace('/api/v1', '')}/uploads/${user.photo}` : null);
     
     const [passwordData, setPasswordData] = useState({
         currentPassword: '',
@@ -59,7 +59,7 @@ const Settings = () => {
                 formData.append('photo', photo);
             }
 
-            await axios.put('http://localhost:5000/api/v1/auth/updatedetails', formData, {
+            await axios.put(`${import.meta.env.VITE_API_URL}/auth/updatedetails`, formData, {
                 headers: { 
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data'
@@ -81,7 +81,7 @@ const Settings = () => {
 
         try {
             const token = localStorage.getItem('token');
-            await axios.put('http://localhost:5000/api/v1/auth/updatepassword', {
+            await axios.put(`${import.meta.env.VITE_API_URL}/auth/updatepassword`, {
                 currentPassword: passwordData.currentPassword,
                 newPassword: passwordData.newPassword,
             }, {

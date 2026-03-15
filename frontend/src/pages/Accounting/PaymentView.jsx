@@ -19,7 +19,7 @@ const PaymentView = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/v1/payments', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/payments`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setPayments(res.data.data);
@@ -69,56 +69,58 @@ const PaymentView = () => {
             </div>
           </div>
 
-          <div className="elite-table-container">
-            <table className="elite-table">
-              <thead>
-                <tr>
-                  <th>Payment #</th>
-                  <th>Date</th>
-                  <th>Receiver</th>
-                  <th>Ledger</th>
-                  <th>Amount</th>
-                  <th>Mode</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                   [1, 2, 3, 4, 5].map((i) => (
-                    <tr key={`sk-${i}`}>
-                      <td colSpan="7" style={{ padding: '24px 32px' }}>
-                        <Skeleton height="60px" borderRadius="12px" />
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  filteredPayments.map((p) => (
-                    <tr key={p._id}>
-                      <td style={{ fontWeight: 700 }}>{p.paymentNumber}</td>
-                      <td>{new Date(p.dateTime).toLocaleDateString()}</td>
-                      <td style={{ fontWeight: 800, color: 'var(--elite-blue)' }}>
-                        {p.receiver?.clientName || p.receiver?.companyName || 'Unknown'}
-                      </td>
-                      <td>{p.ledger?.name}</td>
-                      <td style={{ fontWeight: 800, color: 'var(--error)' }}>₹{p.amount?.toLocaleString()}</td>
-                      <td><span className="status-badge pending">{p.paymentMode}</span></td>
-                      <td>
-                        <button className="btn-elite-ghost" style={{ padding: '6px 12px', fontSize: '11px' }}>
-                          View
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-                {!loading && filteredPayments.length === 0 && (
+          <div className="table-responsive-elite">
+            <div className="elite-table-container">
+              <table className="elite-table">
+                <thead>
                   <tr>
-                    <td colSpan="7" style={{ padding: '60px', textAlign: 'center', color: 'var(--elite-text-secondary)' }}>
-                      No payments found.
-                    </td>
+                    <th>Payment #</th>
+                    <th>Date</th>
+                    <th>Receiver</th>
+                    <th>Ledger</th>
+                    <th>Amount</th>
+                    <th>Mode</th>
+                    <th>Actions</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    [1, 2, 3, 4, 5].map((i) => (
+                      <tr key={`sk-${i}`}>
+                        <td colSpan="7" style={{ padding: '24px 32px' }}>
+                          <Skeleton height="60px" borderRadius="12px" />
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    filteredPayments.map((p) => (
+                      <tr key={p._id}>
+                        <td style={{ fontWeight: 700 }}>{p.paymentNumber}</td>
+                        <td>{new Date(p.dateTime).toLocaleDateString()}</td>
+                        <td style={{ fontWeight: 800, color: 'var(--elite-blue)' }}>
+                          {p.receiver?.clientName || p.receiver?.companyName || 'Unknown'}
+                        </td>
+                        <td>{p.ledger?.name}</td>
+                        <td style={{ fontWeight: 800, color: 'var(--error)' }}>₹{p.amount?.toLocaleString()}</td>
+                        <td><span className="status-badge pending">{p.paymentMode}</span></td>
+                        <td>
+                          <button className="btn-elite-ghost" style={{ padding: '6px 12px', fontSize: '11px' }}>
+                            View
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                  {!loading && filteredPayments.length === 0 && (
+                    <tr>
+                      <td colSpan="7" style={{ padding: '60px', textAlign: 'center', color: 'var(--elite-text-secondary)' }}>
+                        No payments found.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </section>
       </main>

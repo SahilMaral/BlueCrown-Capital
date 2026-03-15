@@ -26,7 +26,7 @@ const InvestmentReport = () => {
   const fetchInitialData = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/v1/companies', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/companies`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCompanies(res.data.data);
@@ -41,7 +41,7 @@ const InvestmentReport = () => {
   const fetchInvestments = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(`http://localhost:5000/api/v1/investments?lenderCompany=${selectedCompany}`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/investments?lenderCompany=${selectedCompany}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setInvestments(res.data.data);
@@ -60,7 +60,7 @@ const InvestmentReport = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const res = await axios.get(`http://localhost:5000/api/v1/reports/investment-report?companyId=${selectedCompany}&investmentId=${selectedInvestment}`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/reports/investment-report?companyId=${selectedCompany}&investmentId=${selectedInvestment}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setReport(res.data.data);

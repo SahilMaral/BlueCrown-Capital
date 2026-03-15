@@ -25,7 +25,7 @@ const DayReport = () => {
   const fetchInitialData = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/v1/companies', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/companies`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCompanies(res.data.data);
@@ -41,7 +41,7 @@ const DayReport = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const res = await axios.get(`http://localhost:5000/api/v1/reports/day?companyId=${selectedCompany}&date=${date}`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/reports/day?companyId=${selectedCompany}&date=${date}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setReport(res.data.data);

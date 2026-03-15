@@ -45,8 +45,8 @@ const LoanForm = () => {
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const [companies, clients] = await Promise.all([
-        axios.get('http://localhost:5000/api/v1/companies', config),
-        axios.get('http://localhost:5000/api/v1/clients', config)
+        axios.get(`${import.meta.env.VITE_API_URL}/companies`, config),
+        axios.get(`${import.meta.env.VITE_API_URL}/clients`, config)
       ]);
       setMasters(prev => ({
         ...prev,
@@ -63,7 +63,7 @@ const LoanForm = () => {
   const fetchBanks = async (companyId) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(`http://localhost:5000/api/v1/banks?companyId=${companyId}`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/banks?companyId=${companyId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMasters(prev => ({ ...prev, banks: res.data.data }));
@@ -102,7 +102,7 @@ const LoanForm = () => {
         date: new Date().toISOString(),
         totalBalanceAmount: formData.totalAmount
       };
-      await axios.post('http://localhost:5000/api/v1/loans', payload, {
+      await axios.post(`${import.meta.env.VITE_API_URL}/loans`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMessage({ type: 'success', text: 'Loan initialized successfully with repayment schedule.' });

@@ -22,7 +22,7 @@ const UserManagement = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/v1/users', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/users`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUsers(res.data.data);
@@ -47,7 +47,7 @@ const UserManagement = () => {
     try {
       setDeleting(true);
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/v1/users/${deleteModal.id}`, {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/users/${deleteModal.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setDeleteModal({ show: false, id: null });
@@ -63,7 +63,7 @@ const UserManagement = () => {
   const handleToggleBlock = async (user) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.patch(`http://localhost:5000/api/v1/users/${user._id}/toggle-block`, {}, {
+      await axios.patch(`${import.meta.env.VITE_API_URL}/users/${user._id}/toggle-block`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchUsers();

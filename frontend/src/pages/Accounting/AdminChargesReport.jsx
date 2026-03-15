@@ -26,8 +26,8 @@ const AdminChargesReport = () => {
     try {
       const token = localStorage.getItem('token');
       const [compRes, clientRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/v1/companies', { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get('http://localhost:5000/api/v1/clients', { headers: { Authorization: `Bearer ${token}` } })
+        axios.get(`${import.meta.env.VITE_API_URL}/companies`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${import.meta.env.VITE_API_URL}/clients`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       setCompanies(compRes.data.data);
       setClients(clientRes.data.data);
@@ -41,7 +41,7 @@ const AdminChargesReport = () => {
   const fetchInvestments = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(`http://localhost:5000/api/v1/investments?lenderCompany=${selectedCompany}`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/investments?lenderCompany=${selectedCompany}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setInvestments(res.data.data);
@@ -57,7 +57,7 @@ const AdminChargesReport = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const res = await axios.get(`http://localhost:5000/api/v1/reports/admin-charges?companyId=${selectedCompany}&investmentId=${selectedInvestment}&clientId=${selectedClient}`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/reports/admin-charges?companyId=${selectedCompany}&investmentId=${selectedInvestment}&clientId=${selectedClient}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setReport(res.data.data);

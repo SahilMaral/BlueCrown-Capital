@@ -32,7 +32,7 @@ const InvestmentForm = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:5000/api/v1/investments', formData, {
+      await axios.post(`${import.meta.env.VITE_API_URL}/investments`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMessage({ type: 'success', text: 'Investment established successfully.' });

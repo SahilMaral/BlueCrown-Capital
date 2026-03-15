@@ -38,7 +38,7 @@ const QuickMasterModal = ({ type, isOpen, onClose, onSuccess, companyId, initial
   const fetchClients = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/v1/clients', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/clients`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setClients(res.data.data);
@@ -50,7 +50,7 @@ const QuickMasterModal = ({ type, isOpen, onClose, onSuccess, companyId, initial
   const fetchCompanies = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/v1/companies', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/companies`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCompanies(res.data.data);
@@ -92,12 +92,12 @@ const QuickMasterModal = ({ type, isOpen, onClose, onSuccess, companyId, initial
       let res;
       if (formData._id) {
         // Edit Mode
-        res = await axios.put(`http://localhost:5000/api/v1${endpoint}/${formData._id}`, payload, {
+        res = await axios.put(`${import.meta.env.VITE_API_URL}${endpoint}/${formData._id}`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
       } else {
         // Create Mode
-        res = await axios.post(`http://localhost:5000/api/v1${endpoint}`, payload, {
+        res = await axios.post(`${import.meta.env.VITE_API_URL}${endpoint}`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }

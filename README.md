@@ -88,27 +88,6 @@ npm run dev
 
 ---
 
-## 🛡️ API Endpoints Preview
-
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `POST` | `/api/v1/auth/register` | Register new user |
-| `POST` | `/api/v1/auth/login` | Secure login session |
-| `GET` | `/api/v1/reports/dashboard-stats` | Real-time portfolio summary |
-| `GET` | `/api/v1/reports/transaction-history` | 30-day analytics data |
-
----
-
-## 🤝 Contribution
-
-1. **Fork** the repository
-2. **Branch**: `git checkout -b feature/AmazingFeature`
-3. **Commit**: `git commit -m 'feat: Add some AmazingFeature'`
-4. **Push**: `git push origin feature/AmazingFeature`
-5. **Open a PR**
-
----
-
 ## 📄 License
 
 Distributed under the MIT License. See `LICENSE` for more information.

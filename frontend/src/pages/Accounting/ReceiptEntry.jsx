@@ -49,10 +49,10 @@ const ReceiptEntry = () => {
         const token = localStorage.getItem('token');
         const config = { headers: { Authorization: `Bearer ${token}` } };
         const [clients, companies, ledgers, banks] = await Promise.all([
-          axios.get('http://localhost:5000/api/v1/clients', config),
-          axios.get('http://localhost:5000/api/v1/companies', config),
-          axios.get('http://localhost:5000/api/v1/ledgers', config),
-          axios.get('http://localhost:5000/api/v1/banks', config)
+          axios.get(`${import.meta.env.VITE_API_URL}/clients`, config),
+          axios.get(`${import.meta.env.VITE_API_URL}/companies`, config),
+          axios.get(`${import.meta.env.VITE_API_URL}/ledgers`, config),
+          axios.get(`${import.meta.env.VITE_API_URL}/banks`, config)
         ]);
         setMasters({
           clients: clients.data.data,
@@ -130,7 +130,7 @@ const ReceiptEntry = () => {
         narration: formData.narration,
         isInternal: formData.isInternal
       };
-      await axios.post('http://localhost:5000/api/v1/receipts', payload, {
+      await axios.post(`${import.meta.env.VITE_API_URL}/receipts`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
       navigate('/accounting/receipts');

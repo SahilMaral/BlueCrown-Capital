@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { X, Menu } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { NavLink, useLocation } from 'react-router-dom';
 import { logout } from '../../store/slices/authSlice';
@@ -122,7 +123,7 @@ const SignOutModal = ({ onConfirm, onCancel }) => (
 
 
 /* ── Sidebar ─────────────────────────────────────────────────── */
-const Sidebar = () => {
+const Sidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
@@ -155,16 +156,26 @@ const Sidebar = () => {
 
   const handleLogout = () => dispatch(logout());
 
+  const handleLinkClick = () => {
+    if (window.innerWidth <= 1100 && onClose) {
+      onClose();
+    }
+  };
+
   return (
     <>
-      <aside className="sidebar">
+      {isOpen && <div className="mobile-overlay" onClick={onClose}></div>}
+      <aside className={`sidebar ${isOpen ? 'mobile-show' : ''}`}>
         <div className="sidebar-header">
+          <button className="mobile-close" onClick={onClose}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
           <LogoIcon className="sidebar-logo animated-icon breathe" />
           <span className="sidebar-title">BlueCrown Capital</span>
         </div>
 
         <nav className="sidebar-nav">
-          <NavLink to="/dashboard" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+          <NavLink to="/dashboard" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
             <OverviewIcon />
             Overview
           </NavLink>
@@ -200,15 +211,15 @@ const Sidebar = () => {
                 transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                 paddingLeft: '8px'
               }}>
-                <NavLink to="/accounting/receipts" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+                <NavLink to="/accounting/receipts" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                   <ReceiptIcon />
                   Receipts
                 </NavLink>
-                <NavLink to="/accounting/payments" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+                <NavLink to="/accounting/payments" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                   <PaymentIcon />
                   Payments
                 </NavLink>
-                <NavLink to="/accounting/self-transfer" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+                <NavLink to="/accounting/self-transfer" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                   <WalletIcon />
                   Self Transfer
                 </NavLink>
@@ -246,12 +257,12 @@ const Sidebar = () => {
             transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
             paddingLeft: '8px'
           }}>
-            <NavLink to="/investment/view" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+            <NavLink to="/investment/view" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
               <PiggyBankIcon />
               Investment
             </NavLink>
             {user?.role !== 'checker' && (
-              <NavLink to="/investment/entry" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+              <NavLink to="/investment/entry" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                 <ReceiptIcon />
                 Investment Collection
               </NavLink>
@@ -288,12 +299,12 @@ const Sidebar = () => {
             transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
             paddingLeft: '8px'
           }}>
-            <NavLink to="/loan/view" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+            <NavLink to="/loan/view" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
               <LoanIcon />
               Loan
             </NavLink>
             {user?.role !== 'checker' && (
-              <NavLink to="/loan/reminders" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+              <NavLink to="/loan/reminders" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                 <CalendarIcon />
                 Loan Reminder
               </NavLink>
@@ -331,36 +342,36 @@ const Sidebar = () => {
             paddingLeft: '8px'
           }}>
             {user?.role !== 'checker' && (
-              <NavLink to="/accounting/day-report" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+              <NavLink to="/accounting/day-report" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                 <AnalyticsIcon />
                 Day Report
               </NavLink>
             )}
-            <NavLink to="/accounting/ledger-report" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+            <NavLink to="/accounting/ledger-report" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
               <LedgerIcon />
               Ledger Report
             </NavLink>
             {user?.role !== 'checker' && (
               <>
-                <NavLink to="/accounting/cancel-receipt-report" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+                <NavLink to="/accounting/cancel-receipt-report" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                   <ReceiptIcon />
                   Cancel Receipt Report
                 </NavLink>
-                <NavLink to="/accounting/penalty-charges-report" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+                <NavLink to="/accounting/penalty-charges-report" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                   <RupeeIcon />
                   Penalty charges Report
                 </NavLink>
-                <NavLink to="/accounting/cancel-payment-report" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+                <NavLink to="/accounting/cancel-payment-report" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                   <PaymentIcon />
                   Cancel Payment Report
                 </NavLink>
-                <NavLink to="/accounting/admin-charges-report" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+                <NavLink to="/accounting/admin-charges-report" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                   <SettingsIcon />
                   Admin Charges Report
                 </NavLink>
               </>
             )}
-            <NavLink to="/investment/report" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+            <NavLink to="/investment/report" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
               <PiggyBankIcon />
               Investment Report
             </NavLink>
@@ -398,32 +409,32 @@ const Sidebar = () => {
                 transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                 paddingLeft: '8px'
               }}>
-                <NavLink to="/accounting/ledgers" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+                <NavLink to="/accounting/ledgers" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                   <LedgerIcon />
                   Ledger
                 </NavLink>
-                <NavLink to="/accounting/banks" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+                <NavLink to="/accounting/banks" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                   <BankIcon />
                   Bank
                 </NavLink>
-                <NavLink to="/accounting/companies" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+                <NavLink to="/accounting/companies" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                   <CompanyIcon />
                   Company
                 </NavLink>
-                <NavLink to="/accounting/clients" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+                <NavLink to="/accounting/clients" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                   <ClientIcon />
                   Client
                 </NavLink>
                 {/* User management restricted to super_admin and admin */}
                 {(user?.role === 'super_admin' || user?.role === 'admin') && (
-                  <NavLink to="/accounting/users" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+                  <NavLink to="/accounting/users" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                     <UserIcon />
                     User
                   </NavLink>
                 )}
                 {/* Counter restricted to super_admin */}
                 {user?.role === 'super_admin' && (
-                  <NavLink to="/accounting/counters" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+                  <NavLink to="/accounting/counters" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                     <BriefcaseIcon />
                     Counter
                   </NavLink>
@@ -432,7 +443,7 @@ const Sidebar = () => {
             </>
           )}
 
-          <NavLink to="/settings" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"} style={{ marginTop: '8px' }}>
+          <NavLink to="/settings" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"} style={{ marginTop: '8px' }}>
             <SettingsIcon />
             App Settings
           </NavLink>

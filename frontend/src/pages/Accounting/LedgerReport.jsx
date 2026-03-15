@@ -28,9 +28,9 @@ const LedgerReport = () => {
     try {
       const token = localStorage.getItem('token');
       const [compRes, clientRes, ledgerRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/v1/companies', { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get('http://localhost:5000/api/v1/clients', { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get('http://localhost:5000/api/v1/ledgers', { headers: { Authorization: `Bearer ${token}` } })
+        axios.get(`${import.meta.env.VITE_API_URL}/companies`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${import.meta.env.VITE_API_URL}/clients`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${import.meta.env.VITE_API_URL}/ledgers`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       setCompanies(compRes.data.data);
       setClients(clientRes.data.data);
@@ -50,7 +50,7 @@ const LedgerReport = () => {
       setLoading(true);
       const token = localStorage.getItem('token');
       const { companyId, counterpartyId, counterpartyType, dateFrom, dateTo } = filters;
-      const url = `http://localhost:5000/api/v1/reports/ledger?companyId=${companyId}&counterpartyId=${counterpartyId}&counterpartyType=${counterpartyType}&dateFrom=${dateFrom}&dateTo=${dateTo}`;
+      const url = `${import.meta.env.VITE_API_URL}/reports/ledger?companyId=${filters.companyId}&counterpartyId=${filters.counterpartyId}&counterpartyType=${filters.counterpartyType}&dateFrom=${filters.dateFrom}&dateTo=${filters.dateTo}`;
       const res = await axios.get(url, { headers: { Authorization: `Bearer ${token}` } });
       setReport(res.data.data);
     } catch (err) {

@@ -35,7 +35,7 @@ const InvestmentView = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/v1/investments', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/investments`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setInvestments(res.data.data);
@@ -50,7 +50,7 @@ const InvestmentView = () => {
   const fetchBanks = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/v1/banks', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/banks`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setBanks(res.data.data);
@@ -70,7 +70,7 @@ const InvestmentView = () => {
   const handleViewSchedule = async (inv) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(`http://localhost:5000/api/v1/investments/${inv._id}`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/investments/${inv._id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSelectedInvestment(res.data.data); // Contains { investment, installments }
@@ -109,7 +109,7 @@ const InvestmentView = () => {
         bankId: formData.bankId
       };
 
-      const endpoint = `http://localhost:5000/api/v1/investments/${selectedInvestment.investment._id}/${actionType}`;
+      const endpoint = `${import.meta.env.VITE_API_URL}/investments/${selectedInvestment.investment._id}/${actionType}`;
       await axios.post(endpoint, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -146,67 +146,69 @@ const InvestmentView = () => {
           </div>
         </div>
 
-        <div className="elite-table-container">
-          <table className="elite-table">
-            <thead>
-              <tr>
-                <th>Sr. No.</th>
-                <th>Inv Number</th>
-                <th>Client Name</th>
-                <th>Principal</th>
-                <th>ROI</th>
-                <th>Date</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                [1, 2, 3, 4, 5].map((i) => (
-                  <tr key={`sk-row-${i}`}>
-                    <td colSpan="7" style={{ padding: '24px 32px' }}>
-                      <Skeleton height="60px" borderRadius="12px" />
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                filteredInvestments.map((inv, idx) => (
-                  <tr key={inv._id}>
-                    <td style={{ fontWeight: 600 }}>{idx + 1}.</td>
-                    <td style={{ fontWeight: 600, color: 'var(--elite-blue)' }}>{inv.investmentNumber}</td>
-                    <td style={{ fontWeight: 800 }}>{inv.clientId?.clientName || 'N/A'}</td>
-                    <td style={{ fontWeight: 700 }}>₹{inv.principalAmount?.toLocaleString()}</td>
-                    <td><span className="status-badge pending">{inv.rateOfInterest}%</span></td>
-                    <td>{new Date(inv.date).toLocaleDateString()}</td>
-                    <td>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <button className="btn-elite-ghost" style={{ padding: '8px 12px', fontSize: '11px' }} onClick={() => handleViewSchedule(inv)}>
-                          Schedule
-                        </button>
-                        {inv.balancePrincipal > 0 && !inv.isForeClosure && (
-                          <>
-                            <button className="btn-elite-ghost" style={{ padding: '8px 12px', fontSize: '11px', color: 'var(--elite-blue)' }} onClick={() => openActionModal(inv, 'lumpsum')}>
-                              Lumpsum
-                            </button>
-                            <button className="btn-elite-ghost" style={{ padding: '8px 12px', fontSize: '11px', color: '#ef4444' }} onClick={() => openActionModal(inv, 'foreclose')}>
-                              Foreclose
-                            </button>
-                          </>
-                        )}
-                        {inv.isForeClosure && <span className="status-badge success" style={{ fontSize: '10px' }}>Closed</span>}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-              {!loading && filteredInvestments.length === 0 && (
+        <div className="table-responsive-elite">
+          <div className="elite-table-container">
+            <table className="elite-table">
+              <thead>
                 <tr>
-                  <td colSpan="7" style={{ padding: '60px', textAlign: 'center', color: 'var(--elite-text-secondary)' }}>
-                    No active investments matching "{searchTerm}"
-                  </td>
+                  <th>Sr. No.</th>
+                  <th>Inv Number</th>
+                  <th>Client Name</th>
+                  <th>Principal</th>
+                  <th>ROI</th>
+                  <th>Date</th>
+                  <th>Actions</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {loading ? (
+                  [1, 2, 3, 4, 5].map((i) => (
+                    <tr key={`sk-row-${i}`}>
+                      <td colSpan="7" style={{ padding: '24px 32px' }}>
+                        <Skeleton height="60px" borderRadius="12px" />
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  filteredInvestments.map((inv, idx) => (
+                    <tr key={inv._id}>
+                      <td style={{ fontWeight: 600 }}>{idx + 1}.</td>
+                      <td style={{ fontWeight: 600, color: 'var(--elite-blue)' }}>{inv.investmentNumber}</td>
+                      <td style={{ fontWeight: 800 }}>{inv.clientId?.clientName || 'N/A'}</td>
+                      <td style={{ fontWeight: 700 }}>₹{inv.principalAmount?.toLocaleString()}</td>
+                      <td><span className="status-badge pending">{inv.rateOfInterest}%</span></td>
+                      <td>{new Date(inv.date).toLocaleDateString()}</td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button className="btn-elite-ghost" style={{ padding: '8px 12px', fontSize: '11px' }} onClick={() => handleViewSchedule(inv)}>
+                            Schedule
+                          </button>
+                          {inv.balancePrincipal > 0 && !inv.isForeClosure && (
+                            <>
+                              <button className="btn-elite-ghost" style={{ padding: '8px 12px', fontSize: '11px', color: 'var(--elite-blue)' }} onClick={() => openActionModal(inv, 'lumpsum')}>
+                                Lumpsum
+                              </button>
+                              <button className="btn-elite-ghost" style={{ padding: '8px 12px', fontSize: '11px', color: '#ef4444' }} onClick={() => openActionModal(inv, 'foreclose')}>
+                                Foreclose
+                              </button>
+                            </>
+                          )}
+                          {inv.isForeClosure && <span className="status-badge success" style={{ fontSize: '10px' }}>Closed</span>}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+                {!loading && filteredInvestments.length === 0 && (
+                  <tr>
+                    <td colSpan="7" style={{ padding: '60px', textAlign: 'center', color: 'var(--elite-text-secondary)' }}>
+                      No active investments matching "{searchTerm}"
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 

@@ -17,7 +17,7 @@ const CancelPaymentReport = () => {
   const fetchCompanies = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/v1/companies', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/companies`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCompanies(res.data.data);
@@ -34,7 +34,7 @@ const CancelPaymentReport = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const res = await axios.get(`http://localhost:5000/api/v1/reports/cancel-payment?companyId=${selectedCompany}&fromDate=${fromDate}&toDate=${toDate}`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/reports/cancel-payment?companyId=${selectedCompany}&fromDate=${fromDate}&toDate=${toDate}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setReport(res.data.data);
