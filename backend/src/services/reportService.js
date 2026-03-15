@@ -354,6 +354,58 @@ class ReportService {
     };
   }
 
+  async getTransactionHistory() {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    thirtyDaysAgo.setHours(0, 0, 0, 0);
+
+    const matchQuery = {
+      dateTime: { $gte: thirtyDaysAgo },
+      isCancelled: { $ne: true }
+    };
+
+    const receipts = await Receipt.aggregate([
+      { $match: matchQuery },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$dateTime" } },
+          amount: { $sum: "$amount" }
+        }
+      }
+    ]);
+
+    const payments = await Payment.aggregate([
+      { $match: matchQuery },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$dateTime" } },
+          amount: { $sum: "$amount" }
+        }
+      }
+    ]);
+
+    // Map to date -> { income, expense }
+    const historyMap = {};
+    
+    // Fill with last 30 days
+    for (let i = 0; i <= 30; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      historyMap[dateStr] = { date: dateStr, income: 0, expense: 0 };
+    }
+
+    receipts.forEach(r => {
+      if (historyMap[r._id]) historyMap[r._id].income = r.amount;
+    });
+
+    payments.forEach(p => {
+      if (historyMap[p._id]) historyMap[p._id].expense = p.amount;
+    });
+
+    return Object.values(historyMap).sort((a, b) => a.date.localeCompare(b.date));
+  }
+
   async getSelfTransferData() {
     const [companies, banks] = await Promise.all([
       Company.find().select('companyName'),

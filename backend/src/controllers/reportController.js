@@ -89,6 +89,11 @@ const getSelfTransferData = asyncHandler(async (req, res, next) => {
   res.status(200).json(new ApiResponse(200, data, 'Self-transfer data retrieved successfully'));
 });
 
+const getTransactionHistory = asyncHandler(async (req, res, next) => {
+  const history = await reportService.getTransactionHistory();
+  res.status(200).json(new ApiResponse(200, history, 'Transaction history retrieved successfully'));
+});
+
 module.exports = {
   getDayReport,
   getLedgerReport,
@@ -98,5 +103,6 @@ module.exports = {
   getPenaltyChargesReport,
   getInvestmentReport,
   getDashboardStats,
+  getTransactionHistory,
   getSelfTransferData
 };

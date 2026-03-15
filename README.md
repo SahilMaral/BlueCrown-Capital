@@ -1,137 +1,120 @@
-# BlueCrown Capital
+# 💎 BlueCrown Capital — Elite Financial Suite
 
-A modern, highly scalable, and secure full-stack MERN application representing a financial or enterprise portal. Built iteratively with industry best practices for the frontend and backend, adhering to a strict MVC architecture.
+[![React](https://img.shields.io/badge/Frontend-React%2018-blue?style=for-the-badge&logo=react)](https://reactjs.org/)
+[![Node](https://img.shields.io/badge/Backend-Node.js-green?style=for-the-badge&logo=nodedotjs)](https://nodejs.org/)
+[![MongoDB](https://img.shields.io/badge/Database-MongoDB-success?style=for-the-badge&logo=mongodb)](https://www.mongodb.com/)
+[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
 
-## Features
-- **User Authentication:** Complete JWT-based authentication system (Login, Register).
-- **Role-Based Access Control:** Secure endpoints and routes using middleware guards (Admin & User).
-- **Scalable Architecture:** Controllers, Services, Middlewares, and Models separated distinctly in the Backend. Redux Toolkit, custom Hooks, and atomic UI structures in the Frontend.
-- **Security First:** Rate-limiting, Helmet for HTTP headers, CORS, JWT standard implementation, and Joi validation.
-- **RESTful API:** Structured and versioned endpoints (`/api/v1/...`).
-- **Global Error Handling:** Centralized custom error classes and wrapper middleware to catch exceptions across the stack.
+> A premium, highly scalable, and secure full-stack MERN application representing a modern financial portal. Built with an "Elite" design aesthetic and atomic architecture.
 
-## Tech Stack
-### Backend
-- **Node.js** & **Express.js** 
-- **MongoDB** with **Mongoose**
-- **Security:** `bcryptjs`, `jsonwebtoken`, `helmet`, `cors`, `express-rate-limit`
-- **Validation:** `joi`
-- **Logging:** `morgan`
+---
 
-### Frontend
-- **React 18** (Functional Components + Hooks)
-- **Vite** as a modern build tool
-- **State Management:** `@reduxjs/toolkit`, `react-redux`
-- **Routing:** `react-router-dom` v6
-- **HTTP Client:** `axios` (with configured interceptors)
-- **Styling:** CSS-in-JS or global styles (Framework adaptable, configured with Tailwind/CSS Modules implicitly)
+## ✨ Key Features
 
-## Project Architecture
+- **🔐 Secure Authentication** — JWT-based login/register with secure HTTP-only cookie potential and role-based guards.
+- **📊 Live Analytics** — Interactive transaction history charts (Recharts) visualizing cash-flow trends.
+- **💼 Entity Management** — Manage Companies, Banks, Ledgers, and Clients with a unified "Elite" UI.
+- **🧾 Transaction Engine** — Atomic processing of Receipts and Payments with automatic balance updates.
+- **📁 Modular Design** — Strict MVC separation in Backend; Redux Toolkit & Custom Hooks in Frontend.
+- **⚖️ Scalability** — Designed for high-performance with asynchronous processing and atomic database transactions.
 
-The repository enforces a strict separation of concerns, housing `frontend` and `backend` as independent deployable layers inside a monorepo structure.
+---
 
-### Folder Structure
-```
+## 🚀 Tech Stack
+
+### **Frontend** (Vite + React)
+* **Logic:** React 18 (Functional Components, Hooks)
+* **State:** Redux Toolkit (@reduxjs/toolkit)
+* **Charts:** Recharts (Visual Analytics)
+* **UI:** Vanilla CSS with Elite Tokens & Glassmorphism
+* **Routing:** React Router v6
+
+### **Backend** (Node + Express)
+* **Core:** Node.js, Express.js
+* **Database:** MongoDB + Mongoose (ODM)
+* **Security:** Helmet, CORS, Rate Limiting, bcryptjs
+* **Validation:** Joi (Schema Validation)
+* **Architecture:** Controller-Service-Model Pattern
+
+---
+
+## 📂 Project Structure
+
+```text
 BlueCrown-Capital/
-├── backend/
-│   ├── src/
-│   │   ├── config/        # Database and environment configurations
-│   │   ├── controllers/   # Route handlers coordinating models & services
-│   │   ├── middlewares/   # Custom Express middlewares (auth, errors, validation)
-│   │   ├── models/        # Mongoose data schemas
-│   │   ├── routes/        # API route declarations (v1)
-│   │   ├── services/      # Core business logic
-│   │   ├── utils/         # Helper functions, custom errors, response formatting
-│   │   ├── validators/    # Joi schema definitions
-│   │   ├── app.js         # Express app instantiation and configuration
-│   │   └── server.js      # Entry point and HTTP listener
-│   ├── .env.example
-│   └── package.json
-├── frontend/
-│   ├── src/
-│   │   ├── components/    # Reusable standalone UI elements
-│   │   ├── hooks/         # Custom React hooks
-│   │   ├── layouts/       # Main, Auth, and Dashboard wrapper layouts
-│   │   ├── pages/         # Top-level page components mapping to routes
-│   │   ├── routes/        # AppRoutes definitions and Route guards
-│   │   ├── services/      # Axios API instances and request methods
-│   │   ├── store/         # Redux Toolkit configuration and slices
-│   │   ├── utils/         # Formatting and helper utilities
-│   │   ├── App.jsx        # Root component wrapper
-│   │   └── main.jsx       # React DOM target
-│   └── package.json
-├── docs/                  # API, architecture, and project documentation
-├── docker/                # Optional Docker compose and build configurations
-└── README.md
+├── 🌐 frontend/          # Vite + React app
+│   ├── 🧩 components/    # Atomic UI components & Icons
+│   ├── 📦 store/         # Redux slices & configuration
+│   └── 📄 pages/         # Feature-rich route pages
+├── ⚙️ backend/           # Express.js API
+│   ├── 🎮 controllers/   # Request/Response handlers
+│   ├── 🛠️ services/      # Business logic (Atomic operations)
+│   └── 📁 models/        # Mongoose Schemas (Collection definitions)
+├── 📜 docs/              # Technical documentation
+└── 🐳 docker/            # Containerization files
 ```
 
-## Installation Guide
+---
 
-### Prerequisites
-- Node.js (v18+ recommended)
-- MongoDB instance (Local or Atlas)
-- Git
+## 🛠️ Installation & Setup
 
-### 1. Clone the repository
-```bash
-git clone <repository-url>
-cd BlueCrown-Capital
-```
+### **1. Prerequisites**
+* Node.js (v18+)
+* MongoDB (Local or Atlas)
 
-### 2. Environment Variables
-Create a `.env` file in the `backend` directory based on the `.env.example` template:
-```env
-PORT=5000
-NODE_ENV=development
-MONGO_URI=mongodb://localhost:27017/bluecrown_db
-JWT_SECRET=your_super_secret_jwt_key
-JWT_EXPIRE=30d
-```
-
-Create a `.env` file in the `frontend` directory:
-```env
-VITE_API_URL=http://localhost:5000/api/v1
-```
-
-### 3. Running Backend (Development)
+### **2. Backend Configuration**
 ```bash
 cd backend
 npm install
+```
+Create a `.env` file:
+```env
+PORT=5000
+MONGO_URI=mongodb://localhost:27017/bluecrown_db
+JWT_SECRET=your_elite_secret_key
+JWT_EXPIRE=30d
+```
+Run development server:
+```bash
 npm run dev
 ```
-The server will start on `http://localhost:5000`.
 
-### 4. Running Frontend (Development)
+### **3. Frontend Configuration**
 ```bash
 cd frontend
 npm install
+```
+Run development server:
+```bash
 npm run dev
 ```
-The application will be accessible via Vite's default dev port (usually `http://localhost:5173`).
 
-## API Documentation
-The current foundational routing includes authentication endpoints. View `backend/src/routes` for further endpoints.
+---
 
-*Note: You can implement Swagger locally inside `/docs` or configure `swagger-ui-express`.*
+## 🛡️ API Endpoints Preview
 
-### `POST /api/v1/auth/register`
-- **Body:** `{ name, email, password }`
-### `POST /api/v1/auth/login`
-- **Body:** `{ email, password }`
-### `GET /api/v1/auth/me`
-- **Headers:** `Authorization: Bearer <token>`
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/v1/auth/register` | Register new user |
+| `POST` | `/api/v1/auth/login` | Secure login session |
+| `GET` | `/api/v1/reports/dashboard-stats` | Real-time portfolio summary |
+| `GET` | `/api/v1/reports/transaction-history` | 30-day analytics data |
 
-## Deployment Guide
-Both layers are built for stateless deployment.
-- **Backend:** Can be deployed using Docker, Heroku, Render, AWS Elastic Beanstalk, or DigitalOcean Apps. Ensure environment variables are secured.
-- **Frontend:** Executing `npm run build` generates static files within `/dist`. These can be hosted on Vercel, Netlify, or an S3 bucket.
+---
 
-## Contribution Guidelines
-1. Fork the repo and create your feature branch (`git checkout -b feature/AmazingFeature`).
-2. Commit your changes strictly following conventional commits (`git commit -m 'feat: Add some AmazingFeature'`).
-3. Ensure the project is formatted (use Prettier).
-4. Push to the branch (`git push origin feature/AmazingFeature`).
-5. Open a Pull Request.
+## 🤝 Contribution
 
-## License
+1. **Fork** the repository
+2. **Branch**: `git checkout -b feature/AmazingFeature`
+3. **Commit**: `git commit -m 'feat: Add some AmazingFeature'`
+4. **Push**: `git push origin feature/AmazingFeature`
+5. **Open a PR**
+
+---
+
+## 📄 License
+
 Distributed under the MIT License. See `LICENSE` for more information.
+
+---
+*Created with ❤️ by the BlueCrown Team*
