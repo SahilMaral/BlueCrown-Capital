@@ -447,20 +447,6 @@ const Sidebar = () => {
             <SignOutIcon />
             Sign Out
           </button>
-          
-          <div style={{ 
-            marginTop: '20px', 
-            padding: '12px 16px', 
-            borderRadius: '12px', 
-            background: 'rgba(37, 99, 235, 0.05)',
-            fontSize: '11px',
-            color: 'var(--elite-text-secondary)',
-            fontWeight: 600,
-            textAlign: 'center',
-            letterSpacing: '0.5px'
-          }}>
-            Created by <span style={{ color: 'var(--elite-blue)', fontWeight: 800 }}>Sahil Maral</span>
-          </div>
         </div>
       </aside>
 
