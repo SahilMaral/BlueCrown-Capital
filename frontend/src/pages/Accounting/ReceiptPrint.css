@@ -1,0 +1,217 @@
+/* Receipt Voucher Print Styles */
+
+.print-page-wrapper {
+  background-color: #f8fafc;
+  min-height: 100vh;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.voucher-container {
+  background-color: #ffffff;
+  width: 800px; /* A4 width approximate constraint for screen */
+  max-width: 100%;
+  padding: 40px;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.05);
+  margin-bottom: 32px;
+  border-radius: 4px;
+}
+
+.voucher-border {
+  border: 2px solid #0f172a;
+  position: relative;
+}
+
+.voucher-border::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1px solid #e2e8f0;
+  pointer-events: none;
+}
+
+.voucher-header {
+  text-align: center;
+  padding: 32px 0 24px;
+  border-bottom: 2px solid #0f172a;
+}
+
+.company-logo {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 26px;
+  color: #0f172a;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  letter-spacing: -0.5px;
+}
+
+.company-name {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  color: #334155;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.company-city {
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  margin: 4px 0 20px 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.voucher-title-pill {
+  background-color: #0f172a;
+  color: #ffffff;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 8px 24px;
+  border-radius: 30px;
+  display: inline-block;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+}
+
+.voucher-row {
+  display: flex;
+  border-bottom: 1px solid #0f172a;
+}
+
+.voucher-row:last-child {
+  border-bottom: none;
+}
+
+.voucher-col {
+  flex: 1;
+  padding: 14px 20px;
+  border-right: 1px solid #0f172a;
+}
+
+.voucher-col:last-child {
+  border-right: none;
+}
+
+.voucher-col-full {
+  width: 100%;
+  padding: 14px 20px;
+}
+
+.voucher-label-value {
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  color: #1e293b;
+}
+
+.voucher-label-value strong {
+  font-weight: 700;
+  color: #0f172a;
+  margin-right: 8px;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.voucher-center-header {
+  text-align: center;
+  font-weight: 800;
+  font-size: 14px;
+  background-color: #f8fafc;
+  color: #0f172a;
+  letter-spacing: 1px;
+}
+
+.disclaimer {
+  text-align: center;
+  font-size: 12px;
+  color: #64748b;
+  font-style: italic;
+  padding: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.print-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 24px;
+  padding-bottom: 40px;
+}
+
+.print-btn {
+  padding: 12px 32px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  cursor: pointer;
+  border: none;
+  color: white;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.print-btn-secondary {
+  background-color: #64748b;
+}
+
+.print-btn-primary {
+  background-color: #0f172a;
+}
+
+.print-btn-accent {
+  background-color: #2563eb;
+}
+
+.print-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  filter: brightness(1.1);
+}
+
+.print-btn:active {
+  transform: translateY(0);
+}
+
+@media print {
+  body {
+    background: white !important;
+  }
+  .print-page-wrapper {
+    background-color: transparent;
+    padding: 0;
+    min-height: auto;
+  }
+  .voucher-container {
+    box-shadow: none;
+    width: 100%;
+    padding: 20px;
+    margin: 0;
+  }
+  .print-actions {
+    display: none;
+  }
+  .voucher-border {
+    border: 2px solid #000 !important;
+  }
+  .voucher-row, .voucher-header, .voucher-col {
+    border-color: #000 !important;
+  }
+}

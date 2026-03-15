@@ -1,0 +1,150 @@
+:root {
+  --elite-accent: #60a5fa;
+  --elite-fill-bg: rgba(37, 99, 235, 0.08); /* Sophisticated base fill */
+}
+
+.animated-icon {
+  width: 24px;
+  height: 24px;
+  color: currentColor;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.animated-icon svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Persistent Subtle Animation: Breathe */
+@keyframes breathe {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.05); }
+}
+
+.animated-icon.breathe {
+  animation: breathe 3s ease-in-out infinite alternate;
+}
+
+/* Base states for High-Fidelity Lineal Elements */
+.animated-icon .icon-fill {
+  fill: #2563eb; /* Use direct hex to ensure consistency */
+  opacity: 0.2; /* Slightly deeper fill */
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform-origin: center;
+}
+
+.animated-icon .icon-fill-accent {
+  fill: var(--elite-accent);
+  opacity: 0.1;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform-origin: center;
+}
+
+.animated-icon .icon-stroke {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6; /* Slightly thinner for more elegance */
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.95; /* High visibility stroke */
+  transition: all 0.4s ease;
+}
+
+.animated-icon .icon-stroke-accent {
+  fill: none;
+  stroke: var(--elite-accent);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.6;
+  transition: all 0.4s ease;
+}
+
+/* --- Global Continuous Animations (The "Elite" Pulse) --- */
+
+.animated-icon .icon-fill {
+  fill: var(--elite-blue);
+  opacity: 0.15;
+  transition: all 0.4s ease;
+  transform-origin: center;
+}
+
+.animated-icon .icon-fill-accent {
+  fill: var(--elite-accent);
+  opacity: 0.1;
+  transition: all 0.4s ease;
+  transform-origin: center;
+}
+
+/* Subtle Hover Enhancement */
+.sidebar-link:hover .animated-icon,
+.sidebar-link.active .animated-icon,
+.auth-input-wrapper:focus-within .animated-icon {
+  transform: scale(1.1);
+}
+
+.sidebar-link:hover .animated-icon .icon-fill-accent {
+  opacity: 0.4;
+}
+
+/* --- Keyframe Animations --- */
+
+@keyframes drawPathInfinite {
+  0%   { stroke-dashoffset: 0;  opacity: 0.85; }
+  50%  { stroke-dashoffset: 8;  opacity: 1;    }
+  100% { stroke-dashoffset: 0;  opacity: 0.85; }
+}
+
+@keyframes popPulse {
+  0% { transform: scale(0.85); opacity: 0.4; }
+  100% { transform: scale(1.05); opacity: 0.9; }
+}
+
+@keyframes rotateInfinite {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes floatInfinite {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* --- Global Triggers --- */
+
+.draw-on-hover {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 0;  /* ALWAYS START VISIBLE */
+  animation: drawPathInfinite 6s ease-in-out infinite;
+}
+
+.pop-on-hover {
+  transform-origin: center;
+  animation: popPulse 2.5s ease-in-out infinite alternate;
+}
+
+.spin-on-hover {
+  transform-origin: center;
+  animation: rotateInfinite 12s linear infinite;
+}
+
+.float-on-hover {
+  animation: floatInfinite 3s ease-in-out infinite;
+}
+
+.bounce-on-hover {
+  display: inline-block;
+  animation: floatInfinite 2s ease-in-out infinite alternate;
+}
+@keyframes bounceSmall {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+.bounce-small {
+  animation: bounceSmall 2s ease-in-out infinite;
+}
