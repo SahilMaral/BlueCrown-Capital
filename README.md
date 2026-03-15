@@ -62,30 +62,27 @@ BlueCrown-Capital/
 * Node.js (v18+)
 * MongoDB (Local or Atlas)
 
-### **2. Backend Configuration**
+### **2. One-Command Startup (Recommended)**
+Install dependencies in the root:
 ```bash
-cd backend
 npm install
 ```
-Create a `.env` file:
-```env
-PORT=5000
-MONGO_URI=mongodb://localhost:27017/bluecrown_db
-JWT_SECRET=your_elite_secret_key
-JWT_EXPIRE=30d
-```
-Run development server:
+Then run both Frontend & Backend simultaneously:
 ```bash
 npm run dev
 ```
 
-### **3. Frontend Configuration**
+### **3. Individual Manual Setup**
+#### **Backend**
+```bash
+cd backend
+npm install
+npm run dev
+```
+#### **Frontend**
 ```bash
 cd frontend
 npm install
-```
-Run development server:
-```bash
 npm run dev
 ```
 
