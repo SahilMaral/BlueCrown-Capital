@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../Dashboard/Dashboard.css';
+import ReportSkeleton from '../../components/common/skeletons/ReportSkeleton';
 
 const AdminChargesReport = () => {
   const [report, setReport] = useState(null);
@@ -77,7 +78,7 @@ const AdminChargesReport = () => {
         </div>
       </header>
 
-      <section className="content-section" style={{ padding: '32px' }}>
+      <section className="content-section content-section-elite">
         <div className="filter-card-elite">
           <div className="filter-grid-elite">
             <div className="input-field-elite">
@@ -101,7 +102,7 @@ const AdminChargesReport = () => {
                 {investments.map(i => <option key={i._id} value={i._id}>{i.investmentNumber}</option>)}
               </select>
             </div>
-            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
+            <div className="filter-actions-elite">
                <button className="btn-elite" onClick={fetchReport} disabled={loading || !selectedInvestment}>
                  Generate Report
                </button>
@@ -110,7 +111,7 @@ const AdminChargesReport = () => {
         </div>
 
         {loading ? (
-          <div className="skeleton-loader-elite" style={{ height: '400px' }}></div>
+          <ReportSkeleton hasSummaryGrid={true} rows={4} />
         ) : report ? (
           <>
             <div className="summary-cards-grid">

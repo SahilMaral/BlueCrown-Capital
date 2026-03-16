@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../Dashboard/Dashboard.css';
+import ReportSkeleton from '../../components/common/skeletons/ReportSkeleton';
 
 const InvestmentReport = () => {
   const [report, setReport] = useState(null);
@@ -80,7 +81,7 @@ const InvestmentReport = () => {
         </div>
       </header>
 
-      <section className="content-section" style={{ padding: '32px' }}>
+      <section className="content-section content-section-elite">
         <div className="filter-card-elite">
           <div className="filter-grid-elite">
             <div className="input-field-elite">
@@ -101,7 +102,7 @@ const InvestmentReport = () => {
                 {investments.map(i => <option key={i._id} value={i._id}>{i.investmentNumber}</option>)}
               </select>
             </div>
-            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end', gridColumn: 'span 2' }}>
+            <div className="filter-actions-elite">
                <button className="btn-elite" onClick={fetchReport} disabled={loading || !selectedInvestment}>
                  Generate Analysis
                </button>
@@ -110,14 +111,14 @@ const InvestmentReport = () => {
         </div>
 
         {loading ? (
-          <div className="skeleton-loader-elite" style={{ height: '400px' }}></div>
+          <ReportSkeleton hasSummaryGrid={true} rows={8} />
         ) : report ? (
           <>
             <div className="section-header">
               <h2>Investment Profile</h2>
             </div>
             <div className="filter-card-elite" style={{ background: 'rgba(37, 99, 235, 0.02)', borderStyle: 'dashed' }}>
-              <div className="filter-grid-elite" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+              <div className="report-profile-grid">
                 <div className="particulars-info">
                   <span className="label" style={{ fontSize: '10px', textTransform: 'uppercase', color: 'var(--elite-text-secondary)' }}>Client Name</span>
                   <span className="main-info">{report.investment.clientId?.clientName}</span>

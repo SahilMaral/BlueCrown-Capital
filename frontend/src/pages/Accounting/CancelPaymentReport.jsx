@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../Dashboard/Dashboard.css';
+import ReportSkeleton from '../../components/common/skeletons/ReportSkeleton';
 
 const CancelPaymentReport = () => {
   const [report, setReport] = useState(null);
@@ -54,7 +55,7 @@ const CancelPaymentReport = () => {
         </div>
       </header>
 
-      <section className="content-section" style={{ padding: '32px' }}>
+      <section className="content-section content-section-elite">
         <div className="filter-card-elite">
           <div className="filter-grid-elite">
             <div className="input-field-elite">
@@ -74,7 +75,7 @@ const CancelPaymentReport = () => {
                 <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
               </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
+            <div className="filter-actions-elite">
                <button 
                  className="btn-elite" 
                  onClick={fetchReport}
@@ -87,7 +88,7 @@ const CancelPaymentReport = () => {
         </div>
 
         {loading ? (
-          <div className="skeleton-loader-elite" style={{ height: '400px' }}></div>
+          <ReportSkeleton hasSummaryGrid={true} rows={5} />
         ) : report ? (
           <>
             <div className="summary-cards-grid">

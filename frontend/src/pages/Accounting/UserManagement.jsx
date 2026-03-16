@@ -100,7 +100,7 @@ const UserManagement = () => {
         </header>
 
         <section className="content-section" style={{ padding: 0 }}>
-          <div className="section-header" style={{ padding: '32px 32px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="section-header" style={{ padding: '24px 32px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h2>System Users</h2>
             <div className="search-container-elite">
               <SearchIcon className="search-icon-elite" />
@@ -114,11 +114,11 @@ const UserManagement = () => {
             </div>
           </div>
 
-          <div className="elite-table-container">
+          <div className="elite-table-container shadow-sm">
             <table className="elite-table">
               <thead>
                 <tr>
-                  <th style={{ width: '80px' }}>Sr. No.</th>
+                  <th style={{ width: '80px' }}>Sr.</th>
                   <th>Full Name</th>
                   <th>Username</th>
                   <th>Email</th>
@@ -133,30 +133,21 @@ const UserManagement = () => {
                 {loading ? (
                    [1, 2, 3].map((i) => (
                     <tr key={`sk-${i}`}>
-                      <td colSpan="8" style={{ padding: '8px 32px' }}>
-                        <div className="skeleton-row skeleton" style={{ margin: 0, height: '60px', borderRadius: '12px' }}></div>
+                      <td colSpan="9">
+                        <div className="skeleton-row skeleton"></div>
                       </td>
                     </tr>
                   ))
                 ) : (
                   filteredUsers.map((u, idx) => (
                     <tr key={u._id}>
-                      <td style={{ fontWeight: 600 }}>{idx + 1}.</td>
-                      <td style={{ fontWeight: 800, color: 'var(--elite-blue)' }}>{u.name || `User (${u.username})`}</td>
-                      <td>@{u.username}</td>
-                      <td style={{ opacity: 0.8 }}>{u.email}</td>
-                      <td style={{ fontWeight: 600 }}>{u.designation || '-'}</td>
+                      <td className="font-bold">{idx + 1}.</td>
+                      <td className="font-extrabold text-primary">{u.name || `User (${u.username})`}</td>
+                      <td className="text-secondary">@{u.username}</td>
+                      <td className="text-secondary opacity-80">{u.email}</td>
+                      <td className="font-semibold">{u.designation || '-'}</td>
                       <td>
-                        <span style={{ 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          gap: '6px',
-                          color: u.role === 'admin' ? '#ef4444' : (u.role === 'maker' ? '#8b5cf6' : '#2563eb'),
-                          fontWeight: 700,
-                          fontSize: '11px',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.5px'
-                        }}>
+                        <span className={`role-badge-elite role-badge-${u.role}`}>
                           <ShieldIcon className="icon-xs" />
                           {u.role}
                         </span>
@@ -164,28 +155,26 @@ const UserManagement = () => {
                       <td>
                         <button 
                           onClick={() => handleToggleBlock(u)}
-                          style={{ border: 'none', background: 'transparent', padding: 0, cursor: 'pointer' }}
+                          className="btn-reset"
                           title={u.isActive ? "Block User" : "Unblock User"}
                         >
-                          <span className={`status-badge ${u.isActive ? 'completed' : 'cancelled'}`}>
+                          <span className={`status-badge ${u.isActive ? 'active' : 'blocked'}`}>
                               {u.isActive ? 'Active' : 'Blocked'}
                           </span>
                         </button>
                       </td>
-                      <td>{new Date(u.createdAt).toLocaleDateString()}</td>
+                      <td className="text-secondary">{new Date(u.createdAt).toLocaleDateString()}</td>
                       <td>
-                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                        <div className="flex justify-center gap-2">
                           <button 
-                            className="btn-elite-icon"
-                            style={{ backgroundColor: '#10b981', color: 'white', border: 'none', padding: '6px', borderRadius: '6px', cursor: 'pointer' }}
+                            className="btn-action-elite btn-action-edit"
                             title="Edit"
                             onClick={() => handleEditClick(u)}
                           >
                             <PencilIcon className="icon-xs" />
                           </button>
                           <button 
-                            className="btn-elite-icon"
-                            style={{ backgroundColor: '#ef4444', color: 'white', border: 'none', padding: '6px', borderRadius: '6px', cursor: 'pointer' }}
+                            className="btn-action-elite btn-action-delete"
                             title="Delete"
                             onClick={() => setDeleteModal({ show: true, id: u._id })}
                           >
@@ -198,7 +187,7 @@ const UserManagement = () => {
                 )}
                 {!loading && filteredUsers.length === 0 && (
                   <tr>
-                    <td colSpan="9" style={{ padding: '60px', textAlign: 'center', color: 'var(--elite-text-secondary)' }}>
+                    <td colSpan="9" className="text-center py-20 text-secondary">
                       No users found.
                     </td>
                   </tr>

@@ -1,9 +1,9 @@
 import React from 'react';
 import './AnimatedIcons.css';
 
-const PlusCircleIcon = ({ className = "" }) => (
-  <span className={`animated-icon breathe ${className}`}>
-    <svg viewBox="0 0 24 24">
+const PlusCircleIcon = ({ className = "", size = 24 }) => (
+  <span className={`animated-icon breathe ${className}`} style={{ width: size, height: size }}>
+    <svg viewBox="0 0 24 24" width={size} height={size}>
       {/* Circle Fill */}
       <circle cx="12" cy="12" r="10" className="icon-fill" />
       

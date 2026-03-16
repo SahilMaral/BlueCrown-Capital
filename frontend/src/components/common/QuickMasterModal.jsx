@@ -144,8 +144,8 @@ const QuickMasterModal = ({ type, isOpen, onClose, onSuccess, companyId, initial
             <div className="auth-input-group elite-full-width">
               <label className="form-label-elite">Address</label>
               <div className="auth-input-wrapper">
-                <MapPinIcon className="auth-input-icon" style={{ top: '24px' }} />
-                <textarea name="address" className="elite-textarea-classic" style={{ paddingLeft: '48px' }} value={formData.address || ''} onChange={handleInputChange} placeholder="Company Office Address"></textarea>
+                <MapPinIcon className="auth-input-icon textarea-icon-elite" />
+                <textarea name="address" className="elite-textarea-classic" value={formData.address || ''} onChange={handleInputChange} placeholder="Company Office Address"></textarea>
               </div>
             </div>
           </div>
@@ -184,8 +184,8 @@ const QuickMasterModal = ({ type, isOpen, onClose, onSuccess, companyId, initial
             <div className="auth-input-group elite-full-width">
               <label className="form-label-elite">Address</label>
               <div className="auth-input-wrapper">
-                <MapPinIcon className="auth-input-icon" style={{ top: '24px' }} />
-                <textarea name="address" className="elite-textarea-classic" style={{ paddingLeft: '48px' }} value={formData.address || ''} onChange={handleInputChange} placeholder="Client Residence Address"></textarea>
+                <MapPinIcon className="auth-input-icon textarea-icon-elite" />
+                <textarea name="address" className="elite-textarea-classic" value={formData.address || ''} onChange={handleInputChange} placeholder="Client Residence Address"></textarea>
               </div>
             </div>
             <div className="auth-input-group elite-full-width">

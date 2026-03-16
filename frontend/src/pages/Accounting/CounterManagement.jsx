@@ -154,18 +154,16 @@ const CounterManagement = () => {
                       </td>
                       <td>{new Date(c.createdAt).toLocaleDateString()}</td>
                       <td>
-                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                        <div className="flex justify-center gap-2">
                           <button 
-                            className="btn-elite-icon"
-                            style={{ backgroundColor: '#10b981', color: 'white', border: 'none', padding: '6px', borderRadius: '6px', cursor: 'pointer' }}
+                            className="btn-action-elite btn-action-edit"
                             title="Edit"
                             onClick={() => handleEditClick(c)}
                           >
                             <PencilIcon className="icon-xs" />
                           </button>
                           <button 
-                            className="btn-elite-icon"
-                            style={{ backgroundColor: '#ef4444', color: 'white', border: 'none', padding: '6px', borderRadius: '6px', cursor: 'pointer' }}
+                            className="btn-action-elite btn-action-delete"
                             title="Delete"
                             onClick={() => setDeleteModal({ show: true, id: c._id })}
                           >

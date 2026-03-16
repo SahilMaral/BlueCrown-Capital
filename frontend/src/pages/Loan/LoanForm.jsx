@@ -139,11 +139,12 @@ const LoanForm = () => {
             </div>
           )}
 
-          <form className="elite-form-padding" onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+          <form className="elite-form-padding" onSubmit={handleSubmit}>
+            <div className="form-grid-elite">
             {/* Company Selection */}
-            <div className="auth-input-group">
+            <div className="auth-input-group has-quick-add">
               <label className="form-label-elite">Company</label>
-              <div style={{ position: 'relative', marginRight: '40px' }}>
+              <div style={{ position: 'relative' }}>
                 <CompanyIcon className="auth-input-icon" style={{ zIndex: 10 }} />
                 <EliteSelect
                   options={masters.companies.map(c => ({ value: c._id, label: c.companyName }))}
@@ -158,9 +159,9 @@ const LoanForm = () => {
             </div>
 
             {/* Bank Selection */}
-            <div className="auth-input-group">
+            <div className="auth-input-group has-quick-add">
               <label className="form-label-elite">Company Bank</label>
-              <div style={{ position: 'relative', marginRight: '40px' }}>
+              <div style={{ position: 'relative' }}>
                 <BankIcon className="auth-input-icon" style={{ zIndex: 10 }} />
                 <EliteSelect
                   options={masters.banks.map(b => ({ value: b._id, label: b.bankName }))}
@@ -176,9 +177,9 @@ const LoanForm = () => {
             </div>
 
             {/* Client Selection */}
-            <div className="auth-input-group">
+            <div className="auth-input-group has-quick-add">
               <label className="form-label-elite">Client (Lender)</label>
-              <div style={{ position: 'relative', marginRight: '40px' }}>
+              <div style={{ position: 'relative' }}>
                 <TrendingUpIcon className="auth-input-icon" style={{ zIndex: 10 }} />
                 <EliteSelect
                   options={masters.clients.map(c => ({ value: c._id, label: c.clientName }))}
@@ -307,7 +308,7 @@ const LoanForm = () => {
               </div>
             </div>
 
-            <div className="auth-input-group" style={{ gridColumn: 'span 2' }}>
+            <div className="auth-input-group elite-full-width">
               <label className="form-label-elite">Loan Reason / Remarks</label>
               <div className="auth-input-wrapper">
                 <textarea 
@@ -320,7 +321,9 @@ const LoanForm = () => {
               </div>
             </div>
 
-            <div style={{ gridColumn: 'span 2', display: 'flex', gap: '16px', marginTop: '16px' }}>
+            </div>
+
+            <div style={{ display: 'flex', gap: '16px', marginTop: '16px' }}>
               <button type="submit" className="btn-elite-primary" disabled={submitting}>
                 {submitting ? 'Initializing...' : 'Activate Credit'}
               </button>

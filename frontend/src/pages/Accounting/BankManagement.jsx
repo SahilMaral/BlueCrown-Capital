@@ -128,18 +128,16 @@ const BankManagement = () => {
                       <td style={{ fontWeight: 600, opacity: 0.7 }}>{b.ifscCode}</td>
                       <td style={{ fontWeight: 700 }}>₹{b.currentBalance?.toLocaleString()}</td>
                       <td>
-                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                        <div className="flex justify-center gap-2">
                           <button 
-                            className="btn-elite-icon"
-                            style={{ backgroundColor: '#10b981', color: 'white', border: 'none', padding: '6px', borderRadius: '6px', cursor: 'pointer' }}
+                            className="btn-action-elite btn-action-edit"
                             title="Edit"
                             onClick={() => handleEditClick(b)}
                           >
                             <PencilIcon className="icon-xs" />
                           </button>
                           <button 
-                            className="btn-elite-icon"
-                            style={{ backgroundColor: '#ef4444', color: 'white', border: 'none', padding: '6px', borderRadius: '6px', cursor: 'pointer' }}
+                            className="btn-action-elite btn-action-delete"
                             title="Delete"
                             onClick={() => setDeleteModal({ show: true, id: b._id })}
                           >

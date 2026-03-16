@@ -11,20 +11,20 @@
 }
 
 .elite-form-padding {
-  padding: 48px;
+  padding: 32px;
 }
 
 .form-grid-elite {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  column-gap: 40px;
-  row-gap: 32px;
+  column-gap: 32px;
+  row-gap: 20px;
 }
 
 .auth-input-group {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   position: relative;
 }
 
@@ -92,30 +92,57 @@
   position: relative;
   display: flex;
   align-items: center;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px; /* Standardized with Masters */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.02);
+  min-height: 52px;
+  width: 100%;
+}
+
+.auth-input-wrapper:focus-within {
+  border-color: #3b82f6;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px -12px rgba(59, 130, 246, 0.2), 0 0 0 5px rgba(59, 130, 246, 0.06);
 }
 
 .auth-input-icon {
   position: absolute;
-  left: 20px;
+  left: 20px; /* Standardized with Masters */
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--elite-blue);
+  opacity: 0.7;
+  pointer-events: none;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 20px;
   height: 20px;
-  color: #3b82f6;
-  opacity: 0.8;
-  z-index: 2;
 }
 
-.elite-input-classic, .elite-textarea-classic {
+.elite-input-classic,
+.elite-textarea-classic,
+.elite-select__control {
   width: 100%;
-  padding: 16px 20px 16px 56px;
-  border-radius: 18px;
-  border: 1px solid #e2e8f0;
-  font-family: 'Outfit', sans-serif;
-  font-size: 16px;
-  font-weight: 500;
-  color: #0f172a;
-  background: #ffffff;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  padding-left: 56px !important; /* Standardized: 56px for icon */
+  border: none !important;
+  background: transparent !important;
+  font-family: 'Outfit', sans-serif !important;
+  font-size: 15.5px !important;
+  font-weight: 500 !important;
+  color: var(--elite-text-primary) !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.elite-input-classic,
+.elite-textarea-classic {
+  padding-top: 14px;
+  padding-bottom: 14px;
+  padding-right: 20px;
 }
 
 .elite-textarea-classic {
@@ -125,10 +152,7 @@
 }
 
 .elite-input-classic:focus, .elite-textarea-classic:focus {
-  border-color: #3b82f6;
   outline: none;
-  transform: translateY(-2.5px);
-  box-shadow: 0 12px 32px -12px rgba(59, 130, 246, 0.2), 0 0 0 5px rgba(59, 130, 246, 0.06);
 }
 
 .elite-input-classic[readOnly] {
@@ -143,20 +167,20 @@
 
 /* Footer Section */
 .entry-form-footer {
-  margin-top: 48px;
+  margin-top: 32px;
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
 }
 
 .btn-elite-primary {
   background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
   color: #ffffff;
-  padding: 18px 48px;
-  border-radius: 18px;
+  padding: 16px 40px;
+  border-radius: 16px;
   font-weight: 800;
   font-family: 'Outfit', sans-serif;
-  font-size: 16px;
+  font-size: 15px;
   border: none;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -164,7 +188,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  flex: 4; /* Dominant width */
+  flex: 3; /* Dominant width */
 }
 
 .btn-elite-primary:hover:not(:disabled) {
@@ -208,6 +232,16 @@
   font-family: 'Outfit', sans-serif;
 }
 
+/* Global Padding for fields with Quick Add */
+.has-quick-add .elite-input-classic,
+.elite-select-container {
+  flex: 1; /* Match EliteSelect to classic inputs */
+}
+
+.has-quick-add .elite-input-classic {
+  padding-right: 8px !important;
+}
+
 .btn-elite-outline:hover {
   border-color: #cbd5e1;
   color: #0f172a;
@@ -215,13 +249,9 @@
 }
 
 .quick-add-btn {
-  position: absolute;
-  right: -52px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: 32px; /* Slightly smaller for better proportion */
+  height: 32px;
+  border-radius: 16px; 
   border: none;
   background: #3b82f6;
   color: white;
@@ -229,18 +259,108 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35);
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.15);
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   z-index: 5;
+  flex-shrink: 0;
+  margin-right: 4px; /* Consistent gap from right edge */
 }
 
 .quick-add-btn:hover {
   background: #2563eb;
-  transform: translateY(-50%) scale(1.1) rotate(5deg);
+  transform: scale(1.1) rotate(5deg);
   box-shadow: 0 12px 28px rgba(59, 130, 246, 0.45);
 }
 
 @keyframes entrance {
   from { opacity: 0; transform: translateY(40px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Responsive Media Queries ─── */
+@media (max-width: 768px) {
+  .elite-form-padding {
+    padding: 24px 20px;
+  }
+
+  .form-grid-elite {
+    grid-template-columns: 1fr;
+    gap: 16px; /* Tighter gap on mobile */
+  }
+
+  .elite-full-width {
+    grid-column: span 1;
+  }
+
+  .quick-add-btn {
+    right: 8px;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+
+  /* When quick add is present, paddings are managed by flex/gap */
+  .has-quick-add .elite-input-classic,
+  .has-quick-add .elite-select-container {
+    padding-right: 0; /* Reset managed padding */
+  }
+
+  .entry-form-footer {
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 32px;
+  }
+
+  .btn-elite-primary {
+    width: 100%;
+    padding: 16px;
+  }
+
+  .btn-elite-red, .btn-elite-outline {
+    width: 100%;
+    padding: 14px;
+  }
+
+  .bank-details-elite {
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    margin-top: 8px;
+  }
+
+  .auth-input-wrapper {
+    min-height: 46px;
+    border-radius: 12px;
+  }
+
+  .auth-input-icon {
+    left: 14px;
+    width: 18px;
+    height: 18px;
+  }
+
+  .elite-input-classic,
+  .elite-textarea-classic,
+  .elite-select__control {
+    padding-left: 42px !important;
+    font-size: 14.5px !important;
+  }
+
+  .elite-input-classic,
+  .elite-textarea-classic {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-right: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .entry-form-container {
+    border-radius: 20px;
+  }
+  
+  .form-label-elite {
+    font-size: 11px;
+    letter-spacing: 0.5px;
+  }
 }

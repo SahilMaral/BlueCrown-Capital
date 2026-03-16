@@ -3,6 +3,7 @@ import useDocumentTitle from '../../hooks/useDocumentTitle';
 import axios from 'axios';
 import '../Dashboard/Dashboard.css';
 import Skeleton from '../../components/common/Skeleton';
+import ReportSkeleton from '../../components/common/skeletons/ReportSkeleton';
 
 const LedgerReport = () => {
   useDocumentTitle('Account Ledger');
@@ -69,7 +70,7 @@ const LedgerReport = () => {
         </div>
       </header>
 
-      <section className="content-section" style={{ padding: '32px' }}>
+      <section className="content-section content-section-elite">
         <div className="filter-card-elite">
           <div className="filter-grid-elite">
             <div className="input-field-elite">
@@ -87,7 +88,7 @@ const LedgerReport = () => {
                 <option value="ledger">General Ledger</option>
               </select>
             </div>
-            <div className="input-field-elite">
+            <div className="input-field-elite span-2-elite">
               <label>Counterparty</label>
               <select value={filters.counterpartyId} onChange={e => setFilters({...filters, counterpartyId: e.target.value})}>
                 <option value="">Choose...</option>
@@ -106,32 +107,21 @@ const LedgerReport = () => {
                 <input type="date" value={filters.dateTo} onChange={e => setFilters({...filters, dateTo: e.target.value})} />
               </div>
             </div>
-          </div>
-          <div className="filter-actions-elite">
-            <button className="btn-elite" onClick={fetchLedger} disabled={!filters.counterpartyId}>
-              Generate Report
-            </button>
+            <div className="filter-actions-elite span-2-elite" style={{ border: 'none', paddingTop: 0 }}>
+              <button 
+                className="btn-elite" 
+                onClick={fetchLedger} 
+                disabled={!filters.counterpartyId}
+                style={{ width: '100%', height: '48px' }}
+              >
+                Generate Report
+              </button>
+            </div>
           </div>
         </div>
 
         {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <div className="summary-cards-grid">
-              {[1, 2, 3, 4].map(i => (
-                <div key={i} className="summary-card-elite">
-                   <Skeleton width="100px" height="12px" style={{ marginBottom: '12px' }} />
-                   <Skeleton width="140px" height="24px" />
-                </div>
-              ))}
-            </div>
-            <div className="elite-table-container shadow">
-               <div style={{ padding: '32px' }}>
-                  {[1, 2, 3, 4, 5].map(i => (
-                    <Skeleton key={i} height="60px" borderRadius="12px" style={{ marginBottom: '12px' }} />
-                  ))}
-               </div>
-            </div>
-          </div>
+          <ReportSkeleton />
         ) : report ? (
           <>
             <div className="summary-cards-grid">

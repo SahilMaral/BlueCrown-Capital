@@ -96,26 +96,27 @@ const Settings = () => {
 
     return (
         <main className="main-content">
-                <header className="dashboard-header">
-                    <div className="welcome-section">
-                        <h1>Elite Settings</h1>
-                        <p>Manage your professional profile and security preferences.</p>
+            <header className="dashboard-header">
+                <div className="welcome-section">
+                    <h1>Elite Settings</h1>
+                    <p>Manage your professional profile and security preferences.</p>
+                </div>
+            </header>
+
+            <section className="content-section" style={{ marginBottom: '32px' }}>
+                <div className="section-header">
+                    <h2>Account Profile</h2>
+                </div>
+
+                {profileMessage && (
+                    <div className={`auth-error ${profileMessage.type === 'success' ? 'success' : ''}`} style={{ marginBottom: '24px', background: profileMessage.type === 'success' ? '#f0fdf4' : '#fef2f2', borderColor: profileMessage.type === 'success' ? '#bbf7d0' : '#fee2e2', color: profileMessage.type === 'success' ? '#166534' : '#b91c1c' }}>
+                        {profileMessage.text}
                     </div>
-                </header>
+                )}
 
-                <section className="content-section" style={{ marginBottom: '32px' }}>
-                    <div className="section-header">
-                        <h2>Account Profile</h2>
-                    </div>
-
-                    {profileMessage && (
-                        <div className={`auth-error ${profileMessage.type === 'success' ? 'success' : ''}`} style={{ marginBottom: '24px', background: profileMessage.type === 'success' ? '#f0fdf4' : '#fef2f2', borderColor: profileMessage.type === 'success' ? '#bbf7d0' : '#fee2e2', color: profileMessage.type === 'success' ? '#166534' : '#b91c1c' }}>
-                            {profileMessage.text}
-                        </div>
-                    )}
-
-                    <form className="auth-form" onSubmit={handleProfileSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
-                        <div style={{ gridColumn: 'span 2', display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '16px' }}>
+                <form className="auth-form" onSubmit={handleProfileSubmit}>
+                    <div className="form-grid-elite">
+                        <div className="settings-profile-photo-section">
                             <div className="profile-photo-wrapper" style={{ width: '100px', height: '100px', borderRadius: '50%', overflow: 'hidden', border: '3px solid #e2e8f0', background: '#f8fafc', position: 'relative' }}>
                                 {preview ? (
                                     <img src={preview} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -217,28 +218,30 @@ const Settings = () => {
                             </div>
                         </div>
 
-                        <div style={{ gridColumn: 'span 2' }}>
+                        <div className="settings-submit-container">
                             {loading ? (
                                 <div className="skeleton skeleton-text" style={{ width: '160px', height: '48px', borderRadius: '12px' }}></div>
                             ) : (
                                 <button type="submit" className="btn-elite">Update Profile</button>
                             )}
                         </div>
-                    </form>
-                </section>
-
-                <section className="content-section">
-                    <div className="section-header">
-                        <h2>Security & Privacy</h2>
                     </div>
+                </form>
+            </section>
 
-                    {passwordMessage && (
-                        <div className={`auth-error ${passwordMessage.type === 'success' ? 'success' : ''}`} style={{ marginBottom: '24px', background: passwordMessage.type === 'success' ? '#f0fdf4' : '#fef2f2', borderColor: passwordMessage.type === 'success' ? '#bbf7d0' : '#fee2e2', color: passwordMessage.type === 'success' ? '#166534' : '#b91c1c' }}>
-                            {passwordMessage.text}
-                        </div>
-                    )}
+            <section className="content-section">
+                <div className="section-header">
+                    <h2>Security & Privacy</h2>
+                </div>
 
-                    <form className="auth-form" onSubmit={handlePasswordSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
+                {passwordMessage && (
+                    <div className={`auth-error ${passwordMessage.type === 'success' ? 'success' : ''}`} style={{ marginBottom: '24px', background: passwordMessage.type === 'success' ? '#f0fdf4' : '#fef2f2', borderColor: passwordMessage.type === 'success' ? '#bbf7d0' : '#fee2e2', color: passwordMessage.type === 'success' ? '#166534' : '#b91c1c' }}>
+                        {passwordMessage.text}
+                    </div>
+                )}
+
+                <form className="auth-form" onSubmit={handlePasswordSubmit}>
+                    <div className="form-grid-elite">
                         <div className="auth-input-group">
                             <label className="form-label-elite">Current Password</label>
                             <div className="auth-input-wrapper">
@@ -259,8 +262,7 @@ const Settings = () => {
                             </div>
                         </div>
 
-                        {/* Spacer to push the next two inputs to a new row */}
-                        <div className="desktop-spacer" style={{ display: 'block' }}></div>
+                        <div className="desktop-spacer"></div>
 
                         <div className="auth-input-group">
                             <label className="form-label-elite">New Elite Password</label>
@@ -302,16 +304,17 @@ const Settings = () => {
                             </div>
                         </div>
 
-                        <div style={{ gridColumn: 'span 2' }}>
+                        <div className="settings-submit-container">
                             {loading ? (
                                 <div className="skeleton skeleton-text" style={{ width: '180px', height: '48px', borderRadius: '12px' }}></div>
                             ) : (
                                 <button type="submit" className="btn-elite">Change Password</button>
                             )}
                         </div>
-                    </form>
-                </section>
-            </main>
+                    </div>
+                </form>
+            </section>
+        </main>
   );
 };
 

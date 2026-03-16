@@ -127,18 +127,16 @@ const LedgerManagement = () => {
                       <td><span className="status-badge completed">{l.isActive ? 'Active' : 'Inactive'}</span></td>
                       <td>{new Date(l.createdAt).toLocaleDateString()}</td>
                       <td>
-                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                        <div className="flex justify-center gap-2">
                           <button 
-                            className="btn-elite-icon"
-                            style={{ backgroundColor: '#10b981', color: 'white', border: 'none', padding: '6px', borderRadius: '6px', cursor: 'pointer' }}
+                            className="btn-action-elite btn-action-edit"
                             title="Edit"
                             onClick={() => handleEditClick(l)}
                           >
                             <PencilIcon className="icon-xs" />
                           </button>
                           <button 
-                            className="btn-elite-icon"
-                            style={{ backgroundColor: '#ef4444', color: 'white', border: 'none', padding: '6px', borderRadius: '6px', cursor: 'pointer' }}
+                            className="btn-action-elite btn-action-delete"
                             title="Delete"
                             onClick={() => setDeleteModal({ show: true, id: l._id })}
                           >

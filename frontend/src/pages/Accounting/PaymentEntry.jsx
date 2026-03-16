@@ -11,7 +11,9 @@ import BankIcon from '../../components/icons/BankIcon';
 import CalendarIcon from '../../components/icons/CalendarIcon';
 import EliteSelect from '../../components/common/EliteSelect';
 import QuickMasterModal from '../../components/common/QuickMasterModal';
+import LedgerIcon from '../../components/icons/LedgerIcon';
 import PlusCircleIcon from '../../components/icons/PlusCircleIcon';
+import FileIcon from '../../components/icons/FileIcon';
 import './EntryForm.css';
 
 const PAYMENT_MODES = [
@@ -199,10 +201,10 @@ const PaymentEntry = () => {
                 </div>
 
                 {/* Payer (Internal Company) */}
-                <div className="auth-input-group">
+                <div className="auth-input-group has-quick-add">
                   <label className="form-label-elite">Payer (Company)</label>
-                  <div style={{ position: 'relative', marginRight: '40px' }}>
-                    <CompanyIcon className="auth-input-icon" style={{ zIndex: 10 }} />
+                  <div className="auth-input-wrapper">
+                    <CompanyIcon className="auth-input-icon" />
                     <EliteSelect
                       options={companyOptions}
                       value={formData.payerId}
@@ -216,10 +218,10 @@ const PaymentEntry = () => {
                 </div>
 
                 {/* Select Receiver */}
-                <div className="auth-input-group">
+                <div className="auth-input-group has-quick-add">
                   <label className="form-label-elite">Select Client</label>
-                  <div style={{ position: 'relative', marginRight: '40px' }}>
-                    <UserIcon className="auth-input-icon" style={{ zIndex: 10 }} />
+                  <div className="auth-input-wrapper">
+                    <UserIcon className="auth-input-icon" />
                     <EliteSelect
                       options={receiverOptions}
                       value={formData.receiverId}
@@ -233,10 +235,10 @@ const PaymentEntry = () => {
                 </div>
 
                 {/* Ledger */}
-                <div className="auth-input-group">
+                <div className="auth-input-group has-quick-add">
                   <label className="form-label-elite">Ledger Account</label>
-                  <div style={{ position: 'relative', marginRight: '40px' }}>
-                    <BriefcaseIcon className="auth-input-icon" style={{ zIndex: 10 }} />
+                  <div className="auth-input-wrapper">
+                    <LedgerIcon className="auth-input-icon" />
                     <EliteSelect
                       options={ledgerOptions}
                       value={formData.ledgerId}
@@ -252,8 +254,8 @@ const PaymentEntry = () => {
                 {/* Payment Mode */}
                 <div className="auth-input-group">
                   <label className="form-label-elite">Payment Mode</label>
-                  <div style={{ position: 'relative' }}>
-                    <WalletIcon className="auth-input-icon" style={{ zIndex: 10 }} />
+                  <div className="auth-input-wrapper">
+                    <WalletIcon className="auth-input-icon" />
                     <EliteSelect
                       options={PAYMENT_MODES}
                       value={formData.paymentMode}
@@ -268,17 +270,18 @@ const PaymentEntry = () => {
                 <div className="auth-input-group">
                   <label className="form-label-elite">Payment Details</label>
                   <div className="auth-input-wrapper">
-                    <input type="text" name="paymentDetails" className="elite-input-classic" style={{ paddingLeft: '20px' }} placeholder="Ref No / Cheque No / Notes..." 
+                    <FileIcon className="auth-input-icon" />
+                    <input type="text" name="paymentDetails" className="elite-input-classic" placeholder="Ref No / Cheque No / Notes..." 
                       value={formData.paymentDetails} onChange={handleInputChange} />
                   </div>
                 </div>
 
                 {/* Bank Account (conditional) */}
                 {formData.paymentMode !== 'Cash' && (
-                  <div className="auth-input-group">
+                  <div className="auth-input-group has-quick-add">
                     <label className="form-label-elite">Bank Account</label>
-                    <div style={{ position: 'relative', marginRight: '40px' }}>
-                      <BankIcon className="auth-input-icon" style={{ zIndex: 10 }} />
+                    <div className="auth-input-wrapper">
+                      <BankIcon className="auth-input-icon" />
                       <EliteSelect
                         options={bankOptions}
                         value={formData.bankId}
@@ -323,7 +326,8 @@ const PaymentEntry = () => {
           <div className="auth-input-group elite-full-width" style={{ marginTop: '24px' }}>
             <label className="form-label-elite">Paid By</label>
             <div className="auth-input-wrapper">
-              <input type="text" value="admin" readOnly className="elite-input-classic" style={{ paddingLeft: '20px' }} />
+              <UserIcon className="auth-input-icon" />
+              <input type="text" value="admin" readOnly className="elite-input-classic" />
             </div>
           </div>
 
@@ -332,7 +336,8 @@ const PaymentEntry = () => {
             <div className="auth-input-group elite-full-width" style={{ marginTop: '24px' }}>
               <label className="form-label-elite">Narration / Remarks</label>
               <div className="auth-input-wrapper">
-                <textarea name="narration" className="elite-textarea-classic" style={{ paddingLeft: '20px' }}
+                <FileIcon className="auth-input-icon" />
+                <textarea name="narration" className="elite-textarea-classic"
                   placeholder="Transaction details..." value={formData.narration} onChange={handleInputChange} />
               </div>
             </div>

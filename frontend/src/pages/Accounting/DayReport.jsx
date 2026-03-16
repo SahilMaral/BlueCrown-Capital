@@ -3,6 +3,7 @@ import useDocumentTitle from '../../hooks/useDocumentTitle';
 import axios from 'axios';
 import '../Dashboard/Dashboard.css';
 import Skeleton from '../../components/common/Skeleton';
+import ReportSkeleton from '../../components/common/skeletons/ReportSkeleton';
 
 const DayReport = () => {
   useDocumentTitle('Daily Report');
@@ -61,7 +62,7 @@ const DayReport = () => {
         </div>
       </header>
 
-      <section className="content-section" style={{ padding: '32px' }}>
+      <section className="content-section content-section-elite">
         <div className="filter-card-elite">
           <div className="filter-grid-elite">
             <div className="input-field-elite">
@@ -74,7 +75,7 @@ const DayReport = () => {
               <label>Report Date</label>
               <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
             </div>
-            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end', gridColumn: 'span 2' }}>
+            <div className="filter-actions-elite">
                <button className="btn-elite" onClick={fetchReport} style={{ height: '48px' }}>
                  Refresh Data
                </button>
@@ -83,23 +84,7 @@ const DayReport = () => {
         </div>
 
         {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <div className="summary-cards-grid">
-              {[1, 2, 3, 4].map(i => (
-                <div key={i} className="summary-card-elite">
-                   <Skeleton width="100px" height="12px" style={{ marginBottom: '12px' }} />
-                   <Skeleton width="140px" height="24px" />
-                </div>
-              ))}
-            </div>
-            <div className="elite-table-container shadow">
-               <div style={{ padding: '32px' }}>
-                  {[1, 2, 3, 4, 5].map(i => (
-                    <Skeleton key={i} height="60px" borderRadius="12px" style={{ marginBottom: '12px' }} />
-                  ))}
-               </div>
-            </div>
-          </div>
+          <ReportSkeleton />
         ) : report ? (
           <>
             <div className="section-header">

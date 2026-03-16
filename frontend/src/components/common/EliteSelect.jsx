@@ -5,21 +5,14 @@ import Select from 'react-select';
 const eliteStyles = {
   control: (base, state) => ({
     ...base,
-    minHeight: '52px',
-    border: state.isFocused
-      ? '1.5px solid #3b82f6'
-      : '1px solid #e2e8f0',
-    borderRadius: '16px',
-    background: '#ffffff',
-    boxShadow: state.isFocused
-      ? '0 0 0 4px rgba(59, 130, 246, 0.08), 0 4px 12px rgba(15, 23, 42, 0.03)'
-      : '0 2px 4px rgba(15, 23, 42, 0.02)',
-    paddingLeft: '40px',   // room for icon
+    minHeight: '48px',
+    border: 'none',
+    borderRadius: '18px',
+    background: 'transparent',
+    boxShadow: 'none',
+    paddingLeft: '44px', /* Room for absolute icon (20px left + 20px width + gap) */
     cursor: 'pointer',
     transition: 'all 0.25s ease',
-    '&:hover': {
-      borderColor: '#93c5fd',
-    },
   }),
   valueContainer: (base) => ({
     ...base,
@@ -45,7 +38,7 @@ const eliteStyles = {
   }),
   menu: (base) => ({
     ...base,
-    borderRadius: '16px',
+    borderRadius: '22px',
     border: '1px solid #e2e8f0',
     boxShadow: '0 20px 60px rgba(15, 23, 42, 0.12), 0 8px 24px rgba(15, 23, 42, 0.06)',
     overflow: 'hidden',
@@ -121,16 +114,20 @@ const EliteSelect = ({
   return (
     <Select
       inputId={id}
-      className={className}
+      className={`elite-select-container ${className}`}
       options={options}
       value={selected}
       onChange={(opt) => onChange(opt ? opt.value : '')}
       placeholder={placeholder}
       isSearchable={isSearchable}
       isClearable={isClearable}
-      styles={eliteStyles}
       classNamePrefix="elite-select"
       menuPlacement="auto"
+      menuPortalTarget={document.body}
+      styles={{
+        ...eliteStyles,
+        menuPortal: (base) => ({ ...base, zIndex: 9999 })
+      }}
     />
   );
 };

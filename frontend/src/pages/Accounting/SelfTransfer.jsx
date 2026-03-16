@@ -122,13 +122,13 @@ const SelfTransfer = () => {
           <div className="form-grid-elite">
             {/* --- FROM SECTION --- */}
             <div className="auth-input-group animate-fade-in">
-              <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#ef4444', marginBottom: '8px', letterSpacing: '0.5px' }}>
+              <h3 style={{ fontSize: '13px', fontWeight: 800, color: '#ef4444', marginBottom: '8px', letterSpacing: '0.5px' }}>
                 FROM (PAYER)
               </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '24px', background: 'rgba(239, 68, 68, 0.03)', borderRadius: '24px', border: '1px solid rgba(239, 68, 68, 0.1)' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '20px', background: 'rgba(239, 68, 68, 0.03)', borderRadius: '24px', border: '1px solid rgba(239, 68, 68, 0.1)', height: '100%' }}>
                 <div className="auth-input-group">
                   <label className="form-label-elite">Payer Company</label>
-                  <div style={{ position: 'relative' }}>
+                  <div className="auth-input-wrapper">
                     <CompanyIcon className="auth-input-icon" />
                     <EliteSelect 
                       options={companyOptions} 
@@ -141,7 +141,7 @@ const SelfTransfer = () => {
 
                 <div className="auth-input-group">
                   <label className="form-label-elite">Payment Mode</label>
-                  <div style={{ position: 'relative' }}>
+                  <div className="auth-input-wrapper">
                     <WalletIcon className="auth-input-icon" />
                     <EliteSelect 
                       options={PAYMENT_MODES} 
@@ -155,7 +155,7 @@ const SelfTransfer = () => {
                 {form.payerPaymentMode === 'Bank' && (
                   <div className="auth-input-group animate-fade-in">
                     <label className="form-label-elite">Payer Bank Account</label>
-                    <div style={{ position: 'relative' }}>
+                    <div className="auth-input-wrapper">
                       <BankIcon className="auth-input-icon" />
                       <EliteSelect 
                         options={payerBankOptions} 
@@ -171,13 +171,13 @@ const SelfTransfer = () => {
 
             {/* --- TO SECTION --- */}
             <div className="auth-input-group animate-fade-in">
-              <h3 style={{ fontSize: '14px', fontWeight: 800, color: 'var(--success)', marginBottom: '8px', letterSpacing: '0.5px' }}>
+              <h3 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--success)', marginBottom: '8px', letterSpacing: '0.5px' }}>
                 TO (RECEIVER)
               </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '24px', background: 'rgba(34, 197, 94, 0.03)', borderRadius: '24px', border: '1px solid rgba(34, 197, 94, 0.1)' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '20px', background: 'rgba(34, 197, 94, 0.03)', borderRadius: '24px', border: '1px solid rgba(34, 197, 94, 0.1)', height: '100%' }}>
                 <div className="auth-input-group">
                   <label className="form-label-elite">Receiver Company</label>
-                  <div style={{ position: 'relative' }}>
+                  <div className="auth-input-wrapper">
                     <CompanyIcon className="auth-input-icon" />
                     <EliteSelect 
                       options={companyOptions} 
@@ -190,7 +190,7 @@ const SelfTransfer = () => {
 
                 <div className="auth-input-group">
                   <label className="form-label-elite">Receipt Mode</label>
-                  <div style={{ position: 'relative' }}>
+                  <div className="auth-input-wrapper">
                     <WalletIcon className="auth-input-icon" />
                     <EliteSelect 
                       options={PAYMENT_MODES} 
@@ -204,7 +204,7 @@ const SelfTransfer = () => {
                 {form.receiverPaymentMode === 'Bank' && (
                   <div className="auth-input-group animate-fade-in">
                     <label className="form-label-elite">Receiver Bank Account</label>
-                    <div style={{ position: 'relative' }}>
+                    <div className="auth-input-wrapper">
                       <BankIcon className="auth-input-icon" />
                       <EliteSelect 
                         options={receiverBankOptions} 
@@ -252,7 +252,7 @@ const SelfTransfer = () => {
             <div className="auth-input-group elite-full-width">
               <label className="form-label-elite">Narration / Internal Note</label>
               <div className="auth-input-wrapper">
-                <FileIcon className="auth-input-icon" style={{ top: '20px' }} />
+                <FileIcon className="auth-input-icon" />
                 <textarea 
                   className="elite-textarea-classic" 
                   value={form.narration} 
@@ -264,7 +264,7 @@ const SelfTransfer = () => {
             </div>
           </div>
 
-          <div className="entry-form-footer" style={{ marginTop: '40px' }}>
+          <div className="entry-form-footer" style={{ marginTop: '32px' }}>
             <button type="submit" className="btn-elite-primary" disabled={submitting}>
               {submitting ? 'Executing Transfer...' : 'Confirm Self-Transfer'}
             </button>

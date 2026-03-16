@@ -164,3 +164,37 @@
   box-shadow: 0 10px 20px rgba(15, 23, 42, 0.03);
   color: #0f172a;
 }
+
+/* Responsive Elite Forms */
+@media (max-width: 768px) {
+  .auth-form, .elite-form {
+    gap: 20px;
+  }
+
+  .auth-input-wrapper input, .auth-input-wrapper select, .auth-input-wrapper textarea {
+    padding: 14px 16px 14px 48px;
+    font-size: 15px;
+    border-radius: 14px;
+  }
+
+  .auth-input-icon {
+    left: 12px;
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  .auth-input-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .elite-radio-group {
+    gap: 20px;
+  }
+
+  .btn-elite {
+    padding: 12px 24px;
+    font-size: 14px;
+    width: 100%;
+  }
+}

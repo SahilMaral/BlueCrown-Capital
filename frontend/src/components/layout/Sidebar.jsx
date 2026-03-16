@@ -183,21 +183,21 @@ const Sidebar = ({ isOpen, onClose }) => {
           {/* Day Book - Hidden for checker */}
           {user?.role !== 'checker' && (
             <>
-              <div 
-                className="sidebar-section-label" 
+              <div
+                className="sidebar-section-label"
                 onClick={() => setIsDayBookOpen(!isDayBookOpen)}
-                style={{ 
-                  cursor: 'pointer', 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
+                style={{
+                  cursor: 'pointer',
+                  display: 'flex',
+                  justifyContent: 'space-between',
                   alignItems: 'center',
                   userSelect: 'none'
                 }}
               >
                 Day Book
-                <svg 
+                <svg
                   width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
-                  style={{ 
+                  style={{
                     transform: isDayBookOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                     transition: 'transform 0.3s ease'
                   }}
@@ -205,9 +205,9 @@ const Sidebar = ({ isOpen, onClose }) => {
                   <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
               </div>
-              <div style={{ 
-                maxHeight: isDayBookOpen ? '300px' : '0', 
-                overflow: 'hidden', 
+              <div style={{
+                maxHeight: isDayBookOpen ? '300px' : '0',
+                overflow: 'hidden',
                 transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                 paddingLeft: '8px'
               }}>
@@ -228,22 +228,22 @@ const Sidebar = ({ isOpen, onClose }) => {
           )}
 
           {/* Investment Section */}
-          <div 
-            className="sidebar-section-label" 
+          <div
+            className="sidebar-section-label"
             onClick={() => setIsInvestmentOpen(!isInvestmentOpen)}
-            style={{ 
-              cursor: 'pointer', 
-              display: 'flex', 
-              justifyContent: 'space-between', 
+            style={{
+              cursor: 'pointer',
+              display: 'flex',
+              justifyContent: 'space-between',
               alignItems: 'center',
               userSelect: 'none',
               marginTop: '8px'
             }}
           >
             Investment
-            <svg 
+            <svg
               width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
-              style={{ 
+              style={{
                 transform: isInvestmentOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                 transition: 'transform 0.3s ease'
               }}
@@ -251,9 +251,9 @@ const Sidebar = ({ isOpen, onClose }) => {
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
           </div>
-          <div style={{ 
-            maxHeight: isInvestmentOpen ? '200px' : '0', 
-            overflow: 'hidden', 
+          <div style={{
+            maxHeight: isInvestmentOpen ? '200px' : '0',
+            overflow: 'hidden',
             transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
             paddingLeft: '8px'
           }}>
@@ -270,22 +270,22 @@ const Sidebar = ({ isOpen, onClose }) => {
           </div>
 
           {/* Loans Section */}
-          <div 
-            className="sidebar-section-label" 
+          <div
+            className="sidebar-section-label"
             onClick={() => setIsLoansOpen(!isLoansOpen)}
-            style={{ 
-              cursor: 'pointer', 
-              display: 'flex', 
-              justifyContent: 'space-between', 
+            style={{
+              cursor: 'pointer',
+              display: 'flex',
+              justifyContent: 'space-between',
               alignItems: 'center',
               userSelect: 'none',
               marginTop: '8px'
             }}
           >
             Loans
-            <svg 
+            <svg
               width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
-              style={{ 
+              style={{
                 transform: isLoansOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                 transition: 'transform 0.3s ease'
               }}
@@ -293,9 +293,9 @@ const Sidebar = ({ isOpen, onClose }) => {
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
           </div>
-          <div style={{ 
-            maxHeight: isLoansOpen ? '200px' : '0', 
-            overflow: 'hidden', 
+          <div style={{
+            maxHeight: isLoansOpen ? '200px' : '0',
+            overflow: 'hidden',
             transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
             paddingLeft: '8px'
           }}>
@@ -312,21 +312,21 @@ const Sidebar = ({ isOpen, onClose }) => {
           </div>
 
           {/* Reports Section */}
-          <div 
-            className="sidebar-section-label" 
+          <div
+            className="sidebar-section-label"
             onClick={() => setIsReportsOpen(!isReportsOpen)}
-            style={{ 
-              cursor: 'pointer', 
-              display: 'flex', 
-              justifyContent: 'space-between', 
+            style={{
+              cursor: 'pointer',
+              display: 'flex',
+              justifyContent: 'space-between',
               alignItems: 'center',
               userSelect: 'none'
             }}
           >
             Reports
-            <svg 
+            <svg
               width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
-              style={{ 
+              style={{
                 transform: isReportsOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                 transition: 'transform 0.3s ease'
               }}
@@ -335,9 +335,9 @@ const Sidebar = ({ isOpen, onClose }) => {
             </svg>
           </div>
 
-          <div style={{ 
-            maxHeight: isReportsOpen ? '600px' : '0', 
-            overflow: 'hidden', 
+          <div style={{
+            maxHeight: isReportsOpen ? '600px' : '0',
+            overflow: 'hidden',
             transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
             paddingLeft: '8px'
           }}>
@@ -380,21 +380,21 @@ const Sidebar = ({ isOpen, onClose }) => {
           {/* Setting Section - Hidden for checker */}
           {user?.role !== 'checker' && (
             <>
-              <div 
-                className="sidebar-section-label" 
+              <div
+                className="sidebar-section-label"
                 onClick={() => setIsSettingOpen(!isSettingOpen)}
-                style={{ 
-                  cursor: 'pointer', 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
+                style={{
+                  cursor: 'pointer',
+                  display: 'flex',
+                  justifyContent: 'space-between',
                   alignItems: 'center',
                   userSelect: 'none'
                 }}
               >
                 Setting
-                <svg 
+                <svg
                   width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
-                  style={{ 
+                  style={{
                     transform: isSettingOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                     transition: 'transform 0.3s ease'
                   }}
@@ -403,9 +403,9 @@ const Sidebar = ({ isOpen, onClose }) => {
                 </svg>
               </div>
 
-              <div style={{ 
-                maxHeight: isSettingOpen ? '500px' : '0', 
-                overflow: 'hidden', 
+              <div style={{
+                maxHeight: isSettingOpen ? '500px' : '0',
+                overflow: 'hidden',
                 transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                 paddingLeft: '8px'
               }}>
