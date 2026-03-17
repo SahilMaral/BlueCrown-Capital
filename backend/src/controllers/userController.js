@@ -97,9 +97,9 @@ const deleteUser = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'User not found');
   }
 
-  // Restrict deleting a super_admin user
-  if (user.role === 'super_admin' && req.user.role !== 'super_admin') {
-    throw new ApiError(403, 'Unauthorized to delete a super_admin user');
+  // Prevent self-deletion
+  if (user._id.toString() === req.user.id.toString()) {
+    throw new ApiError(400, 'You cannot delete your own account');
   }
 
   await User.findByIdAndDelete(req.params.id);

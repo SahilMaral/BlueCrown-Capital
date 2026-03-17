@@ -1,5 +1,5 @@
-import React from 'react';
 import { Menu, X } from 'lucide-react';
+import LogoIcon from '../icons/LogoIcon';
 import './MobileHeader.css';
 
 const MobileHeader = ({ isSidebarOpen, toggleSidebar }) => {
@@ -10,7 +10,7 @@ const MobileHeader = ({ isSidebarOpen, toggleSidebar }) => {
           {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
         <div className="mobile-header-logo">
-          <span className="logo-icon">💠</span>
+          <LogoIcon className="mobile-logo-icon" />
           <span className="logo-text">BlueCrown</span>
         </div>
       </div>

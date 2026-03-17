@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
+import LogoIcon from '../../components/icons/LogoIcon';
+import EliteStatusModal from '../../components/common/EliteStatusModal';
 import './ReceiptPrint.css'; // We will create this or use inline styles
 
 // Helper function to convert Indian Rupees Number to Words
@@ -28,6 +30,7 @@ const ReceiptPrint = () => {
   const [receipt, setReceipt] = useState(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [statusModal, setStatusModal] = useState({ show: false, title: '', message: '', type: 'success' });
   const printRef = useRef();
 
   useEffect(() => {
@@ -63,11 +66,21 @@ const ReceiptPrint = () => {
       await axios.post(url, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      alert('Email sent successfully!');
+      setStatusModal({
+        show: true,
+        title: 'Success!',
+        message: 'The receipt voucher has been sent to the client’s email.',
+        type: 'success'
+      });
     } catch (err) {
       console.error('Error sending email:', err);
       const errorMsg = err.response?.data?.message || err.message;
-      alert(`Failed to send email: ${errorMsg}\n\nPlease check if backend SMTP settings in .env are correct.`);
+      setStatusModal({
+        show: true,
+        title: 'Sending Failed',
+        message: `Oops! ${errorMsg}. Please check your SMTP settings.`,
+        type: 'error'
+      });
     } finally {
       setSending(false);
     }
@@ -99,8 +112,7 @@ const ReceiptPrint = () => {
           {/* Header Section */}
           <div className="voucher-header">
             <div className="company-logo">
-               {/* Stand-in for logo tree icon */}
-               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22v-8"></path><path d="M12 14a4 4 0 0 0-4-4H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-3a4 4 0 0 0-4 4"></path></svg>
+               <LogoIcon className="print-logo" />
                BLUECROWN CAPITAL
             </div>
             <h2 className="company-name">{receipt.receiver?.companyName || 'BlueCrown Elite'}</h2>
@@ -194,6 +206,15 @@ const ReceiptPrint = () => {
           {sending ? 'Sending...' : 'Email Voucher'}
         </button>
       </div>
+
+      <EliteStatusModal 
+        isOpen={statusModal.show}
+        onClose={() => setStatusModal({ ...statusModal, show: false })}
+        title={statusModal.title}
+        message={statusModal.message}
+        type={statusModal.type}
+        buttonText={statusModal.type === 'success' ? 'Great' : 'Try Again'}
+      />
 
     </div>
   );

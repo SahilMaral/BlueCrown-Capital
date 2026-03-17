@@ -82,11 +82,11 @@ const QuickMasterModal = ({ type, isOpen, onClose, onSuccess, companyId, initial
     try {
       const token = localStorage.getItem('token');
       const endpoint = type === 'Client' ? '/clients' :
-                       type === 'Company' ? '/companies' :
-                       type === 'Ledger' ? '/ledgers' : 
-                       type === 'User' ? '/users' :
-                       type === 'Counter' ? '/counters' : '/banks';
-      
+        type === 'Company' ? '/companies' :
+          type === 'Ledger' ? '/ledgers' :
+            type === 'User' ? '/users' :
+              type === 'Counter' ? '/counters' : '/banks';
+
       const payload = { ...formData };
 
       let res;
@@ -101,7 +101,7 @@ const QuickMasterModal = ({ type, isOpen, onClose, onSuccess, companyId, initial
           headers: { Authorization: `Bearer ${token}` }
         });
       }
-      
+
       onSuccess(res.data.data);
       onClose();
       setFormData({});
@@ -198,13 +198,13 @@ const QuickMasterModal = ({ type, isOpen, onClose, onSuccess, companyId, initial
                   </span>
                   <span className="file-browse-btn">Browse</span>
                 </label>
-                <input 
+                <input
                   id="documents-file"
-                  type="file" 
-                  name="documents" 
+                  type="file"
+                  name="documents"
                   className="hidden-file-input"
-                  onChange={handleInputChange} 
-                  accept=".pdf,image/*" 
+                  onChange={handleInputChange}
+                  accept=".pdf,image/*"
                 />
               </div>
             </div>
@@ -280,21 +280,21 @@ const QuickMasterModal = ({ type, isOpen, onClose, onSuccess, companyId, initial
               <label className="form-label-elite">Full Name</label>
               <div className="auth-input-wrapper">
                 <UserIcon className="auth-input-icon" />
-                <input type="text" name="name" className="elite-input-classic" placeholder="John Doe" value={formData.name || ''} onChange={handleInputChange} required />
+                <input type="text" name="name" className="elite-input-classic" placeholder="Your Name" value={formData.name || ''} onChange={handleInputChange} required />
               </div>
             </div>
             <div className="auth-input-group">
               <label className="form-label-elite">Username</label>
               <div className="auth-input-wrapper">
                 <UserIcon className="auth-input-icon" />
-                <input type="text" name="username" className="elite-input-classic" placeholder="johndoe" value={formData.username || ''} onChange={handleInputChange} required />
+                <input type="text" name="username" className="elite-input-classic" placeholder="username" value={formData.username || ''} onChange={handleInputChange} required />
               </div>
             </div>
             <div className="auth-input-group">
               <label className="form-label-elite">Email Address</label>
               <div className="auth-input-wrapper">
                 <MailIcon className="auth-input-icon" />
-                <input type="email" name="email" className="elite-input-classic" placeholder="john@example.com" value={formData.email || ''} onChange={handleInputChange} required />
+                <input type="email" name="email" className="elite-input-classic" placeholder="mail@example.com" value={formData.email || ''} onChange={handleInputChange} required />
               </div>
             </div>
             <div className="auth-input-group">
@@ -395,7 +395,7 @@ const QuickMasterModal = ({ type, isOpen, onClose, onSuccess, companyId, initial
   };
 
   const getSubTitle = () => {
-    switch(type) {
+    switch (type) {
       case 'Bank': return "Register a new account for financial management.";
       case 'Client': return "Add a new client to your management portal.";
       case 'Company': return "Establish a new company entity for accounting.";

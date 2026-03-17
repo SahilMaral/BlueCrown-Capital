@@ -28,7 +28,10 @@ api.interceptors.response.use(
     if (error.response && error.response.status === 401) {
       // Auto logout if 401 response returned from api
       localStorage.removeItem('token');
-      // Redux dispatch logout could go here
+      // Force page reload to clear memory-based state if we are in a loop
+      if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+      }
     }
     
     // Check if the server returned a JSON error message

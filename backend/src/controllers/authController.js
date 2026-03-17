@@ -36,7 +36,6 @@ const getMe = asyncHandler(async (req, res, next) => {
 // @access  Private
 const updateDetails = asyncHandler(async (req, res, next) => {
   const fieldsToUpdate = {
-    name: req.body.name,
     email: req.body.email,
     phone: req.body.phone,
     designation: req.body.designation,

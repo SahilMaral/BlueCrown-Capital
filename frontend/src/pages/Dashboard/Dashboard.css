@@ -160,7 +160,7 @@
 }
 
 .sidebar-section-label {
-  padding: 32px 28px 12px;
+  padding: 24px 16px 8px;
   font-size: 11px;
   font-weight: 800;
   text-transform: uppercase;
@@ -800,6 +800,27 @@
   transform: rotate(90deg);
 }
 
+/* Settings Page Refinements */
+.settings-profile-photo-section {
+  grid-column: span 2;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  margin-bottom: 16px;
+  background: rgba(37, 99, 235, 0.03);
+  padding: 24px;
+  border-radius: 20px;
+  border: 1px solid rgba(37, 99, 235, 0.1);
+}
+
+.settings-submit-container {
+  grid-column: span 2;
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+
 /* ── Responsive Media Queries ─────────────────────────────── */
 
 @media (max-width: 1280px) {
@@ -952,42 +973,30 @@
     width: 100% !important;
   }
 
-  /* Settings Page Refinements */
-  .settings-profile-photo-section {
-    grid-column: span 2;
-    display: flex;
-    align-items: center;
-    gap: 24px;
-    margin-bottom: 16px;
-  }
-
-  .settings-submit-container {
-    grid-column: span 2;
-  }
-
-  .desktop-spacer {
-    display: block;
-  }
-
+  /* Settings Page Refinements - Handled by global classes but adjusting for small screens */
   @media (max-width: 640px) {
     .settings-profile-photo-section {
       flex-direction: column;
-      align-items: flex-start;
+      align-items: center;
+      text-align: center;
       gap: 16px;
       grid-column: 1;
+      padding: 24px 20px;
     }
 
     .settings-submit-container {
       grid-column: 1;
-    }
-
-    .desktop-spacer {
-      display: none !important;
+      justify-content: center;
+      margin-top: 24px;
     }
 
     .btn-elite {
       width: 100%;
     }
+  }
+
+  .desktop-spacer {
+    display: none !important;
   }
 }
 

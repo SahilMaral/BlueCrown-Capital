@@ -39,8 +39,11 @@
   gap: 8px;
 }
 
-.logo-icon {
-  font-size: 20px;
+.mobile-logo-icon {
+  width: 28px;
+  height: 28px;
+  color: var(--elite-blue);
+  filter: drop-shadow(0 2px 8px rgba(37, 99, 235, 0.2));
 }
 
 .logo-text {

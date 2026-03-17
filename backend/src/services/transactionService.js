@@ -11,8 +11,10 @@ const InvestmentInstallment = require('../models/InvestmentInstallment');
 const Loan = require('../models/Loan');
 const ApiError = require('../utils/ApiError');
 const transactionUtils = require('../utils/transactionUtils');
+const puppeteer = require('puppeteer');
 
 const { withTransaction } = require('../utils/dbUtils');
+const sendEmail = require('../utils/sendEmail');
 
 /**
  * Create a Receipt with atomic transaction support
@@ -349,10 +351,90 @@ const sendReceiptEmail = async (receiptId) => {
     </div>
   `;
 
+  // Generate PDF for attachment
+  let pdfBuffer;
+  let browser;
+  try {
+    browser = await puppeteer.launch({
+      headless: 'new',
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+    const page = await browser.newPage();
+    
+    // Create the high-fidelity PDF HTML (similar to the print view)
+    const pdfHtml = `
+      <html>
+        <head>
+          <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+          <style>
+            body { font-family: 'Outfit', sans-serif; margin: 0; padding: 40px; background: white; }
+            .voucher-border { border: 2px solid #0f172a; position: relative; padding: 2px; }
+            .voucher-inner { border: 1px solid #e2e8f0; padding: 0; }
+            .header { text-align: center; padding: 32px 0 24px; border-bottom: 2px solid #0f172a; }
+            .company-logo { font-weight: 800; font-size: 28px; color: #0f172a; margin-bottom: 2px; display: flex; justify-content: center; align-items: center; gap: 14px; letter-spacing: -1px; }
+            .company-name { font-weight: 700; font-size: 20px; color: #334155; margin: 0; text-transform: uppercase; }
+            .company-city { font-size: 14px; font-weight: 600; color: #64748b; margin: 4px 0 20px 0; text-transform: uppercase; letter-spacing: 1px; }
+            .title-pill { background-color: #0f172a; color: #ffffff; font-weight: 700; font-size: 13px; padding: 8px 24px; border-radius: 30px; display: inline-block; letter-spacing: 2px; text-transform: uppercase; }
+            .row { display: flex; border-bottom: 1px solid #0f172a; }
+            .col { flex: 1; padding: 14px 20px; border-right: 1px solid #0f172a; }
+            .col:last-child { border-right: none; }
+            .col-full { width: 100%; padding: 14px 20px; }
+            .label-value { font-size: 14px; color: #1e293b; }
+            .label-value strong { font-weight: 700; color: #0f172a; margin-right: 8px; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+            .center-header { text-align: center; font-weight: 800; font-size: 14px; background-color: #f8fafc; color: #0f172a; letter-spacing: 1px; }
+            .disclaimer { text-align: center; font-size: 12px; color: #64748b; font-style: italic; padding: 16px; border-top: 1px solid #e2e8f0; }
+          </style>
+        </head>
+        <body>
+          <div class="voucher-border">
+            <div class="voucher-inner">
+              <div class="header">
+                <div class="company-logo">BLUECROWN CAPITAL</div>
+                <div class="company-name">${receipt.receiver?.companyName || 'BlueCrown Elite'}</div>
+                <div class="company-city">${receipt.receiver?.city || 'Pune'}</div>
+                <div class="title-pill">RECEIPT VOUCHER</div>
+              </div>
+              <div class="row">
+                <div class="col"><div class="label-value"><strong>RECEIPT NO:</strong> ${receipt.receiptNumber}</div></div>
+                <div class="col"><div class="label-value"><strong>DATE:</strong> ${new Date(receipt.dateTime).toLocaleDateString('en-GB').replace(/\//g, '-')}</div></div>
+              </div>
+              <div class="row"><div class="col-full center-header">MODE OF PAYMENT</div></div>
+              <div class="row">
+                <div class="col"><div class="label-value"><strong>ONLINE/CASH:</strong> ${receipt.paymentMode}</div></div>
+                <div class="col"><div class="label-value"><strong>${amountFormatted}</strong></div></div>
+              </div>
+              <div class="row">
+                <div class="col-full"><div class="label-value"><strong>NARRATION:</strong> ${receipt.narration || '-'}</div></div>
+              </div>
+              <div class="row">
+                <div class="col-full"><div class="label-value"><strong>RECEIVED BY:</strong> ${receipt.receivedBy?.name || 'admin'}</div></div>
+              </div>
+              <div class="disclaimer">This is a computer generated receipt. Signature not required.</div>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    await page.setContent(pdfHtml, { waitUntil: 'networkidle0' });
+    pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
+    await browser.close();
+  } catch (pdfError) {
+    console.error('PDF Generation Error:', pdfError);
+    if (browser) await browser.close();
+  }
+
   await sendEmail({
     email: receipt.payer?.email || process.env.FROM_EMAIL,
     subject: `Receipt Voucher - ${receipt.receiptNumber}`,
     html,
+    attachments: pdfBuffer ? [
+      {
+        filename: `Receipt_${receipt.receiptNumber}.pdf`,
+        content: pdfBuffer,
+        contentType: 'application/pdf'
+      }
+    ] : []
   });
 };
 

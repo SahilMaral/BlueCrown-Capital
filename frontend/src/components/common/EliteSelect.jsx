@@ -59,8 +59,8 @@ const eliteStyles = {
     background: state.isSelected
       ? 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)'
       : state.isFocused
-      ? 'rgba(59, 130, 246, 0.07)'
-      : 'transparent',
+        ? 'rgba(59, 130, 246, 0.07)'
+        : 'transparent',
     cursor: 'pointer',
     padding: '10px 14px',
     transition: 'all 0.15s ease',

@@ -7,6 +7,9 @@ import SearchIcon from '../../components/icons/SearchIcon';
 import CloseIcon from '../../components/icons/CloseIcon';
 import ConfirmModal from '../../components/common/ConfirmModal';
 import Skeleton from '../../components/common/Skeleton';
+import PencilIcon from '../../components/icons/PencilIcon';
+import ReceiptIcon from '../../components/icons/ReceiptIcon';
+import TrashIcon from '../../components/icons/TrashIcon';
 
 
 const ReceiptView = () => {
@@ -129,28 +132,26 @@ const ReceiptView = () => {
                         <td style={{ textAlign: 'center' }}>
                           <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
                             <button 
-                              className="btn-elite-icon"
-                              style={{ backgroundColor: '#10b981', color: 'white', border: 'none', padding: '6px', borderRadius: '6px', cursor: 'pointer' }}
+                              className="btn-action-elite btn-action-edit"
                               title="Edit"
                               onClick={() => navigate(`/accounting/receipts/edit/${r._id}`)}
                             >
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                              <PencilIcon className="icon-xs" />
                             </button>
                             <button 
-                              className="btn-elite-icon"
-                              style={{ backgroundColor: '#3b82f6', color: 'white', border: 'none', padding: '6px', borderRadius: '6px', cursor: 'pointer' }}
+                              className="btn-action-elite"
+                              style={{ backgroundColor: '#3b82f6' }}
                               title="Print"
                               onClick={() => navigate(`/accounting/receipts/print/${r._id}`)}
                             >
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                              <ReceiptIcon className="icon-xs" />
                             </button>
                             <button 
-                              className="btn-elite-icon"
-                              style={{ backgroundColor: '#ef4444', color: 'white', border: 'none', padding: '6px', borderRadius: '6px', cursor: 'pointer' }}
+                              className="btn-action-elite btn-action-delete"
                               title="Delete"
                               onClick={() => setDeleteModal({ show: true, id: r._id })}
                             >
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                              <TrashIcon className="icon-xs" />
                             </button>
                           </div>
                         </td>

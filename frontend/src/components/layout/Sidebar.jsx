@@ -208,8 +208,7 @@ const Sidebar = ({ isOpen, onClose }) => {
               <div style={{
                 maxHeight: isDayBookOpen ? '300px' : '0',
                 overflow: 'hidden',
-                transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                paddingLeft: '8px'
+                transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
               }}>
                 <NavLink to="/accounting/receipts" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                   <ReceiptIcon />
@@ -254,8 +253,7 @@ const Sidebar = ({ isOpen, onClose }) => {
           <div style={{
             maxHeight: isInvestmentOpen ? '200px' : '0',
             overflow: 'hidden',
-            transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-            paddingLeft: '8px'
+            transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
           }}>
             <NavLink to="/investment/view" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
               <PiggyBankIcon />
@@ -296,8 +294,7 @@ const Sidebar = ({ isOpen, onClose }) => {
           <div style={{
             maxHeight: isLoansOpen ? '200px' : '0',
             overflow: 'hidden',
-            transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-            paddingLeft: '8px'
+            transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
           }}>
             <NavLink to="/loan/view" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
               <LoanIcon />
@@ -338,8 +335,7 @@ const Sidebar = ({ isOpen, onClose }) => {
           <div style={{
             maxHeight: isReportsOpen ? '600px' : '0',
             overflow: 'hidden',
-            transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-            paddingLeft: '8px'
+            transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
           }}>
             {user?.role !== 'checker' && (
               <NavLink to="/accounting/day-report" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
@@ -406,8 +402,7 @@ const Sidebar = ({ isOpen, onClose }) => {
               <div style={{
                 maxHeight: isSettingOpen ? '500px' : '0',
                 overflow: 'hidden',
-                transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                paddingLeft: '8px'
+                transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
               }}>
                 <NavLink to="/accounting/ledgers" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                   <LedgerIcon />
