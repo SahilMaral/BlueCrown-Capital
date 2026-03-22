@@ -25,6 +25,16 @@ const getLedgerById = async (id) => {
 };
 
 const updateLedger = async (id, ledgerData) => {
+  if (ledgerData.name) {
+    const existingLedger = await Ledger.findOne({ 
+      name: { $regex: new RegExp(`^${ledgerData.name}$`, 'i') },
+      _id: { $ne: id }
+    });
+    if (existingLedger) {
+      throw new ApiError(400, 'A ledger with this name already exists');
+    }
+  }
+
   const ledger = await Ledger.findByIdAndUpdate(id, ledgerData, {
     new: true,
     runValidators: true

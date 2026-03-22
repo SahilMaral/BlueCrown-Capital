@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import useDocumentTitle from '../../hooks/useDocumentTitle';
 import axios from 'axios';
 import '../Dashboard/Dashboard.css';
-import Skeleton from '../../components/common/Skeleton';
+import './Reports.css';
 import ReportSkeleton from '../../components/common/skeletons/ReportSkeleton';
+import { exportToExcel, formatIndianNumber } from '../../utils/reportUtils';
+import ReportEmailModal from '../../components/common/ReportEmailModal';
+import { Printer, FileSpreadsheet, Mail } from 'lucide-react';
 
 const LedgerReport = () => {
   useDocumentTitle('Account Ledger');
@@ -12,6 +15,7 @@ const LedgerReport = () => {
   const [companies, setCompanies] = useState([]);
   const [clients, setClients] = useState([]);
   const [ledgers, setLedgers] = useState([]);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   
   const [filters, setFilters] = useState({
     companyId: '',
@@ -50,7 +54,6 @@ const LedgerReport = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const { companyId, counterpartyId, counterpartyType, dateFrom, dateTo } = filters;
       const url = `${import.meta.env.VITE_API_URL}/reports/ledger?companyId=${filters.companyId}&counterpartyId=${filters.counterpartyId}&counterpartyType=${filters.counterpartyType}&dateFrom=${filters.dateFrom}&dateTo=${filters.dateTo}`;
       const res = await axios.get(url, { headers: { Authorization: `Bearer ${token}` } });
       setReport(res.data.data);
@@ -61,17 +64,83 @@ const LedgerReport = () => {
     }
   };
 
+  const handleExportExcel = () => {
+    if (!report) return;
+    const headers = ['Date', 'Particulars', 'Narration', 'Type', 'Ref #', 'Debit (Dr)', 'Credit (Cr)', 'Running Balance'];
+    const data = report.ledger.map(tr => [
+      new Date(tr.dateTime).toLocaleDateString(),
+      tr.ledger?.ledgerName || 'General Entry',
+      tr.narration || '',
+      tr.type,
+      tr.receiptNumber || tr.paymentNumber || '',
+      tr.type === 'Payment' ? tr.amount : '',
+      tr.type === 'Receipt' ? tr.amount : '',
+      tr.runningBalance
+    ]);
+    
+    const company = companies.find(c => c._id === filters.companyId);
+    let counterpartyName = '';
+    if (filters.counterpartyType === 'client') counterpartyName = clients.find(c => c._id === filters.counterpartyId)?.clientName;
+    else if (filters.counterpartyType === 'company') counterpartyName = companies.find(c => c._id === filters.counterpartyId)?.companyName;
+    else counterpartyName = ledgers.find(l => l._id === filters.counterpartyId)?.ledgerName;
+
+    const metaData = [
+      [company?.companyName || 'Ledger Report'],
+      [`Counterparty: ${counterpartyName}`],
+      [`Period: ${filters.dateFrom} to ${filters.dateTo}`],
+      [`Opening Balance: ${formatIndianNumber(report.openingBalance)}`]
+    ];
+
+    exportToExcel(headers, data, `Ledger_${counterpartyName}_${filters.dateTo}`, metaData);
+  };
+
+  const getEmailProps = () => {
+    if (!report) return {};
+    const company = companies.find(c => c._id === filters.companyId);
+    let counterpartyName = '';
+    if (filters.counterpartyType === 'client') counterpartyName = clients.find(c => c._id === filters.counterpartyId)?.clientName;
+    else if (filters.counterpartyType === 'company') counterpartyName = companies.find(c => c._id === filters.counterpartyId)?.companyName;
+    else counterpartyName = ledgers.find(l => l._id === filters.counterpartyId)?.ledgerName;
+
+    return {
+      title: `Ledger Report - ${counterpartyName}`,
+      subTitle: `Period: ${filters.dateFrom} to ${filters.dateTo}`,
+      companyName: company?.companyName,
+      fileName: `Ledger_${counterpartyName}`,
+      headers: ['Date', 'Particulars', 'Ref #', 'Dr', 'Cr', 'Balance'],
+      body: report.ledger.map(tr => [
+        new Date(tr.dateTime).toLocaleDateString(),
+        tr.ledger?.ledgerName || 'General Entry',
+        tr.receiptNumber || tr.paymentNumber || '-',
+        tr.type === 'Payment' ? `₹${tr.amount}` : '-',
+        tr.type === 'Receipt' ? `₹${tr.amount}` : '-',
+        `₹${tr.runningBalance}`
+      ])
+    };
+  };
+
   return (
     <main className="main-content">
-      <header className="dashboard-header">
+      <header className="dashboard-header no-print">
         <div className="welcome-section">
           <h1>Account Ledger</h1>
           <p>Detailed transaction history for counterparties.</p>
         </div>
+        <div className="header-actions-elite">
+          <button className="btn-elite secondary" onClick={() => window.print()}>
+            <Printer size={18} /> Print
+          </button>
+          <button className="btn-elite secondary" onClick={handleExportExcel}>
+            <FileSpreadsheet size={18} /> Excel
+          </button>
+          <button className="btn-elite secondary" onClick={() => setIsEmailModalOpen(true)}>
+            <Mail size={18} /> Email
+          </button>
+        </div>
       </header>
 
       <section className="content-section content-section-elite">
-        <div className="filter-card-elite">
+        <div className="filter-card-elite no-print">
           <div className="filter-grid-elite">
             <div className="input-field-elite">
               <label>Our Company</label>
@@ -124,25 +193,32 @@ const LedgerReport = () => {
           <ReportSkeleton />
         ) : report ? (
           <>
+            <div className="print-only">
+               <center>
+                 <h1>{companies.find(c => c._id === filters.companyId)?.companyName}</h1>
+                 <h3>Ledger Report - {filters.dateFrom} to {filters.dateTo}</h3>
+               </center>
+            </div>
+
             <div className="summary-cards-grid">
               <div className="summary-card-elite">
                 <span className="label">Opening Balance</span>
                 <span className={`value ${report.openingBalance >= 0 ? 'success' : 'danger'}`}>
-                  ₹{Math.abs(report.openingBalance).toLocaleString()} {report.openingBalance >= 0 ? 'Cr' : 'Dr'}
+                  ₹{formatIndianNumber(Math.abs(report.openingBalance))} {report.openingBalance >= 0 ? 'Cr' : 'Dr'}
                 </span>
               </div>
               <div className="summary-card-elite">
                 <span className="label">Total Debit</span>
-                <span className="value danger">₹{report.totalDebit?.toLocaleString()}</span>
+                <span className="value danger">₹{formatIndianNumber(report.totalDebit)}</span>
               </div>
               <div className="summary-card-elite">
                 <span className="label">Total Credit</span>
-                <span className="value success">₹{report.totalCredit?.toLocaleString()}</span>
+                <span className="value success">₹{formatIndianNumber(report.totalCredit)}</span>
               </div>
               <div className="summary-card-elite">
                 <span className="label">Closing Balance</span>
                 <span className={`value ${report.closingBalance >= 0 ? 'success' : 'danger'}`}>
-                  ₹{Math.abs(report.closingBalance).toLocaleString()} {report.closingBalance >= 0 ? 'Cr' : 'Dr'}
+                  ₹{formatIndianNumber(Math.abs(report.closingBalance))} {report.closingBalance >= 0 ? 'Cr' : 'Dr'}
                 </span>
               </div>
             </div>
@@ -165,17 +241,17 @@ const LedgerReport = () => {
                     <tr key={idx} className="hoverable">
                       <td>{new Date(tr.dateTime).toLocaleDateString()}</td>
                       <td>
-                        <div className="particulars-info">
-                          <span className="main-info">{tr.ledger?.ledgerName || 'General Entry'}</span>
-                          <span className="sub-info">{tr.narration}</span>
-                          {tr.bank && <span className="bank-info">{tr.bank.bankName}</span>}
+                        <div className="particular-cell">
+                           <span className="main">{tr.ledger?.ledgerName || 'General Entry'}</span>
+                           <span className="sub">{tr.narration}</span>
+                           {tr.bank && <span className="sub">{tr.bank.bankName}</span>}
                         </div>
                       </td>
                       <td><span className={`badge-elite ${tr.type.toLowerCase()}`}>{tr.type}</span></td>
                       <td className="text-secondary">{tr.receiptNumber || tr.paymentNumber || '-'}</td>
-                      <td className="text-right danger-text">{tr.type === 'Payment' ? `₹${tr.amount.toLocaleString()}` : ''}</td>
-                      <td className="text-right success-text">{tr.type === 'Receipt' ? `₹${tr.amount.toLocaleString()}` : ''}</td>
-                      <td className="text-right font-bold">₹{tr.runningBalance.toLocaleString()}</td>
+                      <td className="text-right danger-text">{tr.type === 'Payment' ? `₹${formatIndianNumber(tr.amount)}` : ''}</td>
+                      <td className="text-right success-text">{tr.type === 'Receipt' ? `₹${formatIndianNumber(tr.amount)}` : ''}</td>
+                      <td className="text-right font-bold">₹{formatIndianNumber(tr.runningBalance)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -190,6 +266,13 @@ const LedgerReport = () => {
           </div>
         )}
       </section>
+
+      <ReportEmailModal 
+        isOpen={isEmailModalOpen}
+        onClose={() => setIsEmailModalOpen(false)}
+        {...getEmailProps()}
+        reportType="LedgerReport"
+      />
     </main>
   );
 };

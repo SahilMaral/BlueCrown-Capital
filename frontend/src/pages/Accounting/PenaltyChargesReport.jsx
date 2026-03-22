@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../Dashboard/Dashboard.css';
+import './Reports.css';
 import ReportSkeleton from '../../components/common/skeletons/ReportSkeleton';
+import { exportToExcel, formatIndianNumber } from '../../utils/reportUtils';
+import ReportEmailModal from '../../components/common/ReportEmailModal';
+import { Printer, FileSpreadsheet, Mail } from 'lucide-react';
 
 const PenaltyChargesReport = () => {
   const [report, setReport] = useState(null);
@@ -12,6 +16,7 @@ const PenaltyChargesReport = () => {
   const [selectedCompany, setSelectedCompany] = useState('');
   const [selectedClient, setSelectedClient] = useState('');
   const [selectedLoan, setSelectedLoan] = useState('');
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
 
   useEffect(() => {
     fetchInitialData();
@@ -69,17 +74,77 @@ const PenaltyChargesReport = () => {
     }
   };
 
+  const handleExportExcel = () => {
+    if (!report) return;
+    const headers = ['Date', 'Voucher #', 'Type', 'Mode', 'Narration', 'Amount'];
+    const transactions = [...report.receipts, ...report.payments].sort((a,b) => new Date(a.dateTime) - new Date(b.dateTime));
+    const data = transactions.map(item => [
+      new Date(item.dateTime).toLocaleDateString(),
+      item.receiptNumber || item.paymentNumber,
+      item.receiptNumber ? 'Receipt' : 'Payment',
+      item.paymentMode,
+      item.narration,
+      item.amount
+    ]);
+    
+    const company = companies.find(c => c._id === selectedCompany);
+    const client = clients.find(c => c._id === selectedClient);
+    const loan = loans.find(l => l._id === selectedLoan);
+
+    const metaData = [
+      [company?.companyName || 'Penalty Charges Report'],
+      [`Client: ${client?.clientName}`],
+      [`Loan: ${loan?.loanNumber}`],
+      [`Total Penalties: ${formatIndianNumber(transactions.reduce((sum, item) => sum + (item.receiptNumber ? item.amount : -item.amount), 0))}`]
+    ];
+
+    exportToExcel(headers, data, `PenaltyCharges_${loan?.loanNumber}`, metaData);
+  };
+
+  const getEmailProps = () => {
+    if (!report) return {};
+    const company = companies.find(c => c._id === selectedCompany);
+    const client = clients.find(c => c._id === selectedClient);
+    const loan = loans.find(l => l._id === selectedLoan);
+    const transactions = [...report.receipts, ...report.payments].sort((a,b) => new Date(a.dateTime) - new Date(b.dateTime));
+
+    return {
+      title: `Penalty Charges Report - ${loan?.loanNumber}`,
+      subTitle: `Client: ${client?.clientName}`,
+      companyName: company?.companyName,
+      fileName: `PenaltyCharges_${loan?.loanNumber}`,
+      headers: ['Date', 'Type', 'Ref #', 'Amount'],
+      body: transactions.map(item => [
+        new Date(item.dateTime).toLocaleDateString(),
+        item.receiptNumber ? 'Receipt' : 'Payment',
+        item.receiptNumber || item.paymentNumber,
+        `₹${formatIndianNumber(item.amount)}`
+      ])
+    };
+  };
+
   return (
     <main className="main-content">
-      <header className="dashboard-header">
+      <header className="dashboard-header no-print">
         <div className="welcome-section">
           <h1>Penalty Charges Report</h1>
           <p>Detailed log of all penalty fees collected on loans.</p>
         </div>
+        <div className="header-actions-elite">
+          <button className="btn-elite secondary" onClick={() => window.print()}>
+            <Printer size={18} /> Print
+          </button>
+          <button className="btn-elite secondary" onClick={handleExportExcel}>
+            <FileSpreadsheet size={18} /> Excel
+          </button>
+          <button className="btn-elite secondary" onClick={() => setIsEmailModalOpen(true)}>
+            <Mail size={18} /> Email
+          </button>
+        </div>
       </header>
 
       <section className="content-section content-section-elite">
-        <div className="filter-card-elite">
+        <div className="filter-card-elite no-print">
           <div className="filter-grid-elite">
             <div className="input-field-elite">
               <label>Our Company</label>
@@ -114,11 +179,18 @@ const PenaltyChargesReport = () => {
           <ReportSkeleton hasSummaryGrid={true} rows={3} />
         ) : report ? (
           <>
+            <div className="print-only">
+               <center>
+                 <h1>{companies.find(c => c._id === selectedCompany)?.companyName}</h1>
+                 <h3>Penalty Charges Report - {loans.find(l => l._id === selectedLoan)?.loanNumber}</h3>
+               </center>
+            </div>
+
             <div className="summary-cards-grid">
               <div className="summary-card-elite">
                 <span className="label">Total Penalties</span>
                 <span className="value success">
-                  ₹{([...report.receipts, ...report.payments].reduce((sum, item) => sum + (item.receiptNumber ? item.amount : -item.amount), 0)).toLocaleString()}
+                  ₹{formatIndianNumber([...report.receipts, ...report.payments].reduce((sum, item) => sum + (item.receiptNumber ? item.amount : -item.amount), 0))}
                 </span>
               </div>
               <div className="summary-card-elite">
@@ -152,7 +224,7 @@ const PenaltyChargesReport = () => {
                       <td><span className="badge-elite receipt" style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--elite-blue)' }}>{item.paymentMode}</span></td>
                       <td className="text-secondary">{item.narration}</td>
                       <td className={`text-right font-bold ${item.receiptNumber ? 'success-text' : 'danger-text'}`}>
-                        ₹{item.amount?.toLocaleString()}
+                        ₹{formatIndianNumber(item.amount)}
                       </td>
                     </tr>
                   ))}
@@ -179,6 +251,13 @@ const PenaltyChargesReport = () => {
           </div>
         )}
       </section>
+
+      <ReportEmailModal 
+        isOpen={isEmailModalOpen}
+        onClose={() => setIsEmailModalOpen(false)}
+        {...getEmailProps()}
+        reportType="PenaltyChargesReport"
+      />
     </main>
   );
 };

@@ -1,0 +1,84 @@
+.day-report-table {
+  font-size: 0.85rem;
+}
+
+.day-report-table th {
+  padding: 8px 4px;
+}
+
+.day-report-table td {
+  padding: 10px 4px;
+}
+
+.bg-success-light {
+  background-color: rgba(16, 185, 129, 0.05) !important;
+  color: var(--success);
+  font-weight: 700;
+  border-bottom: 2px solid var(--success) !important;
+}
+
+.bg-danger-light {
+  background-color: rgba(239, 68, 68, 0.05) !important;
+  color: var(--danger);
+  font-weight: 700;
+  border-bottom: 2px solid var(--danger) !important;
+}
+
+.particular-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.particular-cell .main {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.particular-cell .sub {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.header-actions-elite {
+  display: flex;
+  gap: 12px;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-only {
+    display: block !important;
+  }
+
+  .main-content {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .content-section {
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .elite-table-container {
+    box-shadow: none !important;
+    border: 1px solid #eee !important;
+  }
+
+  .day-report-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  .day-report-table th, .day-report-table td {
+    border: 1px solid #ddd !important;
+  }
+}
+
+.print-only {
+  display: none;
+}

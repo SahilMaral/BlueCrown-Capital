@@ -7,11 +7,15 @@ import BankIcon from '../icons/BankIcon';
 import RupeeIcon from '../icons/RupeeIcon';
 import MapPinIcon from '../icons/MapPinIcon';
 import CloseIcon from '../icons/CloseIcon';
+import TrashIcon from '../icons/TrashIcon';
 import CalendarIcon from '../icons/CalendarIcon';
 import MailIcon from '../icons/MailIcon';
 import FileIcon from '../icons/FileIcon';
 import ShieldIcon from '../icons/ShieldIcon';
 import PhoneIcon from '../icons/PhoneIcon';
+import EliteSelect from './EliteSelect';
+import EliteStatusModal from './EliteStatusModal';
+import ConfirmModal from './ConfirmModal';
 import './QuickMasterModal.css';
 
 const FINANCIAL_YEARS = ['2023-24', '2024-25', '2025-26', '2026-27'];
@@ -20,13 +24,32 @@ const QuickMasterModal = ({ type, isOpen, onClose, onSuccess, companyId, initial
   const [formData, setFormData] = useState(initialData || {});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [statusConfig, setStatusConfig] = useState({ title: '', message: '', type: 'info' });
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmConfig, setConfirmConfig] = useState({ title: '', message: '', onConfirm: () => { } });
   const [companies, setCompanies] = useState([]);
   const [clients, setClients] = useState([]);
 
   // Update form data when initialData changes or modal opens
   React.useEffect(() => {
     if (isOpen) {
-      setFormData(initialData || {});
+      if (initialData) {
+        setFormData({
+          ...initialData,
+          yearlyBalances: initialData.yearlyBalances || (type === 'Company' ? initialData.yearlyCashBalances : null) || [
+            {
+              financialYear: initialData.financialYear || '',
+              openingBalance: (type === 'Company' ? initialData.cashOpeningBalance : initialData.openingBalance) || 0
+            }
+          ]
+        });
+      } else {
+        setFormData({
+          isActive: true,
+          yearlyBalances: [{ financialYear: '', openingBalance: 0 }]
+        });
+      }
       setError('');
       if (type === 'Bank' || type === 'User') {
         fetchCompanies();
@@ -88,25 +111,83 @@ const QuickMasterModal = ({ type, isOpen, onClose, onSuccess, companyId, initial
               type === 'Counter' ? '/counters' : '/banks';
 
       const payload = { ...formData };
+      if (type === 'Ledger' && payload.name) {
+        payload.name = payload.name.trim();
+      }
+      if (type === 'Bank' && payload.bankName) {
+        payload.bankName = payload.bankName.trim();
+      }
+      if (type === 'Company') {
+        if (payload.companyName) payload.companyName = payload.companyName.trim();
+        if (payload.yearlyBalances) {
+          payload.yearlyCashBalances = payload.yearlyBalances.map(b => ({
+            financialYear: b.financialYear,
+            cashOpeningBalance: (typeof b.openingBalance === 'number' ? b.openingBalance : parseFloat(b.openingBalance)) || 0
+          }));
+        }
+      }
+      if (type === 'Client' && payload.clientName) {
+        payload.clientName = payload.clientName.trim();
+      }
 
       let res;
-      if (formData._id) {
-        // Edit Mode
-        res = await axios.put(`${import.meta.env.VITE_API_URL}${endpoint}/${formData._id}`, payload, {
-          headers: { Authorization: `Bearer ${token}` }
+      const config = {
+        headers: { Authorization: `Bearer ${token}` }
+      };
+
+      // Use FormData if files are present
+      const hasFiles = (type === 'Client' && (payload.documents instanceof FileList || payload.documents instanceof File)) ||
+                      (type === 'User' && payload.photo instanceof File);
+
+      if (hasFiles) {
+        const formDataPayload = new FormData();
+
+        // Append all regular fields
+        Object.keys(payload).forEach(key => {
+          if (key !== 'documents' && key !== 'allFiles' && key !== 'photo' && payload[key] !== undefined && payload[key] !== null) {
+            formDataPayload.append(key, payload[key]);
+          }
         });
+
+        // Append files
+        if (type === 'Client') {
+          if (payload.documents instanceof FileList) {
+            Array.from(payload.documents).forEach(file => {
+              formDataPayload.append('documents', file);
+            });
+          } else {
+            formDataPayload.append('documents', payload.documents);
+          }
+        } else if (type === 'User' && payload.photo instanceof File) {
+          formDataPayload.append('photo', payload.photo);
+        }
+
+        if (formData._id) {
+          res = await axios.put(`${import.meta.env.VITE_API_URL}${endpoint}/${formData._id}`, formDataPayload, config);
+        } else {
+          res = await axios.post(`${import.meta.env.VITE_API_URL}${endpoint}`, formDataPayload, config);
+        }
       } else {
-        // Create Mode
-        res = await axios.post(`${import.meta.env.VITE_API_URL}${endpoint}`, payload, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        // Regular JSON submission
+        if (formData._id) {
+          res = await axios.put(`${import.meta.env.VITE_API_URL}${endpoint}/${formData._id}`, payload, config);
+        } else {
+          res = await axios.post(`${import.meta.env.VITE_API_URL}${endpoint}`, payload, config);
+        }
       }
 
       onSuccess(res.data.data);
       onClose();
       setFormData({});
     } catch (err) {
-      setError(err.response?.data?.message || `Error creating ${type}`);
+      const msg = err.response?.data?.message || `Error creating ${type}`;
+      setError(msg);
+      setStatusConfig({
+        title: 'Action Failed',
+        message: msg,
+        type: 'error'
+      });
+      setShowStatusModal(true);
     } finally {
       setLoading(false);
     }
@@ -125,28 +206,95 @@ const QuickMasterModal = ({ type, isOpen, onClose, onSuccess, companyId, initial
               </div>
             </div>
             <div className="auth-input-group">
-              <label className="form-label-elite">Cash Opening Balance</label>
+              <label className="form-label-elite">Contact No</label>
               <div className="auth-input-wrapper">
-                <RupeeIcon className="auth-input-icon" />
-                <input type="number" name="cashOpeningBalance" className="elite-input-classic" placeholder="0.00" value={formData.cashOpeningBalance || ''} onChange={handleInputChange} />
-              </div>
-            </div>
-            <div className="auth-input-group">
-              <label className="form-label-elite">Financial Year</label>
-              <div className="auth-input-wrapper">
-                <CalendarIcon className="auth-input-icon" />
-                <select name="financialYear" className="elite-select-classic" value={formData.financialYear || ''} onChange={handleInputChange} style={{ color: '#0f172a' }} required>
-                  <option value="">-- Select --</option>
-                  {FINANCIAL_YEARS.map(fy => <option key={fy} value={fy}>{fy}</option>)}
-                </select>
+                <PhoneIcon className="auth-input-icon" />
+                <input type="text" name="contactNo" className="elite-input-classic" placeholder="10 Digit Number" value={formData.contactNo || ''} onChange={handleInputChange} />
               </div>
             </div>
             <div className="auth-input-group elite-full-width">
-              <label className="form-label-elite">Address</label>
+              <label className="form-label-elite">Email Address</label>
+              <div className="auth-input-wrapper">
+                <MailIcon className="auth-input-icon" />
+                <input type="email" name="email" className="elite-input-classic" placeholder="company@example.com" value={formData.email || ''} onChange={handleInputChange} />
+              </div>
+            </div>
+            <div className="auth-input-group elite-full-width">
+              <label className="form-label-elite">Office Address</label>
               <div className="auth-input-wrapper">
                 <MapPinIcon className="auth-input-icon textarea-icon-elite" />
                 <textarea name="address" className="elite-textarea-classic" value={formData.address || ''} onChange={handleInputChange} placeholder="Company Office Address"></textarea>
               </div>
+            </div>
+
+            <div className="elite-full-width" style={{ marginTop: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
+                <label className="form-label-elite" style={{ margin: 0 }}>Yearly Cash Balances</label>
+                <button
+                  type="button"
+                  className="btn-elite"
+                  style={{ padding: '8px 16px', fontSize: '12px', width: 'auto', borderRadius: '12px', height: '36px' }}
+                  onClick={() => {
+                    const balances = [...(formData.yearlyBalances || [])];
+                    balances.push({ financialYear: '', openingBalance: 0 });
+                    setFormData({ ...formData, yearlyBalances: balances });
+                  }}
+                >
+                  + Add Year
+                </button>
+              </div>
+
+              {(formData.yearlyBalances || []).map((bal, index) => (
+                <div key={index} className="modal-grid-elite" style={{ gap: '16px', marginBottom: '16px', background: 'rgba(248, 250, 252, 0.5)', padding: '20px', borderRadius: '20px', border: '1px solid #f1f5f9', position: 'relative' }}>
+                  <div className="auth-input-group">
+                    <label className="form-label-elite">Financial Year</label>
+                    <div className="auth-input-wrapper">
+                      <CalendarIcon className="auth-input-icon" />
+                      <EliteSelect
+                        options={FINANCIAL_YEARS.map(fy => ({ value: fy, label: fy }))}
+                        value={bal.financialYear}
+                        onChange={(val) => {
+                          const balances = [...formData.yearlyBalances];
+                          balances[index].financialYear = val;
+                          setFormData({ ...formData, yearlyBalances: balances });
+                        }}
+                        isSearchable={false}
+                        placeholder="Select Year"
+                      />
+                    </div>
+                  </div>
+                  <div className="auth-input-group">
+                    <label className="form-label-elite">Cash Opening Balance</label>
+                    <div className="auth-input-wrapper">
+                      <RupeeIcon className="auth-input-icon" />
+                      <input
+                        type="number"
+                        className="elite-input-classic"
+                        placeholder="0.00"
+                        value={bal.openingBalance}
+                        onChange={(e) => {
+                          const balances = [...formData.yearlyBalances];
+                          balances[index].openingBalance = parseFloat(e.target.value) || 0;
+                          setFormData({ ...formData, yearlyBalances: balances });
+                        }}
+                      />
+                    </div>
+                  </div>
+                  {formData.yearlyBalances.length > 1 && (
+                    <button
+                      type="button"
+                      className="close-btn-elite"
+                      style={{ position: 'absolute', top: '12px', right: '12px', background: '#ffffff', border: '1px solid #fee2e2', color: '#ef4444', width: '28px', height: '28px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px' }}
+                      onClick={() => {
+                        const balances = formData.yearlyBalances.filter((_, i) => i !== index);
+                        setFormData({ ...formData, yearlyBalances: balances });
+                      }}
+                    >
+                      <CloseIcon style={{ width: '14px', height: '14px' }} />
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         );
@@ -161,10 +309,10 @@ const QuickMasterModal = ({ type, isOpen, onClose, onSuccess, companyId, initial
               </div>
             </div>
             <div className="auth-input-group">
-              <label className="form-label-elite">Company Name (Optional)</label>
+              <label className="form-label-elite">Company Name</label>
               <div className="auth-input-wrapper">
-                <CompanyIcon className="auth-input-icon" />
-                <input type="text" name="companyName" className="elite-input-classic" placeholder="Business Name" value={formData.companyName || ''} onChange={handleInputChange} />
+                <BriefcaseIcon className="auth-input-icon" />
+                <input type="text" name="companyName" className="elite-input-classic" placeholder="Optional" value={formData.companyName || ''} onChange={handleInputChange} />
               </div>
             </div>
             <div className="auth-input-group">
@@ -175,48 +323,119 @@ const QuickMasterModal = ({ type, isOpen, onClose, onSuccess, companyId, initial
               </div>
             </div>
             <div className="auth-input-group">
-              <label className="form-label-elite">Email</label>
+              <label className="form-label-elite">Email Address</label>
               <div className="auth-input-wrapper">
                 <MailIcon className="auth-input-icon" />
-                <input type="email" name="email" className="elite-input-classic" placeholder="email@example.com" value={formData.email || ''} onChange={handleInputChange} />
+                <input type="email" name="email" className="elite-input-classic" placeholder="client@example.com" value={formData.email || ''} onChange={handleInputChange} />
               </div>
             </div>
             <div className="auth-input-group elite-full-width">
-              <label className="form-label-elite">Address</label>
+              <label className="form-label-elite">Physical Address</label>
               <div className="auth-input-wrapper">
                 <MapPinIcon className="auth-input-icon textarea-icon-elite" />
-                <textarea name="address" className="elite-textarea-classic" value={formData.address || ''} onChange={handleInputChange} placeholder="Client Residence Address"></textarea>
+                <textarea name="address" className="elite-textarea-classic" value={formData.address || ''} onChange={handleInputChange} placeholder="Residence or Office Address"></textarea>
               </div>
             </div>
             <div className="auth-input-group elite-full-width">
-              <label className="form-label-elite">Documents (PDF, Images Only)</label>
-              <div className="auth-input-wrapper file-input-wrapper-elite">
+              <label className="form-label-elite">Upload Documents (PDF, Images)</label>
+              <div className="auth-input-wrapper">
                 <FileIcon className="auth-input-icon" />
-                <label htmlFor="documents-file" className="file-input-label-elite">
-                  <span className="file-name-text">
-                    {formData.documents ? (typeof formData.documents === 'string' ? formData.documents : formData.documents.name) : 'Choose File (PDF, Images)'}
+                <div className="file-input-container-elite">
+                  <span className="file-input-text-elite">
+                    {formData.documents instanceof FileList
+                      ? `${formData.documents.length} files selected`
+                      : (formData.documents?.name || 'Choose documents to upload...')}
                   </span>
-                  <span className="file-browse-btn">Browse</span>
-                </label>
-                <input
-                  id="documents-file"
-                  type="file"
-                  name="documents"
-                  className="hidden-file-input"
-                  onChange={handleInputChange}
-                  accept=".pdf,image/*"
-                />
+                  <input
+                    id="documents-file"
+                    type="file"
+                    name="documents"
+                    className="file-input-hidden-elite"
+                    onChange={(e) => setFormData({ ...formData, documents: e.target.files })}
+                    multiple
+                    accept=".pdf,image/*"
+                  />
+                  <div className="file-input-label-elite">Browse</div>
+                </div>
               </div>
             </div>
+            {formData._id && formData.documents && Array.isArray(formData.documents) && formData.documents.length > 0 && (
+              <div className="elite-full-width" style={{ marginTop: '16px' }}>
+                <label className="form-label-elite">Existing Documents</label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px', marginTop: '8px' }}>
+                  {formData.documents.map((doc, idx) => (
+                    <div key={idx} className="document-chip-elite" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', background: '#f8fafc', border: '1px solid #f1f5f9', borderRadius: '12px' }}>
+                      <a
+                        href={`${window.location.origin}/${doc.replace(/^\//, '')}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{ fontSize: '11px', fontWeight: 600, color: 'var(--elite-blue)', textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '140px', cursor: 'pointer' }}
+                        title="View Document"
+                      >
+                        {doc.split('/').pop()}
+                      </a>
+                      <button
+                        type="button"
+                        title="Delete Document"
+                        style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px', display: 'flex' }}
+                        onClick={() => {
+                          setConfirmConfig({
+                            title: 'Delete Document',
+                            message: 'Are you sure you want to delete this document permanently?',
+                            onConfirm: async () => {
+                              try {
+                                const token = localStorage.getItem('token');
+                                await axios.delete(`${import.meta.env.VITE_API_URL}/clients/${formData._id}/documents/${idx}`, {
+                                  headers: { Authorization: `Bearer ${token}` }
+                                });
+                                const updatedDocs = formData.documents.filter((_, i) => i !== idx);
+                                setFormData({ ...formData, documents: updatedDocs });
+                                setStatusConfig({ title: 'Success', message: 'Document deleted successfully', type: 'success' });
+                                setShowStatusModal(true);
+                              } catch (error) {
+                                setStatusConfig({ title: 'Error', message: 'Failed to delete document', type: 'error' });
+                                setShowStatusModal(true);
+                              }
+                              setShowConfirmModal(false);
+                            }
+                          });
+                          setShowConfirmModal(true);
+                        }}
+                      >
+                        <TrashIcon style={{ width: '14px', height: '14px' }} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         );
       case 'Ledger':
         return (
-          <div className="auth-input-group">
-            <label className="form-label-elite">Ledger Name</label>
-            <div className="auth-input-wrapper">
-              <BriefcaseIcon className="auth-input-icon" />
-              <input type="text" name="name" className="elite-input-classic" placeholder="Salary / Rent / Misc" value={formData.name || ''} onChange={handleInputChange} required />
+          <div className="modal-grid-elite">
+            <div className="auth-input-group">
+              <label className="form-label-elite">Ledger Name</label>
+              <div className="auth-input-wrapper">
+                <BriefcaseIcon className="auth-input-icon" />
+                <input type="text" name="name" className="elite-input-classic" placeholder="Salary / Rent / Misc" value={formData.name || ''} onChange={handleInputChange} required />
+              </div>
+            </div>
+            <div className="auth-input-group">
+              <label className="form-label-elite">Status</label>
+              <div className="auth-input-wrapper">
+                <ShieldIcon className="auth-input-icon" />
+                <EliteSelect
+                  options={[
+                    { value: 'true', label: 'Active' },
+                    { value: 'false', label: 'Inactive' }
+                  ]}
+                  value={formData.isActive === false ? 'false' : 'true'}
+                  onChange={(val) => setFormData({ ...formData, isActive: val === 'true' })}
+                  placeholder="Select Status"
+                  isSearchable={false}
+                />
+              </div>
             </div>
           </div>
         );
@@ -245,31 +464,93 @@ const QuickMasterModal = ({ type, isOpen, onClose, onSuccess, companyId, initial
               </div>
             </div>
             <div className="auth-input-group">
-              <label className="form-label-elite">Opening Balance</label>
-              <div className="auth-input-wrapper">
-                <RupeeIcon className="auth-input-icon" />
-                <input type="text" name="openingBalance" className="elite-input-classic" placeholder="₹0.00" value={formData.openingBalance || ''} onChange={handleInputChange} />
-              </div>
-            </div>
-            <div className="auth-input-group">
               <label className="form-label-elite">Belongs to Company</label>
               <div className="auth-input-wrapper">
                 <CompanyIcon className="auth-input-icon" />
-                <select name="companyId" className="elite-select-classic" value={formData.companyId || ''} onChange={handleInputChange} style={{ color: '#0f172a' }} required>
-                  <option value="">-- Select Company --</option>
-                  {companies.map(c => <option key={c._id} value={c._id}>{c.companyName}</option>)}
-                </select>
+                <EliteSelect
+                  options={companies.map(c => ({ value: c._id, label: c.companyName }))}
+                  value={formData.companyId}
+                  onChange={(val) => setFormData({ ...formData, companyId: val })}
+                  placeholder="Select Company"
+                />
               </div>
             </div>
             <div className="auth-input-group">
-              <label className="form-label-elite">Financial Year</label>
+              <label className="form-label-elite">Branch Name</label>
               <div className="auth-input-wrapper">
-                <CalendarIcon className="auth-input-icon" />
-                <select name="financialYear" className="elite-select-classic" value={formData.financialYear || ''} onChange={handleInputChange} style={{ color: '#0f172a' }} required>
-                  <option value="">-- Select FY --</option>
-                  {FINANCIAL_YEARS.map(fy => <option key={fy} value={fy}>{fy}</option>)}
-                </select>
+                <MapPinIcon className="auth-input-icon" />
+                <input type="text" name="branch" className="elite-input-classic" placeholder="Optional" value={formData.branch || ''} onChange={handleInputChange} />
               </div>
+            </div>
+
+            <div className="elite-full-width" style={{ marginTop: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
+                <label className="form-label-elite" style={{ margin: 0 }}>Yearly Opening Balances</label>
+                <button
+                  type="button"
+                  className="btn-elite"
+                  style={{ padding: '8px 16px', fontSize: '12px', width: 'auto', borderRadius: '12px', height: '36px' }}
+                  onClick={() => {
+                    const balances = [...(formData.yearlyBalances || [])];
+                    balances.push({ financialYear: '', openingBalance: 0 });
+                    setFormData({ ...formData, yearlyBalances: balances });
+                  }}
+                >
+                  + Add Year
+                </button>
+              </div>
+
+              {(formData.yearlyBalances || []).map((bal, index) => (
+                <div key={index} className="modal-grid-elite" style={{ gap: '16px', marginBottom: '16px', background: 'rgba(248, 250, 252, 0.5)', padding: '20px', borderRadius: '20px', border: '1px solid #f1f5f9', position: 'relative' }}>
+                  <div className="auth-input-group">
+                    <label className="form-label-elite">Financial Year</label>
+                    <div className="auth-input-wrapper">
+                      <CalendarIcon className="auth-input-icon" />
+                      <EliteSelect
+                        options={FINANCIAL_YEARS.map(fy => ({ value: fy, label: fy }))}
+                        value={bal.financialYear}
+                        onChange={(val) => {
+                          const balances = [...formData.yearlyBalances];
+                          balances[index].financialYear = val;
+                          setFormData({ ...formData, yearlyBalances: balances });
+                        }}
+                        isSearchable={false}
+                        placeholder="Select Year"
+                      />
+                    </div>
+                  </div>
+                  <div className="auth-input-group">
+                    <label className="form-label-elite">Opening Balance</label>
+                    <div className="auth-input-wrapper">
+                      <RupeeIcon className="auth-input-icon" />
+                      <input
+                        type="number"
+                        className="elite-input-classic"
+                        placeholder="0.00"
+                        value={bal.openingBalance}
+                        onChange={(e) => {
+                          const balances = [...formData.yearlyBalances];
+                          balances[index].openingBalance = parseFloat(e.target.value) || 0;
+                          setFormData({ ...formData, yearlyBalances: balances });
+                        }}
+                      />
+                    </div>
+                  </div>
+                  {formData.yearlyBalances.length > 1 && (
+                    <button
+                      type="button"
+                      className="close-btn-elite"
+                      style={{ position: 'absolute', top: '12px', right: '12px', background: '#ffffff', border: '1px solid #fee2e2', color: '#ef4444', width: '28px', height: '28px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px' }}
+                      onClick={() => {
+                        const balances = formData.yearlyBalances.filter((_, i) => i !== index);
+                        setFormData({ ...formData, yearlyBalances: balances });
+                      }}
+                    >
+                      <CloseIcon style={{ width: '14px', height: '14px' }} />
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         );
@@ -308,12 +589,18 @@ const QuickMasterModal = ({ type, isOpen, onClose, onSuccess, companyId, initial
               <label className="form-label-elite">Access Role</label>
               <div className="auth-input-wrapper">
                 <ShieldIcon className="auth-input-icon" />
-                <select name="role" className="elite-select-classic" value={formData.role || 'user'} onChange={handleInputChange} style={{ color: '#0f172a' }} required>
-                  <option value="user">Standard User</option>
-                  <option value="maker">Maker</option>
-                  <option value="checker">Checker</option>
-                  <option value="admin">Administrator</option>
-                </select>
+                <EliteSelect
+                  options={[
+                    { value: 'user', label: 'Standard User' },
+                    { value: 'maker', label: 'Maker' },
+                    { value: 'checker', label: 'Checker' },
+                    { value: 'admin', label: 'Administrator' }
+                  ]}
+                  value={formData.role || 'user'}
+                  onChange={(val) => setFormData({ ...formData, role: val })}
+                  placeholder="Select Role"
+                  isSearchable={false}
+                />
               </div>
             </div>
 
@@ -322,10 +609,12 @@ const QuickMasterModal = ({ type, isOpen, onClose, onSuccess, companyId, initial
                 <label className="form-label-elite">Assigned Client</label>
                 <div className="auth-input-wrapper">
                   <UserIcon className="auth-input-icon" />
-                  <select name="clientId" className="elite-select-classic" value={formData.clientId || ''} onChange={handleInputChange} style={{ color: '#0f172a' }} required>
-                    <option value="">-- Select Client --</option>
-                    {clients.map(c => <option key={c._id} value={c._id}>{c.clientName}</option>)}
-                  </select>
+                  <EliteSelect
+                    options={clients.map(c => ({ value: c._id, label: c.clientName }))}
+                    value={formData.clientId}
+                    onChange={(val) => setFormData({ ...formData, clientId: val })}
+                    placeholder="Select Client"
+                  />
                 </div>
               </div>
             )}
@@ -345,6 +634,37 @@ const QuickMasterModal = ({ type, isOpen, onClose, onSuccess, companyId, initial
                 <input type="text" name="designation" className="elite-input-classic" placeholder="Accountant / Manager" value={formData.designation || ''} onChange={handleInputChange} />
               </div>
             </div>
+
+            <div className="auth-input-group elite-full-width">
+              <label className="form-label-elite">Profile Photo</label>
+              <div className="auth-input-wrapper">
+                <FileIcon className="auth-input-icon" />
+                <div className="file-input-container-elite">
+                   <span className="file-input-text-elite">
+                    {formData.photo instanceof File ? formData.photo.name : (formData.photo ? 'Update Photo...' : 'Choose profile photo...')}
+                  </span>
+                  <input 
+                    type="file" 
+                    className="file-input-hidden-elite" 
+                    accept="image/*"
+                    onChange={(e) => setFormData({...formData, photo: e.target.files[0]})}
+                  />
+                  <button type="button" className="browse-btn-elite">BROWSE</button>
+                </div>
+              </div>
+              {formData.photo && (
+                <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '12px', overflow: 'hidden', border: '2px solid #f1f5f9' }}>
+                    <img 
+                      src={formData.photo instanceof File ? URL.createObjectURL(formData.photo) : `${window.location.origin}/uploads/${formData.photo}`} 
+                      alt="Preview" 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    />
+                  </div>
+                  <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500 }}>Photo Preview</span>
+                </div>
+              )}
+            </div>
           </div>
         );
       case 'Counter':
@@ -354,13 +674,18 @@ const QuickMasterModal = ({ type, isOpen, onClose, onSuccess, companyId, initial
               <label className="form-label-elite">Counter Type</label>
               <div className="auth-input-wrapper">
                 <FileIcon className="auth-input-icon" />
-                <select name="counterName" className="elite-select-classic" value={formData.counterName || ''} onChange={handleInputChange} style={{ color: '#0f172a' }} required>
-                  <option value="">-- Select Type --</option>
-                  <option value="receipt">Receipt</option>
-                  <option value="payment">Payment</option>
-                  <option value="investment">Investment</option>
-                  <option value="loan">Loan</option>
-                </select>
+                <EliteSelect
+                  options={[
+                    { value: 'receipt', label: 'Receipt' },
+                    { value: 'payment', label: 'Payment' },
+                    { value: 'investment', label: 'Investment' },
+                    { value: 'loan', label: 'Loan' }
+                  ]}
+                  value={formData.counterName}
+                  onChange={(val) => setFormData({ ...formData, counterName: val })}
+                  placeholder="Select Type"
+                  isSearchable={false}
+                />
               </div>
             </div>
             <div className="auth-input-group">
@@ -381,10 +706,12 @@ const QuickMasterModal = ({ type, isOpen, onClose, onSuccess, companyId, initial
               <label className="form-label-elite">Financial Year</label>
               <div className="auth-input-wrapper">
                 <CalendarIcon className="auth-input-icon" />
-                <select name="financialYear" className="elite-select-classic" value={formData.financialYear || ''} onChange={handleInputChange} style={{ color: '#0f172a' }} required>
-                  <option value="">-- Select --</option>
-                  {FINANCIAL_YEARS.map(fy => <option key={fy} value={fy}>{fy}</option>)}
-                </select>
+                <EliteSelect
+                  options={FINANCIAL_YEARS.map(fy => ({ value: fy, label: fy }))}
+                  value={formData.financialYear}
+                  onChange={(val) => setFormData({ ...formData, financialYear: val })}
+                  placeholder="Select"
+                />
               </div>
             </div>
           </div>
@@ -420,7 +747,6 @@ const QuickMasterModal = ({ type, isOpen, onClose, onSuccess, companyId, initial
           <div className="modal-body-elite">
             {renderForm()}
           </div>
-          {error && <p className="error-text-elite">{error}</p>}
           <div className="modal-footer-elite">
             <button type="submit" className="btn-elite" disabled={loading}>
               {loading ? 'Saving...' : (formData._id ? 'Update Record' : (type === 'Bank' ? 'Register Account' : 'Save Record'))}
@@ -434,6 +760,22 @@ const QuickMasterModal = ({ type, isOpen, onClose, onSuccess, companyId, initial
           </div>
         </form>
       </div>
+
+      <EliteStatusModal
+        isOpen={showStatusModal}
+        onClose={() => setShowStatusModal(false)}
+        title={statusConfig.title}
+        message={statusConfig.message}
+        type={statusConfig.type}
+      />
+
+      <ConfirmModal
+        isOpen={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        onConfirm={confirmConfig.onConfirm}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+      />
     </div>
   );
 };

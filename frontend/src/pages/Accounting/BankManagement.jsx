@@ -7,6 +7,7 @@ import PencilIcon from '../../components/icons/PencilIcon';
 import TrashIcon from '../../components/icons/TrashIcon';
 import QuickMasterModal from '../../components/common/QuickMasterModal';
 import ConfirmModal from '../../components/common/ConfirmModal';
+import EliteStatusModal from '../../components/common/EliteStatusModal';
 
 const BankManagement = () => {
   const [banks, setBanks] = useState([]);
@@ -17,6 +18,8 @@ const BankManagement = () => {
   const [deleteModal, setDeleteModal] = useState({ show: false, id: null });
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState('');
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [statusConfig, setStatusConfig] = useState({ title: '', message: '', type: 'info' });
 
   const fetchBanks = async () => {
     try {
@@ -54,7 +57,13 @@ const BankManagement = () => {
       fetchBanks();
     } catch (err) {
       console.error('Error deleting bank', err);
-      alert('Failed to delete bank. Ensure it has no associated transactions.');
+      const msg = err.response?.data?.message || 'Failed to delete bank. Ensure it has no associated transactions.';
+      setStatusConfig({
+        title: 'Deletion Failed',
+        message: msg,
+        type: 'error'
+      });
+      setShowStatusModal(true);
     } finally {
       setDeleting(false);
     }
@@ -177,6 +186,14 @@ const BankManagement = () => {
           confirmText="Yes, Delete"
           loading={deleting}
           variant="danger"
+        />
+
+        <EliteStatusModal 
+          isOpen={showStatusModal}
+          onClose={() => setShowStatusModal(false)}
+          title={statusConfig.title}
+          message={statusConfig.message}
+          type={statusConfig.type}
         />
       </main>
   );

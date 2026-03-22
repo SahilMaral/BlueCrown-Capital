@@ -17,10 +17,10 @@ const getDayReport = asyncHandler(async (req, res, next) => {
 const getLedgerReport = asyncHandler(async (req, res, next) => {
   const { companyId, counterpartyId, counterpartyType, dateFrom, dateTo } = req.query;
   const report = await reportService.getLedgerReport(
-    companyId, 
-    counterpartyId, 
-    counterpartyType, 
-    dateFrom, 
+    companyId,
+    counterpartyId,
+    counterpartyType,
+    dateFrom,
     dateTo,
     req.user.role,
     req.user.clientId
@@ -94,6 +94,44 @@ const getTransactionHistory = asyncHandler(async (req, res, next) => {
   res.status(200).json(new ApiResponse(200, history, 'Transaction history retrieved successfully'));
 });
 
+// @desc    Send Report Email
+// @route   POST /api/v1/reports/email
+// @access  Private
+const sendReportEmail = asyncHandler(async (req, res) => {
+  const { recipientEmail, ccEmail, bccEmail, subject, message, reportType, reportData } = req.body;
+
+  // Note: Attachment handling will be done by receiving a base64 or file upload.
+  // For now, let's assume the frontend sends the PDF as a base64 or we generate it if needed.
+
+  const sendEmail = require('../utils/sendEmail');
+
+  const attachments = [];
+  if (req.file) {
+    attachments.push({
+      filename: req.file.originalname,
+      path: req.file.path
+    });
+  }
+
+  await sendEmail({
+    email: recipientEmail,
+    subject: subject,
+    message: message,
+    html: `<p>${message.replace(/\n/g, '<br>')}</p>`,
+    attachments: attachments
+  });
+
+  // Clean up uploaded file
+  if (req.file) {
+    const fs = require('fs');
+    fs.unlink(req.file.path, (err) => {
+      if (err) console.error('Error deleting attachment:', err);
+    });
+  }
+
+  res.status(200).json(new ApiResponse(200, null, 'Email sent successfully'));
+});
+
 module.exports = {
   getDayReport,
   getLedgerReport,
@@ -104,5 +142,6 @@ module.exports = {
   getInvestmentReport,
   getDashboardStats,
   getTransactionHistory,
-  getSelfTransferData
+  getSelfTransferData,
+  sendReportEmail
 };

@@ -98,7 +98,7 @@
 
 .elite-input-classic, .elite-select-classic, .elite-textarea-classic {
   width: 100%;
-  padding: 16px 20px 16px 56px;
+  padding: 19px 20px 19px 56px;
   border-radius: 18px;
   border: 1px solid #e2e8f0;
   font-family: 'Outfit', sans-serif;
@@ -336,59 +336,89 @@
   }
 }
 
-/* File Upload Custom UI */
-.file-input-wrapper-elite {
-  width: 100%;
-}
-
-.file-input-label-elite {
-  width: 100%;
-  padding: 16px 20px 16px 56px;
+.file-input-container-elite {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 18px 56px;
   border-radius: 18px;
   border: 1px solid #e2e8f0;
-  font-family: 'Outfit', sans-serif;
-  font-size: 15.5px;
-  font-weight: 500;
-  color: #0f172a;
   background: #ffffff;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  min-height: 60px;
 }
 
-.file-input-label-elite:hover {
+.file-input-container-elite:hover {
   border-color: #3b82f6;
   background: #f8fbff;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -10px rgba(59, 130, 246, 0.2);
 }
 
-.file-name-text {
+.file-input-text-elite {
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: #64748b;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 70%;
-  color: #64748b;
+  max-width: 200px;
+  pointer-events: none;
 }
 
-.file-browse-btn {
-  padding: 6px 14px;
+.browse-btn-elite {
+  padding: 10px 18px;
   background: #f1f5f9;
   color: #334155;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 700;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
   transition: all 0.2s;
+  cursor: pointer;
+  pointer-events: none;
+  z-index: 2;
+  border: none;
 }
 
-.file-input-label-elite:hover .file-browse-btn {
+.file-input-container-elite:hover .browse-btn-elite {
   background: #3b82f6;
   color: #ffffff;
 }
 
-.hidden-file-input {
-  display: none;
+/* Crucial fix to hide default browser input but keep it clickable */
+.file-input-hidden-elite {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 10;
+  font-size: 100px; /* Makes the clickable area large across all browsers */
+}
+
+.textarea-icon-elite {
+  top: 24px;
+  transform: none;
+}
+
+/* Popover Animations */
+@keyframes popoverIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(0) scale(0.95); }
+  to { opacity: 1; transform: translateX(-50%) translateY(8px) scale(1); }
+}
+
+.doc-item-hover:hover {
+  background: #f1f5f9 !important;
+  color: #3b82f6 !important;
+  transform: translateX(4px);
 }

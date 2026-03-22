@@ -63,9 +63,9 @@ const ConfirmModal = ({
               fontSize: '14px',
               width: 'auto',
               margin: 0,
-              backgroundColor: variant === 'danger' ? '#ef4444' : '#3b82f6',
+              background: variant === 'danger' ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)' : 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)',
               color: '#ffffff',
-              boxShadow: variant === 'danger' ? '0 4px 12px rgba(239, 68, 68, 0.2)' : '0 4px 12px rgba(59, 130, 246, 0.2)'
+              boxShadow: variant === 'danger' ? '0 8px 20px rgba(239, 68, 68, 0.2)' : '0 8px 20px rgba(37, 99, 235, 0.25)'
             }}
           >
             {loading ? 'Processing...' : confirmText}

@@ -1,6 +1,8 @@
 const express = require('express');
 const reportController = require('../../controllers/reportController');
 const { protect } = require('../../middlewares/authMiddleware');
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
 
 const router = express.Router();
 
@@ -16,5 +18,7 @@ router.get('/investment-report', reportController.getInvestmentReport);
 router.get('/dashboard-stats', reportController.getDashboardStats);
 router.get('/transaction-history', reportController.getTransactionHistory);
 router.get('/self-transfer-data', reportController.getSelfTransferData);
+
+router.post('/email', upload.single('reportAttachment'), reportController.sendReportEmail);
 
 module.exports = router;

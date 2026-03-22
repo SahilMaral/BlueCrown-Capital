@@ -27,6 +27,12 @@ const bankSchema = new mongoose.Schema({
     default: 0,
     min: [0, 'Opening balance cannot be negative']
   },
+  yearlyBalances: [
+    {
+      financialYear: { type: String, required: true },
+      openingBalance: { type: Number, default: 0 }
+    }
+  ],
   currentBalance: {
     type: Number,
     default: 0

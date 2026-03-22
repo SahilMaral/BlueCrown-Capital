@@ -5,36 +5,43 @@ import Select from 'react-select';
 const eliteStyles = {
   control: (base, state) => ({
     ...base,
-    minHeight: '48px',
-    border: 'none',
+    minHeight: '56px',
+    height: '56px',
+    border: state.isFocused ? '1px solid #3b82f6' : '1px solid #e2e8f0',
     borderRadius: '18px',
-    background: 'transparent',
-    boxShadow: 'none',
-    paddingLeft: '44px', /* Room for absolute icon (20px left + 20px width + gap) */
+    background: '#ffffff',
+    boxShadow: state.isFocused 
+      ? '0 12px 24px -10px rgba(59, 130, 246, 0.2), 0 0 0 4px rgba(59, 130, 246, 0.08)' 
+      : '0 2px 4px rgba(0,0,0,0.02)',
+    paddingLeft: '0',
     cursor: 'pointer',
-    transition: 'all 0.25s ease',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    transform: state.isFocused ? 'translateY(-2px)' : 'none',
   }),
   valueContainer: (base) => ({
     ...base,
-    padding: '0 8px',
+    padding: '0 20px 0 56px',
   }),
   singleValue: (base) => ({
     ...base,
     color: '#0f172a',
     fontWeight: 600,
-    fontSize: '15px',
+    fontSize: '15.5px',
     fontFamily: 'Outfit, Inter, sans-serif',
   }),
   placeholder: (base) => ({
     ...base,
     color: '#94a3b8',
-    fontSize: '15px',
+    fontSize: '15.5px',
     fontFamily: 'Outfit, Inter, sans-serif',
   }),
   input: (base) => ({
     ...base,
     color: '#0f172a',
     fontFamily: 'Outfit, Inter, sans-serif',
+    fontSize: '15.5px',
+    margin: 0,
+    padding: 0,
   }),
   menu: (base) => ({
     ...base,
@@ -42,7 +49,7 @@ const eliteStyles = {
     border: '1px solid #e2e8f0',
     boxShadow: '0 20px 60px rgba(15, 23, 42, 0.12), 0 8px 24px rgba(15, 23, 42, 0.06)',
     overflow: 'hidden',
-    zIndex: 9999,
+    zIndex: 11000,
     marginTop: '6px',
   }),
   menuList: (base) => ({
@@ -126,7 +133,8 @@ const EliteSelect = ({
       menuPortalTarget={document.body}
       styles={{
         ...eliteStyles,
-        menuPortal: (base) => ({ ...base, zIndex: 9999 })
+        container: (base) => ({ ...base, width: '100%' }),
+        menuPortal: (base) => ({ ...base, zIndex: 11000 })
       }}
     />
   );

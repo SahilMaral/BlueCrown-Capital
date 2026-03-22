@@ -31,6 +31,10 @@ const companySchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  yearlyCashBalances: [{
+    financialYear: { type: String, required: true },
+    cashOpeningBalance: { type: Number, default: 0 }
+  }],
   financialYear: {
     type: String,
     required: [true, 'Financial year is required']

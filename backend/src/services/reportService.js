@@ -56,19 +56,19 @@ class ReportService {
 
     for (const accId of accountIds) {
       const isCompanyCash = accId.toString() === companyId.toString();
-      
+
       const lastKnownEntry = await Passbook.findOne({
         account: accId,
         dateTime: { $lt: startOfDay }
       }).sort('-dateTime');
-      
+
       let openingBalance = 0;
       if (lastKnownEntry) {
         openingBalance = lastKnownEntry.closingBalance;
       } else {
-        const accDoc = isCompanyCash ? 
+        const accDoc = isCompanyCash ?
           await Company.findById(accId) : await Bank.findById(accId);
-        openingBalance = isCompanyCash ? 
+        openingBalance = isCompanyCash ?
           accDoc.cashOpeningBalance : accDoc.openingBalance;
       }
 
@@ -76,7 +76,7 @@ class ReportService {
       const dayNet = dayTransactions.reduce((sum, t) => sum + t.amount, 0);
       const closingBalance = openingBalance + dayNet;
 
-      const accDoc = isCompanyCash ? 
+      const accDoc = isCompanyCash ?
         await Company.findById(accId) : await Bank.findById(accId);
       const sourceName = isCompanyCash ? 'Cash' : accDoc.bankName;
 
@@ -100,13 +100,36 @@ class ReportService {
     const maxLength = Math.max(receipts.length, payments.length);
     const reportData = [];
     for (let i = 0; i < maxLength; i++) {
+      const r = receipts[i];
+      const p = payments[i];
+
       reportData.push({
-        receipt: receipts[i] || {},
-        payment: payments[i] || {}
+        receipt: r ? {
+          date: r.dateTime,
+          receiptNumber: r.receipt?.receiptNumber || '-',
+          particular: r.isCash ? 'Cash' : (r.account?.bankName || 'Bank'),
+          vchType: 'Receipt',
+          paymentMode: r.receipt?.paymentMode || '-',
+          bankName: r.receipt?.bankName || '',
+          paymentDetails: r.receipt?.paymentDetails || '',
+          narration: r.receipt?.narration || '',
+          amount: r.amount
+        } : {},
+        payment: p ? {
+          date: p.dateTime,
+          paymentNumber: p.payment?.paymentNumber || '-',
+          particular: p.isCash ? 'Cash' : (p.account?.bankName || 'Bank'),
+          vchType: 'Payment',
+          paymentMode: p.payment?.paymentMode || '-',
+          bankName: p.payment?.bankName || '',
+          paymentDetails: p.payment?.paymentDetails || '',
+          narration: p.payment?.narration || '',
+          amount: Math.abs(p.amount)
+        } : {}
       });
     }
 
-    // 6. Calculate Differences (as per kasture-capital logic)
+    // 6. Calculate Differences
     const cashDifference = Math.abs(cashOpeningSum + totalCashReceipts - totalCashPayments);
     const onlineDifference = Math.abs(onlineOpeningSum + totalOnlineReceipts - totalOnlinePayments);
 
@@ -133,7 +156,7 @@ class ReportService {
    */
   async getLedgerReport(companyId, counterpartyId, counterpartyType, dateFrom, dateTo, role, clientId) {
     if (role === 'checker' && counterpartyId !== clientId.toString()) {
-        throw new ApiError(403, 'Unauthorized to access this ledger');
+      throw new ApiError(403, 'Unauthorized to access this ledger');
     }
     const start = new Date(dateFrom);
     start.setHours(0, 0, 0, 0);
@@ -240,12 +263,12 @@ class ReportService {
   async getAdminChargesReport(companyId, investmentId, clientId) {
     // 1. Get Investment details to show in header
     const investment = await Investment.findById(investmentId).populate('client lenderCompany');
-    
+
     // 2. We search for receipts linked to this investment's installments that have the "Admin Charges" ledger
     // Or simpler: find all receipts for this receiver/payer with the "Admin Charges" ledger
     const Ledger = require('../models/Ledger');
     const adminLedger = await Ledger.findOne({ ledgerName: /admin charges/i });
-    
+
     if (!adminLedger) throw new ApiError(404, 'Admin Charges ledger not found');
 
     const receipts = await Receipt.find({
@@ -300,19 +323,19 @@ class ReportService {
   async getInvestmentReport(companyId, investmentId, role, clientId) {
     const InvestmentInstallment = require('../models/InvestmentInstallment');
     const Payment = require('../models/Payment');
-    
+
     const query = { _id: investmentId };
     if (role === 'checker' && clientId) {
-        query.clientId = clientId;
+      query.clientId = clientId;
     }
 
     const investment = await Investment.findOne(query)
       .populate('clientId lenderCompanyId bankId paymentId');
-    
+
     if (!investment) throw new ApiError(404, 'Investment not found');
 
-    const installments = await InvestmentInstallment.find({ 
-      investmentId 
+    const installments = await InvestmentInstallment.find({
+      investmentId
     }).populate('receiptId').sort('installmentNumber');
 
     // Fetch the original payment for the principal (debit)
@@ -386,7 +409,7 @@ class ReportService {
 
     // Map to date -> { income, expense }
     const historyMap = {};
-    
+
     // Fill with last 30 days
     for (let i = 0; i <= 30; i++) {
       const d = new Date();

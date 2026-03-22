@@ -7,6 +7,7 @@ import PencilIcon from '../../components/icons/PencilIcon';
 import TrashIcon from '../../components/icons/TrashIcon';
 import QuickMasterModal from '../../components/common/QuickMasterModal';
 import ConfirmModal from '../../components/common/ConfirmModal';
+import EliteStatusModal from '../../components/common/EliteStatusModal';
 
 const CompanyManagement = () => {
   const [companies, setCompanies] = useState([]);
@@ -17,6 +18,8 @@ const CompanyManagement = () => {
   const [deleteModal, setDeleteModal] = useState({ show: false, id: null });
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState('');
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [statusConfig, setStatusConfig] = useState({ title: '', message: '', type: 'info' });
 
   const fetchCompanies = async () => {
     try {
@@ -54,7 +57,13 @@ const CompanyManagement = () => {
       fetchCompanies();
     } catch (err) {
       console.error('Error deleting company', err);
-      alert('Failed to delete company. It might have associated bank accounts or transactions.');
+      const msg = err.response?.data?.message || 'Failed to delete company. It might have associated records.';
+      setStatusConfig({
+        title: 'Deletion Failed',
+        message: msg,
+        type: 'error'
+      });
+      setShowStatusModal(true);
     } finally {
       setDeleting(false);
     }
@@ -181,6 +190,14 @@ const CompanyManagement = () => {
           confirmText="Yes, Delete"
           loading={deleting}
           variant="danger"
+        />
+
+        <EliteStatusModal 
+          isOpen={showStatusModal}
+          onClose={() => setShowStatusModal(false)}
+          title={statusConfig.title}
+          message={statusConfig.message}
+          type={statusConfig.type}
         />
       </main>
   );

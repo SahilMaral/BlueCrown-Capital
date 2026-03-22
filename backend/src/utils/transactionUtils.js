@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 
 /**
  * Generate a unique document number (Receipt, Payment, Investment, Loan)
+ * Uses pre-configured counters from the Counter management page.
  */
 exports.generateDocumentNumber = async (counterName, date) => {
   const investDate = new Date(date);
@@ -19,15 +20,38 @@ exports.generateDocumentNumber = async (counterName, date) => {
     financialYear = `${year - 1}-${year.toString().slice(-2)}`;
   }
 
-  const counter = await Counter.findOneAndUpdate(
-    { counterName, financialYear },
+  // Default prefixes if no counter is configured
+  const defaultPrefixes = {
+    receipt: 'RCP-',
+    payment: 'PAY-',
+    investment: 'INV-',
+    loan: 'LN-'
+  };
+
+  // Try to find an existing counter for this type + year
+  let counter = await Counter.findOne({ counterName, financialYear });
+
+  if (!counter) {
+    // Auto-create with default prefix so the system keeps working
+    const defaultPrefix = defaultPrefixes[counterName] || `${counterName.toUpperCase().slice(0, 3)}-`;
+    counter = await Counter.create({
+      counterName,
+      prefix: defaultPrefix,
+      financialYear,
+      countNumber: 1
+    });
+  }
+
+  // Atomically increment the counter and get the CURRENT value before increment
+  const updatedCounter = await Counter.findByIdAndUpdate(
+    counter._id,
     { $inc: { countNumber: 1 } },
-    { new: true, upsert: true }
+    { new: false } // Return document BEFORE increment
   );
 
-  const num = counter.countNumber - 1;
-  const formattedNum = num < 10 ? '0' + num : num;
-  return `${counter.prefix}${formattedNum}-${financialYear}`;
+  const num = updatedCounter.countNumber;
+  const formattedNum = String(num).padStart(4, '0');
+  return `${updatedCounter.prefix}${formattedNum}-${financialYear}`;
 };
 
 /**

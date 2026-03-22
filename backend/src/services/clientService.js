@@ -6,27 +6,24 @@ const Payment = require('../models/Payment');
 const ApiError = require('../utils/ApiError');
 
 const createClient = async (clientData) => {
-  // Check if client already exists (Case-insensitive name + mobile)
+  // Check if client already exists
   const query = {
     $or: [
       { 
-        clientName: { $regex: new RegExp(`^${clientData.clientName}$`, 'i') },
-        mobileNo: clientData.mobileNo
+        clientName: { $regex: new RegExp(`^${clientData.clientName.trim()}$`, 'i') },
+        mobileNo: clientData.mobileNo,
+        companyName: clientData.companyName ? { $regex: new RegExp(`^${clientData.companyName.trim()}$`, 'i') } : { $exists: false }
       }
     ]
   };
 
   if (clientData.email) {
-    query.$or.push({ email: clientData.email });
+    query.$or.push({ email: { $regex: new RegExp(`^${clientData.email.trim()}$`, 'i') } });
   }
 
-  const existing = await Client.findOne(query);
-  
-  if (existing) {
-    if (existing.email === clientData.email && clientData.email) {
-      throw new ApiError(400, 'A client with this email already exists');
-    }
-    throw new ApiError(400, 'A client with this name and mobile number already exists');
+  const existingClient = await Client.findOne(query);
+  if (existingClient) {
+    throw new ApiError(400, 'Client with this name/mobile or email already exists');
   }
 
   return await Client.create(clientData);
@@ -44,40 +41,42 @@ const getClientById = async (id) => {
   return client;
 };
 
-const updateClient = async (id, clientData) => {
-  if (clientData.clientName || clientData.mobileNo || clientData.email) {
-    const existingQuery = {
-      _id: { $ne: id },
-      $or: []
-    };
-
-    if (clientData.clientName && clientData.mobileNo) {
-      existingQuery.$or.push({
-        clientName: { $regex: new RegExp(`^${clientData.clientName}$`, 'i') },
-        mobileNo: clientData.mobileNo
-      });
-    }
-
-    if (clientData.email) {
-      existingQuery.$or.push({ email: clientData.email });
-    }
-
-    if (existingQuery.$or.length > 0) {
-      const existing = await Client.findOne(existingQuery);
-      if (existing) {
-        throw new ApiError(400, 'Another client with this name/mobile/email combination already exists');
-      }
-    }
-  }
-
-  const client = await Client.findByIdAndUpdate(id, clientData, {
-    new: true,
-    runValidators: true
-  });
+const updateClient = async (id, updateData) => {
+  const client = await Client.findById(id);
   if (!client) {
     throw new ApiError(404, 'Client not found');
   }
-  return client;
+
+  // If name, mobile, or email is being updated, check for duplicates
+  if (updateData.clientName || updateData.mobileNo || updateData.email || updateData.companyName) {
+    const checkName = (updateData.clientName || client.clientName).trim();
+    const checkMobile = updateData.mobileNo || client.mobileNo;
+    const checkEmail = (updateData.email || client.email)?.trim();
+    const checkCompany = (updateData.companyName || client.companyName)?.trim();
+
+    const query = {
+      _id: { $ne: id },
+      $or: [
+        { 
+          clientName: { $regex: new RegExp(`^${checkName}$`, 'i') },
+          mobileNo: checkMobile,
+          companyName: checkCompany ? { $regex: new RegExp(`^${checkCompany}$`, 'i') } : { $exists: false }
+        }
+      ]
+    };
+
+    if (checkEmail) {
+      query.$or.push({ email: { $regex: new RegExp(`^${checkEmail}$`, 'i') } });
+    }
+
+    const existingClient = await Client.findOne(query);
+    if (existingClient) {
+      throw new ApiError(400, 'Another client with this name/mobile or email already exists');
+    }
+  }
+
+  Object.assign(client, updateData);
+  return await client.save();
 };
 
 const deleteClient = async (id) => {

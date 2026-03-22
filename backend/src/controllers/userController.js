@@ -1,4 +1,6 @@
 const User = require('../models/User');
+const Receipt = require('../models/Receipt');
+const Payment = require('../models/Payment');
 const asyncHandler = require('../utils/asyncHandler');
 const ApiResponse = require('../utils/ApiResponse');
 const ApiError = require('../utils/ApiError');
@@ -42,7 +44,8 @@ const createUser = asyncHandler(async (req, res) => {
     role,
     phone: req.body.phone,
     designation: req.body.designation,
-    clientId: req.body.clientId || null
+    clientId: req.body.clientId || null,
+    photo: req.file ? req.file.filename : null
   });
 
   res.status(201).json(new ApiResponse(201, user, 'User created successfully'));
@@ -79,6 +82,10 @@ const updateUser = asyncHandler(async (req, res) => {
     }
   });
 
+  if (req.file) {
+    updateData.photo = req.file.filename;
+  }
+
   const updatedUser = await User.findByIdAndUpdate(req.params.id, updateData, {
     new: true,
     runValidators: true
@@ -100,6 +107,18 @@ const deleteUser = asyncHandler(async (req, res) => {
   // Prevent self-deletion
   if (user._id.toString() === req.user.id.toString()) {
     throw new ApiError(400, 'You cannot delete your own account');
+  }
+
+  // Check for dependent records in Receipt table
+  const receiptCount = await Receipt.countDocuments({ receivedBy: req.params.id });
+  if (receiptCount > 0) {
+    throw new ApiError(400, 'Cannot delete user: They are referenced in receipt records');
+  }
+
+  // Check for dependent records in Payment table
+  const paymentCount = await Payment.countDocuments({ paidBy: req.params.id });
+  if (paymentCount > 0) {
+    throw new ApiError(400, 'Cannot delete user: They are referenced in payment records');
   }
 
   await User.findByIdAndDelete(req.params.id);

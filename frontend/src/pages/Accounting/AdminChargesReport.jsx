@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../Dashboard/Dashboard.css';
+import './Reports.css';
 import ReportSkeleton from '../../components/common/skeletons/ReportSkeleton';
+import { exportToExcel, formatIndianNumber } from '../../utils/reportUtils';
+import ReportEmailModal from '../../components/common/ReportEmailModal';
+import { Printer, FileSpreadsheet, Mail } from 'lucide-react';
 
 const AdminChargesReport = () => {
   const [report, setReport] = useState(null);
@@ -12,6 +16,7 @@ const AdminChargesReport = () => {
   const [selectedCompany, setSelectedCompany] = useState('');
   const [selectedClient, setSelectedClient] = useState('');
   const [selectedInvestment, setSelectedInvestment] = useState('');
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
 
   useEffect(() => {
     fetchInitialData();
@@ -69,17 +74,77 @@ const AdminChargesReport = () => {
     }
   };
 
+  const handleExportExcel = () => {
+    if (!report) return;
+    const headers = ['Date', 'Voucher #', 'Type', 'Mode', 'Narration', 'Amount'];
+    const transactions = [...report.receipts, ...report.payments].sort((a,b) => new Date(a.dateTime) - new Date(b.dateTime));
+    const data = transactions.map(item => [
+      new Date(item.dateTime).toLocaleDateString(),
+      item.receiptNumber || item.paymentNumber,
+      item.receiptNumber ? 'Receipt' : 'Payment',
+      item.paymentMode,
+      item.narration,
+      item.amount
+    ]);
+    
+    const company = companies.find(c => c._id === selectedCompany);
+    const client = clients.find(c => c._id === selectedClient);
+    const investment = investments.find(i => i._id === selectedInvestment);
+
+    const metaData = [
+      [company?.companyName || 'Admin Charges Report'],
+      [`Client: ${client?.clientName}`],
+      [`Investment: ${investment?.investmentNumber}`],
+      [`Total Collected: ${formatIndianNumber(transactions.reduce((sum, item) => sum + (item.receiptNumber ? item.amount : -item.amount), 0))}`]
+    ];
+
+    exportToExcel(headers, data, `AdminCharges_${investment?.investmentNumber}`, metaData);
+  };
+
+  const getEmailProps = () => {
+    if (!report) return {};
+    const company = companies.find(c => c._id === selectedCompany);
+    const client = clients.find(c => c._id === selectedClient);
+    const investment = investments.find(i => i._id === selectedInvestment);
+    const transactions = [...report.receipts, ...report.payments].sort((a,b) => new Date(a.dateTime) - new Date(b.dateTime));
+
+    return {
+      title: `Admin Charges Report - ${investment?.investmentNumber}`,
+      subTitle: `Client: ${client?.clientName}`,
+      companyName: company?.companyName,
+      fileName: `AdminCharges_${investment?.investmentNumber}`,
+      headers: ['Date', 'Type', 'Ref #', 'Amount'],
+      body: transactions.map(item => [
+        new Date(item.dateTime).toLocaleDateString(),
+        item.receiptNumber ? 'Receipt' : 'Payment',
+        item.receiptNumber || item.paymentNumber,
+        `₹${formatIndianNumber(item.amount)}`
+      ])
+    };
+  };
+
   return (
     <main className="main-content">
-      <header className="dashboard-header">
+      <header className="dashboard-header no-print">
         <div className="welcome-section">
           <h1>Admin Charges Report</h1>
           <p>Track all administrative fees collected from investments.</p>
         </div>
+        <div className="header-actions-elite">
+          <button className="btn-elite secondary" onClick={() => window.print()}>
+            <Printer size={18} /> Print
+          </button>
+          <button className="btn-elite secondary" onClick={handleExportExcel}>
+            <FileSpreadsheet size={18} /> Excel
+          </button>
+          <button className="btn-elite secondary" onClick={() => setIsEmailModalOpen(true)}>
+            <Mail size={18} /> Email
+          </button>
+        </div>
       </header>
 
       <section className="content-section content-section-elite">
-        <div className="filter-card-elite">
+        <div className="filter-card-elite no-print">
           <div className="filter-grid-elite">
             <div className="input-field-elite">
               <label>Our Company</label>
@@ -114,11 +179,18 @@ const AdminChargesReport = () => {
           <ReportSkeleton hasSummaryGrid={true} rows={4} />
         ) : report ? (
           <>
+            <div className="print-only">
+               <center>
+                 <h1>{companies.find(c => c._id === selectedCompany)?.companyName}</h1>
+                 <h3>Admin Charges Report - {investments.find(i => i._id === selectedInvestment)?.investmentNumber}</h3>
+               </center>
+            </div>
+
             <div className="summary-cards-grid">
               <div className="summary-card-elite">
                 <span className="label">Total Collected</span>
                 <span className="value success">
-                  ₹{([...report.receipts, ...report.payments].reduce((sum, item) => sum + (item.receiptNumber ? item.amount : -item.amount), 0)).toLocaleString()}
+                  ₹{formatIndianNumber([...report.receipts, ...report.payments].reduce((sum, item) => sum + (item.receiptNumber ? item.amount : -item.amount), 0))}
                 </span>
               </div>
               <div className="summary-card-elite">
@@ -152,7 +224,7 @@ const AdminChargesReport = () => {
                       <td><span className="badge-elite receipt" style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--elite-blue)' }}>{item.paymentMode}</span></td>
                       <td className="text-secondary">{item.narration}</td>
                       <td className={`text-right font-bold ${item.receiptNumber ? 'success-text' : 'danger-text'}`}>
-                        ₹{item.amount?.toLocaleString()}
+                        ₹{formatIndianNumber(item.amount)}
                       </td>
                     </tr>
                   ))}
@@ -179,6 +251,13 @@ const AdminChargesReport = () => {
           </div>
         )}
       </section>
+
+      <ReportEmailModal 
+        isOpen={isEmailModalOpen}
+        onClose={() => setIsEmailModalOpen(false)}
+        {...getEmailProps()}
+        reportType="AdminChargesReport"
+      />
     </main>
   );
 };

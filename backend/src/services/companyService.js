@@ -7,11 +7,18 @@ const ApiError = require('../utils/ApiError');
 const createCompany = async (companyData) => {
   // Check if company already exists (Case-insensitive)
   const existing = await Company.findOne({ 
-    companyName: { $regex: new RegExp(`^${companyData.companyName}$`, 'i') } 
+    companyName: { $regex: new RegExp(`^${companyData.companyName.trim()}$`, 'i') } 
   });
   if (existing) {
     throw new ApiError(400, 'A company with this name already exists');
   }
+
+  // Sync top-level fields with first yearly balance if available
+  if (companyData.yearlyCashBalances && companyData.yearlyCashBalances.length > 0) {
+    companyData.cashOpeningBalance = companyData.yearlyCashBalances[0].cashOpeningBalance;
+    companyData.financialYear = companyData.yearlyCashBalances[0].financialYear;
+  }
+
   return await Company.create(companyData);
 };
 
@@ -31,11 +38,17 @@ const updateCompany = async (id, companyData) => {
   if (companyData.companyName) {
     const existing = await Company.findOne({ 
       _id: { $ne: id },
-      companyName: { $regex: new RegExp(`^${companyData.companyName}$`, 'i') } 
+      companyName: { $regex: new RegExp(`^${companyData.companyName.trim()}$`, 'i') } 
     });
     if (existing) {
       throw new ApiError(400, 'A company with this name already exists');
     }
+  }
+
+  // Sync top-level fields with first yearly balance if available
+  if (companyData.yearlyCashBalances && companyData.yearlyCashBalances.length > 0) {
+    companyData.cashOpeningBalance = companyData.yearlyCashBalances[0].cashOpeningBalance;
+    companyData.financialYear = companyData.yearlyCashBalances[0].financialYear;
   }
 
   const company = await Company.findByIdAndUpdate(id, companyData, {

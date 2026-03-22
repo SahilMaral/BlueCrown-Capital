@@ -100,8 +100,8 @@ const EliteStatusModal = ({
           className="btn-elite" 
           onClick={onClose}
           style={{ 
-            background: type === 'error' ? '#ef4444' : 'linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)',
-            boxShadow: type === 'error' ? '0 8px 20px rgba(239, 68, 68, 0.2)' : '0 8px 20px rgba(30, 64, 175, 0.25)'
+            background: type === 'error' ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)' : 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)',
+            boxShadow: type === 'error' ? '0 8px 20px rgba(239, 68, 68, 0.2)' : '0 8px 20px rgba(37, 99, 235, 0.25)'
           }}
         >
           {buttonText}

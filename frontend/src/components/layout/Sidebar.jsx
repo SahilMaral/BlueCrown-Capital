@@ -181,7 +181,7 @@ const Sidebar = ({ isOpen, onClose }) => {
           </NavLink>
 
           {/* Day Book - Hidden for checker */}
-          {user?.role !== 'checker' && (
+          {user?.role?.toLowerCase() !== 'checker' && (
             <>
               <div
                 className="sidebar-section-label"
@@ -259,7 +259,7 @@ const Sidebar = ({ isOpen, onClose }) => {
               <PiggyBankIcon />
               Investment
             </NavLink>
-            {user?.role !== 'checker' && (
+            {user?.role?.toLowerCase() !== 'checker' && (
               <NavLink to="/investment/entry" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                 <ReceiptIcon />
                 Investment Collection
@@ -300,7 +300,7 @@ const Sidebar = ({ isOpen, onClose }) => {
               <LoanIcon />
               Loan
             </NavLink>
-            {user?.role !== 'checker' && (
+            {user?.role?.toLowerCase() !== 'checker' && (
               <NavLink to="/loan/reminders" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                 <CalendarIcon />
                 Loan Reminder
@@ -337,7 +337,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             overflow: 'hidden',
             transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
           }}>
-            {user?.role !== 'checker' && (
+            {user?.role?.toLowerCase() !== 'checker' && (
               <NavLink to="/accounting/day-report" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                 <AnalyticsIcon />
                 Day Report
@@ -347,7 +347,7 @@ const Sidebar = ({ isOpen, onClose }) => {
               <LedgerIcon />
               Ledger Report
             </NavLink>
-            {user?.role !== 'checker' && (
+            {user?.role?.toLowerCase() !== 'checker' && (
               <>
                 <NavLink to="/accounting/cancel-receipt-report" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                   <ReceiptIcon />
@@ -374,7 +374,7 @@ const Sidebar = ({ isOpen, onClose }) => {
           </div>
 
           {/* Setting Section - Hidden for checker */}
-          {user?.role !== 'checker' && (
+          {user?.role?.toLowerCase() !== 'checker' && (
             <>
               <div
                 className="sidebar-section-label"
@@ -421,14 +421,14 @@ const Sidebar = ({ isOpen, onClose }) => {
                   Client
                 </NavLink>
                 {/* User management restricted to super_admin and admin */}
-                {(user?.role === 'super_admin' || user?.role === 'admin') && (
+                {(user?.role?.toLowerCase() === 'super_admin' || user?.role?.toLowerCase() === 'admin') && (
                   <NavLink to="/accounting/users" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                     <UserIcon />
                     User
                   </NavLink>
                 )}
                 {/* Counter restricted to super_admin */}
-                {user?.role === 'super_admin' && (
+                {user?.role?.toLowerCase() === 'super_admin' && (
                   <NavLink to="/accounting/counters" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                     <BriefcaseIcon />
                     Counter

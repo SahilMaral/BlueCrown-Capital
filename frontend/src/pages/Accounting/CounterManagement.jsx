@@ -105,7 +105,7 @@ const CounterManagement = () => {
             <table className="elite-table">
               <thead>
                 <tr>
-                  <th style={{ width: '80px' }}>Sr. No.</th>
+                  <th style={{ width: '80px', paddingLeft: '32px' }}>Sr. No.</th>
                   <th>Counter Type</th>
                   <th>Prefix</th>
                   <th>Next Number</th>
@@ -126,7 +126,7 @@ const CounterManagement = () => {
                 ) : (
                   filteredCounters.map((c, idx) => (
                     <tr key={c._id}>
-                      <td style={{ fontWeight: 600 }}>{idx + 1}.</td>
+                      <td style={{ paddingLeft: '32px', fontWeight: 600 }}>{idx + 1}.</td>
                       <td style={{ 
                         fontWeight: 800, 
                         color: 'var(--elite-blue)',

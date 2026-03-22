@@ -7,6 +7,7 @@ import PencilIcon from '../../components/icons/PencilIcon';
 import TrashIcon from '../../components/icons/TrashIcon';
 import QuickMasterModal from '../../components/common/QuickMasterModal';
 import ConfirmModal from '../../components/common/ConfirmModal';
+import EliteStatusModal from '../../components/common/EliteStatusModal';
 
 const LedgerManagement = () => {
   const [ledgers, setLedgers] = useState([]);
@@ -17,6 +18,8 @@ const LedgerManagement = () => {
   const [deleteModal, setDeleteModal] = useState({ show: false, id: null });
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState('');
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [statusConfig, setStatusConfig] = useState({ title: '', message: '', type: 'info' });
 
   const fetchLedgers = async () => {
     try {
@@ -54,7 +57,13 @@ const LedgerManagement = () => {
       fetchLedgers();
     } catch (err) {
       console.error('Error deleting ledger', err);
-      alert('Failed to delete ledger. It might have associated transactions.');
+      const msg = err.response?.data?.message || 'Failed to delete ledger. It might have associated transactions.';
+      setStatusConfig({
+        title: 'Delete Failed',
+        message: msg,
+        type: 'error'
+      });
+      setShowStatusModal(true);
     } finally {
       setDeleting(false);
     }
@@ -176,6 +185,14 @@ const LedgerManagement = () => {
           confirmText="Yes, Delete"
           loading={deleting}
           variant="danger"
+        />
+
+        <EliteStatusModal 
+          isOpen={showStatusModal}
+          onClose={() => setShowStatusModal(false)}
+          title={statusConfig.title}
+          message={statusConfig.message}
+          type={statusConfig.type}
         />
       </main>
   );

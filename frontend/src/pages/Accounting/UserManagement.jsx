@@ -100,7 +100,7 @@ const UserManagement = () => {
         </header>
 
         <section className="content-section" style={{ padding: 0 }}>
-          <div className="section-header" style={{ padding: '24px 32px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="section-header" style={{ padding: '32px 32px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h2>System Users</h2>
             <div className="search-container-elite">
               <SearchIcon className="search-icon-elite" />
@@ -118,14 +118,12 @@ const UserManagement = () => {
             <table className="elite-table">
               <thead>
                 <tr>
-                  <th style={{ width: '80px' }}>Sr.</th>
+                  <th style={{ width: '80px', paddingLeft: '32px' }}>Sr. No.</th>
                   <th>Full Name</th>
-                  <th>Username</th>
-                  <th>Email</th>
-                  <th>Designation</th>
+                  <th>User Details</th>
+                  <th>Designation & Details</th>
                   <th>Role</th>
                   <th>Status</th>
-                  <th>Created At</th>
                   <th style={{ textAlign: 'center' }}>Actions</th>
                 </tr>
               </thead>
@@ -133,21 +131,43 @@ const UserManagement = () => {
                 {loading ? (
                    [1, 2, 3].map((i) => (
                     <tr key={`sk-${i}`}>
-                      <td colSpan="9">
-                        <div className="skeleton-row skeleton"></div>
+                      <td colSpan="7" style={{ padding: '8px 32px' }}>
+                        <div className="skeleton-row skeleton" style={{ margin: 0, height: '60px', borderRadius: '12px' }}></div>
                       </td>
                     </tr>
                   ))
                 ) : (
                   filteredUsers.map((u, idx) => (
                     <tr key={u._id}>
-                      <td className="font-bold">{idx + 1}.</td>
-                      <td className="font-extrabold text-primary">{u.name || `User (${u.username})`}</td>
-                      <td className="text-secondary">@{u.username}</td>
-                      <td className="text-secondary opacity-80">{u.email}</td>
-                      <td className="font-semibold">{u.designation || '-'}</td>
+                      <td style={{ paddingLeft: '32px', fontWeight: 600 }}>{idx + 1}.</td>
                       <td>
-                        <span className={`role-badge-elite role-badge-${u.role}`}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{ width: '32px', height: '32px', borderRadius: '8px', overflow: 'hidden', background: '#f1f5f9', flexShrink: 0 }}>
+                            {u.photo ? (
+                              <img src={`${import.meta.env.VITE_API_URL.replace('/api/v1', '')}/uploads/${u.photo}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
+                                <UserIcon className="icon-xs" />
+                              </div>
+                            )}
+                          </div>
+                          <span style={{ fontWeight: 800, color: 'var(--elite-blue)' }}>{u.name || `User (@${u.username})`}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <span style={{ fontWeight: 600 }}>@{u.username}</span>
+                          <span style={{ fontSize: '12px', opacity: 0.7 }}>{u.email}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ fontWeight: 600 }}>{u.designation || 'Staff'}</span>
+                          <span style={{ fontSize: '11px', opacity: 0.6 }}>{new Date(u.createdAt).toLocaleDateString()}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <span className={`role-badge-elite role-badge-${u.role?.toLowerCase()}`}>
                           <ShieldIcon className="icon-xs" />
                           {u.role}
                         </span>
@@ -163,7 +183,6 @@ const UserManagement = () => {
                           </span>
                         </button>
                       </td>
-                      <td className="text-secondary">{new Date(u.createdAt).toLocaleDateString()}</td>
                       <td>
                         <div className="flex justify-center gap-2">
                           <button 
@@ -187,7 +206,7 @@ const UserManagement = () => {
                 )}
                 {!loading && filteredUsers.length === 0 && (
                   <tr>
-                    <td colSpan="9" className="text-center py-20 text-secondary">
+                    <td colSpan="7" style={{ padding: '60px', textAlign: 'center', color: 'var(--elite-text-secondary)' }}>
                       No users found.
                     </td>
                   </tr>

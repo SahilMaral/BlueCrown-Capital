@@ -121,26 +121,26 @@ const LoanForm = () => {
 
   return (
     <main className="main-content">
-        <header className="dashboard-header">
-          <div className="welcome-section">
-            <h1>Loan Configuration</h1>
-            <p>Initialize a new corporate credit facility.</p>
+      <header className="dashboard-header">
+        <div className="welcome-section">
+          <h1>Loan Configuration</h1>
+          <p>Initialize a new corporate credit facility.</p>
+        </div>
+      </header>
+
+      <section className="content-section">
+        <div className="section-header">
+          <h2>New Loan Entry</h2>
+        </div>
+
+        {message && (
+          <div className={`auth-error ${message.type === 'success' ? 'success' : ''}`} style={{ marginBottom: '24px', background: message.type === 'success' ? '#f0fdf4' : '#fef2f2', borderColor: message.type === 'success' ? '#bbf7d0' : '#fee2e2', color: message.type === 'success' ? '#166534' : '#b91c1c' }}>
+            {message.text}
           </div>
-        </header>
+        )}
 
-        <section className="content-section">
-          <div className="section-header">
-            <h2>New Loan Entry</h2>
-          </div>
-
-          {message && (
-            <div className={`auth-error ${message.type === 'success' ? 'success' : ''}`} style={{ marginBottom: '24px', background: message.type === 'success' ? '#f0fdf4' : '#fef2f2', borderColor: message.type === 'success' ? '#bbf7d0' : '#fee2e2', color: message.type === 'success' ? '#166534' : '#b91c1c' }}>
-              {message.text}
-            </div>
-          )}
-
-          <form className="elite-form-padding" onSubmit={handleSubmit}>
-            <div className="form-grid-elite">
+        <form className="elite-form-padding" onSubmit={handleSubmit}>
+          <div className="form-grid-elite">
             {/* Company Selection */}
             <div className="auth-input-group has-quick-add">
               <label className="form-label-elite">Company</label>
@@ -150,7 +150,7 @@ const LoanForm = () => {
                   options={masters.companies.map(c => ({ value: c._id, label: c.companyName }))}
                   value={formData.companyId}
                   onChange={handleCompanyChange}
-                  placeholder="-- Select Company --"
+                  placeholder="Select Company"
                 />
                 <button type="button" className="quick-add-btn" onClick={() => setModalType('Company')}>
                   <PlusCircleIcon size={16} />
@@ -167,7 +167,7 @@ const LoanForm = () => {
                   options={masters.banks.map(b => ({ value: b._id, label: b.bankName }))}
                   value={formData.bankId}
                   onChange={(val) => setFormData({ ...formData, bankId: val })}
-                  placeholder="-- Select Bank --"
+                  placeholder="Select Bank"
                   isDisabled={!formData.companyId}
                 />
                 <button type="button" className="quick-add-btn" onClick={() => setModalType('Bank')} disabled={!formData.companyId}>
@@ -185,7 +185,7 @@ const LoanForm = () => {
                   options={masters.clients.map(c => ({ value: c._id, label: c.clientName }))}
                   value={formData.clientId}
                   onChange={(val) => setFormData({ ...formData, clientId: val })}
-                  placeholder="-- Select Client --"
+                  placeholder="Select Client"
                 />
                 <button type="button" className="quick-add-btn" onClick={() => setModalType('Client')}>
                   <PlusCircleIcon size={16} />
@@ -198,12 +198,12 @@ const LoanForm = () => {
               <label className="form-label-elite">Tenure (Months)</label>
               <div className="auth-input-wrapper">
                 <ClockIcon className="auth-input-icon" />
-                <input 
-                  type="number" 
-                  placeholder="24" 
+                <input
+                  type="number"
+                  placeholder="24"
                   value={formData.tenure}
-                  onChange={(e) => setFormData({...formData, tenure: e.target.value})}
-                  required 
+                  onChange={(e) => setFormData({ ...formData, tenure: e.target.value })}
+                  required
                 />
               </div>
             </div>
@@ -213,12 +213,12 @@ const LoanForm = () => {
               <label className="form-label-elite">Principal Amount</label>
               <div className="auth-input-wrapper">
                 <RupeeIcon className="auth-input-icon" />
-                <input 
-                  type="number" 
-                  placeholder="₹0.00" 
+                <input
+                  type="number"
+                  placeholder="₹0.00"
                   value={formData.principalAmount}
-                  onChange={(e) => setFormData({...formData, principalAmount: e.target.value})}
-                  required 
+                  onChange={(e) => setFormData({ ...formData, principalAmount: e.target.value })}
+                  required
                 />
               </div>
             </div>
@@ -228,12 +228,12 @@ const LoanForm = () => {
               <label className="form-label-elite">Total Repayment Amount</label>
               <div className="auth-input-wrapper">
                 <RupeeIcon className="auth-input-icon" />
-                <input 
-                  type="number" 
-                  placeholder="₹0.00" 
+                <input
+                  type="number"
+                  placeholder="₹0.00"
                   value={formData.totalAmount}
-                  onChange={(e) => setFormData({...formData, totalAmount: e.target.value})}
-                  required 
+                  onChange={(e) => setFormData({ ...formData, totalAmount: e.target.value })}
+                  required
                 />
               </div>
             </div>
@@ -243,13 +243,13 @@ const LoanForm = () => {
               <label className="form-label-elite">Rate of Interest (%)</label>
               <div className="auth-input-wrapper">
                 <TrendingUpIcon className="auth-input-icon" />
-                <input 
-                  type="number" 
-                  step="0.01" 
-                  placeholder="10.5" 
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="10.5"
                   value={formData.rateOfInterest}
-                  onChange={(e) => setFormData({...formData, rateOfInterest: e.target.value})}
-                  required 
+                  onChange={(e) => setFormData({ ...formData, rateOfInterest: e.target.value })}
+                  required
                 />
               </div>
             </div>
@@ -259,11 +259,11 @@ const LoanForm = () => {
               <label className="form-label-elite">EMI Start Date</label>
               <div className="auth-input-wrapper">
                 <CalendarIcon className="auth-input-icon" />
-                <input 
-                  type="date" 
+                <input
+                  type="date"
                   value={formData.dateOfPayment}
-                  onChange={(e) => setFormData({...formData, dateOfPayment: e.target.value})}
-                  required 
+                  onChange={(e) => setFormData({ ...formData, dateOfPayment: e.target.value })}
+                  required
                 />
               </div>
             </div>
@@ -288,21 +288,21 @@ const LoanForm = () => {
               <label className="form-label-elite">Repayment Schedule</label>
               <div className="elite-radio-group" style={{ height: '52px', display: 'flex', alignItems: 'center', gap: '20px' }}>
                 <label className="elite-radio-label">
-                  <input 
-                    type="radio" 
-                    name="loanSchedule" 
+                  <input
+                    type="radio"
+                    name="loanSchedule"
                     value={2}
                     checked={formData.isInterestOrPrincipal === 2}
-                    onChange={() => setFormData({...formData, isInterestOrPrincipal: 2})}
+                    onChange={() => setFormData({ ...formData, isInterestOrPrincipal: 2 })}
                   /> Only Interest
                 </label>
                 <label className="elite-radio-label">
-                  <input 
-                    type="radio" 
-                    name="loanSchedule" 
+                  <input
+                    type="radio"
+                    name="loanSchedule"
                     value={1}
                     checked={formData.isInterestOrPrincipal === 1}
-                    onChange={() => setFormData({...formData, isInterestOrPrincipal: 1})}
+                    onChange={() => setFormData({ ...formData, isInterestOrPrincipal: 1 })}
                   /> Principal + Interest
                 </label>
               </div>
@@ -311,35 +311,35 @@ const LoanForm = () => {
             <div className="auth-input-group elite-full-width">
               <label className="form-label-elite">Loan Reason / Remarks</label>
               <div className="auth-input-wrapper">
-                <textarea 
+                <textarea
                   className="elite-textarea-classic"
                   placeholder="Reason for taking loan..."
                   value={formData.loanReason}
-                  onChange={(e) => setFormData({...formData, loanReason: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, loanReason: e.target.value })}
                   style={{ minHeight: '80px', padding: '12px 20px' }}
                 />
               </div>
             </div>
 
-            </div>
+          </div>
 
-            <div style={{ display: 'flex', gap: '16px', marginTop: '16px' }}>
-              <button type="submit" className="btn-elite-primary" disabled={submitting}>
-                {submitting ? 'Initializing...' : 'Activate Credit'}
-              </button>
-              <button type="button" className="btn-elite-outline" onClick={() => window.history.back()}>Discard</button>
-            </div>
-          </form>
-        </section>
+          <div style={{ display: 'flex', gap: '16px', marginTop: '16px' }}>
+            <button type="submit" className="btn-elite-primary" disabled={submitting}>
+              {submitting ? 'Initializing...' : 'Activate Credit'}
+            </button>
+            <button type="button" className="btn-elite-outline" onClick={() => window.history.back()}>Discard</button>
+          </div>
+        </form>
+      </section>
 
-        <QuickMasterModal
-          type={modalType}
-          isOpen={!!modalType}
-          onClose={() => setModalType(null)}
-          onSuccess={handleQuickAddSuccess}
-          companyId={modalType === 'Bank' ? formData.companyId : undefined}
-        />
-      </main>
+      <QuickMasterModal
+        type={modalType}
+        isOpen={!!modalType}
+        onClose={() => setModalType(null)}
+        onSuccess={handleQuickAddSuccess}
+        companyId={modalType === 'Bank' ? formData.companyId : undefined}
+      />
+    </main>
   );
 };
 
