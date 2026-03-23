@@ -4,13 +4,10 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const { errorHandler, notFound } = require('./middlewares/errorMiddleware');
-const path = require('path');
 const routes = require('./routes/v1');
 
 const app = express();
 
-// Set static folder
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Request Interceptor for Debugging
 app.use((req, res, next) => {
