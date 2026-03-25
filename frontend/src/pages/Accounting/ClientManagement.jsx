@@ -10,6 +10,7 @@ import CloseIcon from '../../components/icons/CloseIcon';
 import QuickMasterModal from '../../components/common/QuickMasterModal';
 import ConfirmModal from '../../components/common/ConfirmModal';
 import EliteStatusModal from '../../components/common/EliteStatusModal';
+import { openDocument } from '../../utils/fileUtils';
 
 const ClientManagement = () => {
   const [clients, setClients] = useState([]);
@@ -265,7 +266,7 @@ const ClientManagement = () => {
                   {docModal.documents.map((doc, idx) => (
                     <div 
                       key={idx} 
-                      onClick={() => window.open(`${window.location.origin}/${doc.replace(/^\//, '')}`, '_blank')}
+                      onClick={() => openDocument(doc)}
                       className="doc-item-hover"
                       style={{ 
                         display: 'flex', 

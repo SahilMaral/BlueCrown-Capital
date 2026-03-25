@@ -16,6 +16,7 @@ import PhoneIcon from '../icons/PhoneIcon';
 import EliteSelect from './EliteSelect';
 import EliteStatusModal from './EliteStatusModal';
 import ConfirmModal from './ConfirmModal';
+import { openDocument } from '../../utils/fileUtils';
 import './QuickMasterModal.css';
 
 const FINANCIAL_YEARS = ['2023-24', '2024-25', '2025-26', '2026-27'];
@@ -365,15 +366,13 @@ const QuickMasterModal = ({ type, isOpen, onClose, onSuccess, companyId, initial
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px', marginTop: '8px' }}>
                   {formData.documents.map((doc, idx) => (
                     <div key={idx} className="document-chip-elite" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', background: '#f8fafc', border: '1px solid #f1f5f9', borderRadius: '12px' }}>
-                      <a
-                        href={`${window.location.origin}/${doc.replace(/^\//, '')}`}
-                        target="_blank"
-                        rel="noreferrer"
+                      <div
+                        onClick={() => openDocument(doc)}
                         style={{ fontSize: '11px', fontWeight: 600, color: 'var(--elite-blue)', textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '140px', cursor: 'pointer' }}
                         title="View Document"
                       >
-                        {doc.split('/').pop()}
-                      </a>
+                        {doc.startsWith('data:') ? 'View Document' : doc.split('/').pop()}
+                      </div>
                       <button
                         type="button"
                         title="Delete Document"
@@ -656,7 +655,7 @@ const QuickMasterModal = ({ type, isOpen, onClose, onSuccess, companyId, initial
                 <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div style={{ width: '48px', height: '48px', borderRadius: '12px', overflow: 'hidden', border: '2px solid #f1f5f9' }}>
                     <img 
-                      src={formData.photo instanceof File ? URL.createObjectURL(formData.photo) : `${window.location.origin}/uploads/${formData.photo}`} 
+                      src={formData.photo instanceof File ? URL.createObjectURL(formData.photo) : (formData.photo?.startsWith('data:') ? formData.photo : `${window.location.origin}/uploads/${formData.photo}`)} 
                       alt="Preview" 
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                     />

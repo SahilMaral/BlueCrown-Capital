@@ -21,7 +21,7 @@ const Settings = () => {
         designation: user?.designation || '',
     });
     const [photo, setPhoto] = useState(null);
-    const [preview, setPreview] = useState(user?.photo ? `${import.meta.env.VITE_API_URL.replace('/api/v1', '')}/uploads/${user.photo}` : null);
+    const [preview, setPreview] = useState(user?.photo ? (user.photo.startsWith('data:') ? user.photo : `${import.meta.env.VITE_API_URL.replace('/api/v1', '')}/uploads/${user.photo}`) : null);
     
     const [passwordData, setPasswordData] = useState({
         currentPassword: '',

@@ -4,6 +4,22 @@ const Payment = require('../models/Payment');
 const asyncHandler = require('../utils/asyncHandler');
 const ApiResponse = require('../utils/ApiResponse');
 const ApiError = require('../utils/ApiError');
+const fs = require('fs');
+const path = require('path');
+
+// Helper to process memory-storage or disk-storage files to base64 data URIs
+const processUserFile = (file) => {
+  if (!file) return null;
+  
+  if (file.buffer) {
+    // Memory storage (Vercel)
+    const base64 = file.buffer.toString('base64');
+    const mimeType = file.mimetype;
+    return `data:${mimeType};base64,${base64}`;
+  }
+  
+  return file.filename;
+};
 
 // @desc    Get all users
 // @route   GET /api/v1/users
@@ -45,7 +61,7 @@ const createUser = asyncHandler(async (req, res) => {
     phone: req.body.phone,
     designation: req.body.designation,
     clientId: req.body.clientId || null,
-    photo: req.file ? req.file.filename : null
+    photo: processUserFile(req.file)
   });
 
   res.status(201).json(new ApiResponse(201, user, 'User created successfully'));
@@ -83,7 +99,7 @@ const updateUser = asyncHandler(async (req, res) => {
   });
 
   if (req.file) {
-    updateData.photo = req.file.filename;
+    updateData.photo = processUserFile(req.file);
   }
 
   const updatedUser = await User.findByIdAndUpdate(req.params.id, updateData, {
