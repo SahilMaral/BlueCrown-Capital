@@ -109,7 +109,7 @@ const sendReportEmail = asyncHandler(async (req, res) => {
   if (req.file) {
     attachments.push({
       filename: req.file.originalname,
-      path: req.file.path
+      content: req.file.buffer
     });
   }
 
@@ -120,14 +120,6 @@ const sendReportEmail = asyncHandler(async (req, res) => {
     html: `<p>${message.replace(/\n/g, '<br>')}</p>`,
     attachments: attachments
   });
-
-  // Clean up uploaded file
-  if (req.file) {
-    const fs = require('fs');
-    fs.unlink(req.file.path, (err) => {
-      if (err) console.error('Error deleting attachment:', err);
-    });
-  }
 
   res.status(200).json(new ApiResponse(200, null, 'Email sent successfully'));
 });

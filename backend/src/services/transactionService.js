@@ -291,7 +291,7 @@ const deleteReceipt = async (id) => {
 /**
  * Send Receipt Email
  */
-const sendReceiptEmail = async (receiptId) => {
+const sendReceiptEmail = async (receiptId, attachment) => {
   const receipt = await Receipt.findById(receiptId)
     .populate('payer')
     .populate('receiver')
@@ -352,21 +352,21 @@ const sendReceiptEmail = async (receiptId) => {
     </div>
   `;
 
-  // PDF attachment is not generated on the server (not supported in serverless).
-  // The frontend handles receipt PDF export via the browser's print view.
-  const pdfBuffer = null;
+  // PDF attachment handling
+  const pdfAttachments = [];
+  if (attachment) {
+    pdfAttachments.push({
+      filename: attachment.originalname || `Receipt_${receipt.receiptNumber}.pdf`,
+      content: attachment.buffer,
+      contentType: 'application/pdf'
+    });
+  }
 
   await sendEmail({
     email: receipt.payer?.email || process.env.FROM_EMAIL,
     subject: `Receipt Voucher - ${receipt.receiptNumber}`,
     html,
-    attachments: pdfBuffer ? [
-      {
-        filename: `Receipt_${receipt.receiptNumber}.pdf`,
-        content: pdfBuffer,
-        contentType: 'application/pdf'
-      }
-    ] : []
+    attachments: pdfAttachments
   });
 };
 

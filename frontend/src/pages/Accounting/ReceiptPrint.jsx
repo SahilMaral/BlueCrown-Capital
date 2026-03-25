@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
 import LogoIcon from '../../components/icons/LogoIcon';
 import EliteStatusModal from '../../components/common/EliteStatusModal';
+import { generateVoucherPDF } from '../../utils/reportUtils';
 import './ReceiptPrint.css'; // We will create this or use inline styles
 
 // Helper function to convert Indian Rupees Number to Words
@@ -62,9 +63,22 @@ const ReceiptPrint = () => {
     try {
       setSending(true);
       const token = localStorage.getItem('token');
+      
+      // 1. Generate PDF
+      const amountInWords = numberToWords(Math.floor(receipt.amount || 0));
+      const pdfBlob = generateVoucherPDF({ ...receipt, amountInWords });
+      const pdfFile = new File([pdfBlob], `Receipt_${receipt.receiptNumber}.pdf`, { type: 'application/pdf' });
+
+      // 2. Prepare FormData
+      const formData = new FormData();
+      formData.append('pdfAttachment', pdfFile);
+
       const url = `${import.meta.env.VITE_API_URL}/receipts/${id}/send-email`;
-      await axios.post(url, {}, {
-        headers: { Authorization: `Bearer ${token}` }
+      await axios.post(url, formData, {
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
       });
       setStatusModal({
         show: true,

@@ -93,7 +93,7 @@ const deleteReceipt = asyncHandler(async (req, res) => {
 });
 
 const sendReceiptEmail = asyncHandler(async (req, res) => {
-  await transactionService.sendReceiptEmail(req.params.id);
+  await transactionService.sendReceiptEmail(req.params.id, req.file);
   res.status(200).json(new ApiResponse(200, null, 'Receipt email sent successfully'));
 });
 
