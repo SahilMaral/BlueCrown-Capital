@@ -131,6 +131,11 @@ const QuickMasterModal = ({ type, isOpen, onClose, onSuccess, companyId, initial
         payload.clientName = payload.clientName.trim();
       }
 
+      // Ensure financialYear is set for Bank and Company from the first entry of yearlyBalances
+      if ((type === 'Bank' || type === 'Company') && payload.yearlyBalances && payload.yearlyBalances.length > 0) {
+        payload.financialYear = payload.yearlyBalances[0].financialYear;
+      }
+
       let res;
       const config = {
         headers: { Authorization: `Bearer ${token}` }

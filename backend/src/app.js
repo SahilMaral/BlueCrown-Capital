@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
@@ -14,6 +15,9 @@ app.use((req, res, next) => {
   console.log(`Incoming Request: ${req.method} ${req.url}`);
   next();
 });
+
+// Serve static files from 'uploads' directory
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Set security HTTP headers
 app.use(helmet());

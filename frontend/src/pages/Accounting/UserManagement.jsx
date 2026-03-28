@@ -144,7 +144,11 @@ const UserManagement = () => {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <div style={{ width: '32px', height: '32px', borderRadius: '8px', overflow: 'hidden', background: '#f1f5f9', flexShrink: 0 }}>
                             {u.photo ? (
-                              <img src={`${import.meta.env.VITE_API_URL.replace('/api/v1', '')}/uploads/${u.photo}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              <img 
+                                src={u.photo.startsWith('data:') ? u.photo : `${window.location.origin}/uploads/${u.photo}`} 
+                                alt="" 
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                              />
                             ) : (
                               <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
                                 <UserIcon className="icon-xs" />
