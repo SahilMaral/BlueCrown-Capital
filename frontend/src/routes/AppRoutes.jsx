@@ -36,6 +36,8 @@ const ReceiptEdit = lazy(() => import('../pages/Accounting/ReceiptEdit'));
 const ReceiptPrint = lazy(() => import('../pages/Accounting/ReceiptPrint'));
 const PaymentView = lazy(() => import('../pages/Accounting/PaymentView'));
 const PaymentEntry = lazy(() => import('../pages/Accounting/PaymentEntry'));
+const PaymentEdit = lazy(() => import('../pages/Accounting/PaymentEdit'));
+const PaymentPrint = lazy(() => import('../pages/Accounting/PaymentPrint'));
 const SelfTransfer = lazy(() => import('../pages/Accounting/SelfTransfer'));
 const DayReport = lazy(() => import('../pages/Accounting/DayReport'));
 const LedgerReport = lazy(() => import('../pages/Accounting/LedgerReport'));
@@ -79,6 +81,7 @@ const AppRoutes = () => {
       <Route element={<ProtectedRoute />}>
         {/* Print routes (No Layout) */}
         <Route path="/accounting/receipts/print/:id" element={<Suspense fallback={<div style={{padding: '40px', textAlign: 'center'}}>Preparing voucher...</div>}><ReceiptPrint /></Suspense>} />
+        <Route path="/accounting/payments/print/:id" element={<Suspense fallback={<div style={{padding: '40px', textAlign: 'center'}}>Preparing voucher...</div>}><PaymentPrint /></Suspense>} />
 
         <Route element={<MainLayout />}>
            <Route path="/dashboard" element={<Suspense fallback={<DashboardSkeleton />}><Dashboard /></Suspense>} />
@@ -110,6 +113,7 @@ const AppRoutes = () => {
           
           <Route path="/accounting/payments" element={<Suspense fallback={<TableSkeleton />}><PaymentView /></Suspense>} />
           <Route path="/accounting/payments/new" element={<Suspense fallback={<FormSkeleton />}><PaymentEntry /></Suspense>} />
+          <Route path="/accounting/payments/edit/:id" element={<Suspense fallback={<FormSkeleton />}><PaymentEdit /></Suspense>} />
           <Route path="/accounting/self-transfer" element={<Suspense fallback={<FormSkeleton />}><SelfTransfer /></Suspense>} />
           <Route path="/accounting/day-report" element={<Suspense fallback={<TableSkeleton />}><DayReport /></Suspense>} />
           <Route path="/accounting/ledger-report" element={<Suspense fallback={<TableSkeleton />}><LedgerReport /></Suspense>} />

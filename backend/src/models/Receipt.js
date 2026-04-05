@@ -71,6 +71,17 @@ const receiptSchema = new mongoose.Schema({
   paymentId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Payment'
+  },
+  investmentInstallmentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'InvestmentInstallment'
+  },
+  investmentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Investment'
+  },
+  investmentType: {
+    type: String
   }
 }, {
   timestamps: true

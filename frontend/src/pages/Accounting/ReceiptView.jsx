@@ -2,24 +2,26 @@ import React, { useState, useEffect } from 'react';
 import useDocumentTitle from '../../hooks/useDocumentTitle';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import '../Dashboard/Dashboard.css';
 import SearchIcon from '../../components/icons/SearchIcon';
-import CloseIcon from '../../components/icons/CloseIcon';
 import ConfirmModal from '../../components/common/ConfirmModal';
 import Skeleton from '../../components/common/Skeleton';
 import PencilIcon from '../../components/icons/PencilIcon';
 import ReceiptIcon from '../../components/icons/ReceiptIcon';
 import TrashIcon from '../../components/icons/TrashIcon';
 
-
 const ReceiptView = () => {
   useDocumentTitle('Receipt Records');
+  const { user } = useSelector((state) => state.auth);
   const [receipts, setReceipts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [deleteModal, setDeleteModal] = useState({ show: false, id: null });
-  const [deleting, setDeleting] = useState(false);
+  const [cancelModal, setCancelModal] = useState({ show: false, id: null });
+  const [cancelling, setCancelling] = useState(false);
   const navigate = useNavigate();
+
+  const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
 
   const fetchReceipts = async () => {
     try {
@@ -42,39 +44,57 @@ const ReceiptView = () => {
 
   const filteredReceipts = receipts.filter(r => 
     r.receiptNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    r.payer?.clientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    r.payer?.companyName?.toLowerCase().includes(searchTerm.toLowerCase())
+    (r.payerModel === 'Client' ? r.payer?.clientName : r.payer?.companyName)?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleDelete = async () => {
-    if (!deleteModal.id) return;
+  const handleCancel = async () => {
+    if (!cancelModal.id) return;
     try {
-      setDeleting(true);
+      setCancelling(true);
       const token = localStorage.getItem('token');
-      await axios.delete(`${import.meta.env.VITE_API_URL}/receipts/${deleteModal.id}`, {
+      await axios.post(`${import.meta.env.VITE_API_URL}/receipts/${cancelModal.id}/cancel`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setDeleteModal({ show: false, id: null });
+      setCancelModal({ show: false, id: null });
       fetchReceipts();
     } catch (err) {
-      console.error('Error deleting receipt', err);
-      alert('Failed to delete receipt');
+      console.error('Error cancelling receipt', err);
+      alert('Failed to cancel receipt');
     } finally {
-      setDeleting(false);
+      setCancelling(false);
     }
   };
 
   return (
     <main className="main-content">
+        <style>{`
+          .status-badge.cancelled {
+            background: rgba(239, 68, 68, 0.08);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.1);
+          }
+          .cancelled-row {
+            background-color: rgba(239, 68, 68, 0.04) !important;
+          }
+          .cancelled-row td {
+            color: #ef4444 !important;
+            opacity: 0.8;
+          }
+          .cancelled-row .status-badge {
+            opacity: 1 !important;
+          }
+        `}</style>
         <header className="dashboard-header">
           <div className="welcome-section">
             <h1>Receipt Records</h1>
             <p>Track all incoming funds and payment vouchers.</p>
           </div>
           <div className="header-actions">
-            <button className="btn-elite" onClick={() => navigate('/accounting/receipts/new')}>
-              + New Receipt
-            </button>
+            {(user?.role === 'maker' || isAdmin) && (
+              <button className="btn-elite" onClick={() => navigate('/accounting/receipts/new')}>
+                + New Receipt
+              </button>
+            )}
           </div>
         </header>
 
@@ -119,25 +139,31 @@ const ReceiptView = () => {
                     ))
                   ) : (
                     filteredReceipts.map((r, index) => (
-                      <tr key={r._id}>
+                      <tr key={r._id} className={r.isCancelled ? 'cancelled-row' : ''}>
                         <td style={{ textAlign: 'center', color: 'var(--elite-text-secondary)' }}>{index + 1}</td>
                         <td style={{ fontWeight: 700 }}>{r.receiptNumber}</td>
                         <td>{new Date(r.dateTime).toLocaleDateString('en-GB')}</td>
-                        <td style={{ fontWeight: 600, color: 'var(--elite-blue)' }}>
-                          {r.payer?.clientName ? `${r.payer.clientName} (Client)` : (r.payer?.companyName || 'Unknown')}
+                        <td style={{ fontWeight: 600, color: r.isCancelled ? 'inherit' : 'var(--elite-blue)' }}>
+                          {r.payerModel === 'Client' ? `${r.payer?.clientName} (Client)` : (r.payer?.companyName || 'Unknown')}
                         </td>
                         <td style={{ fontWeight: 600 }}>{r.receiver?.companyName || 'Unknown'}</td>
-                        <td style={{ fontWeight: 800, color: 'var(--success)' }}>₹{r.amount?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                        <td><span className="status-badge completed">{r.paymentMode}</span></td>
+                        <td style={{ fontWeight: 800, color: r.isCancelled ? 'inherit' : 'var(--success)' }}>₹{r.amount?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                        <td>
+                          <span className={`status-badge ${r.isCancelled ? 'cancelled' : 'completed'}`}>
+                            {r.isCancelled ? 'Cancelled' : r.paymentMode}
+                          </span>
+                        </td>
                         <td style={{ textAlign: 'center' }}>
                           <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
-                            <button 
-                              className="btn-action-elite btn-action-edit"
-                              title="Edit"
-                              onClick={() => navigate(`/accounting/receipts/edit/${r._id}`)}
-                            >
-                              <PencilIcon className="icon-xs" />
-                            </button>
+                            {isAdmin && !r.isCancelled && (
+                              <button 
+                                className="btn-action-elite btn-action-edit"
+                                title="Edit"
+                                onClick={() => navigate(`/accounting/receipts/edit/${r._id}`)}
+                              >
+                                <PencilIcon className="icon-xs" />
+                              </button>
+                            )}
                             <button 
                               className="btn-action-elite"
                               style={{ backgroundColor: '#3b82f6' }}
@@ -146,13 +172,15 @@ const ReceiptView = () => {
                             >
                               <ReceiptIcon className="icon-xs" />
                             </button>
-                            <button 
-                              className="btn-action-elite btn-action-delete"
-                              title="Delete"
-                              onClick={() => setDeleteModal({ show: true, id: r._id })}
-                            >
-                              <TrashIcon className="icon-xs" />
-                            </button>
+                            {isAdmin && !r.isCancelled && (
+                              <button 
+                                className="btn-action-elite btn-action-delete"
+                                title="Cancel"
+                                onClick={() => setCancelModal({ show: true, id: r._id })}
+                              >
+                                <TrashIcon className="icon-xs" />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -172,13 +200,13 @@ const ReceiptView = () => {
         </section>
 
         <ConfirmModal 
-          isOpen={deleteModal.show}
-          onClose={() => setDeleteModal({ show: false, id: null })}
-          onConfirm={handleDelete}
-          title="Delete Receipt"
-          message="Are you sure you want to delete this receipt? This action will revert the balances and cannot be undone."
-          confirmText="Yes, Delete"
-          loading={deleting}
+          isOpen={cancelModal.show}
+          onClose={() => setCancelModal({ show: false, id: null })}
+          onConfirm={handleCancel}
+          title="Cancel Receipt"
+          message="Are you sure you want to cancel this receipt? This action will revert the balances and cannot be undone."
+          confirmText="Yes, Cancel"
+          loading={cancelling}
           variant="danger"
         />
       </main>
@@ -186,3 +214,4 @@ const ReceiptView = () => {
 };
 
 export default ReceiptView;
+;

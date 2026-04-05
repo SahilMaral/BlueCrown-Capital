@@ -1,18 +1,24 @@
 const express = require('express');
-const transactionController = require('../../controllers/transactionController');
-const { protect } = require('../../middlewares/authMiddleware');
-
 const router = express.Router();
+const transactionController = require('../../controllers/transactionController');
+const validateRequest = require('../../middlewares/validateRequest');
+const { paymentSchema, updatePaymentSchema } = require('../../validators/paymentValidator');
+const { protect } = require('../../middlewares/authMiddleware');
 
 router.use(protect);
 
 router
   .route('/')
   .get(transactionController.getPayments)
-  .post(transactionController.createPayment);
+  .post(validateRequest(paymentSchema), transactionController.createPayment);
 
 router
   .route('/:id')
-  .get(transactionController.getPaymentById);
+  .get(transactionController.getPaymentById)
+  .patch(validateRequest(updatePaymentSchema), transactionController.updatePayment)
+  .post(transactionController.cancelPayment);
+
+router.post('/:id/cancel', transactionController.cancelPayment);
+router.post('/:id/send-email', transactionController.sendPaymentEmail);
 
 module.exports = router;

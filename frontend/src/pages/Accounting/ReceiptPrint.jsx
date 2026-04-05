@@ -100,6 +100,41 @@ const ReceiptPrint = () => {
     }
   };
 
+  const handleCancelReceipt = async () => {
+    if (!window.confirm('Are you sure you want to CANCEL this receipt? This will revert all balances and mark the voucher as void. This action is irreversible.')) {
+      return;
+    }
+
+    try {
+      setSending(true);
+      const token = localStorage.getItem('token');
+      const url = `${import.meta.env.VITE_API_URL}/receipts/${id}/cancel`;
+      
+      await axios.post(url, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      setReceipt({ ...receipt, isCancelled: true });
+      setStatusModal({
+        show: true,
+        title: 'Receipt Cancelled',
+        message: 'The receipt has been successfully voided and balances have been reverted.',
+        type: 'success'
+      });
+    } catch (err) {
+      console.error('Error cancelling receipt:', err);
+      const errorMsg = err.response?.data?.message || err.message;
+      setStatusModal({
+        show: true,
+        title: 'Cancellation Failed',
+        message: `Oops! ${errorMsg}`,
+        type: 'error'
+      });
+    } finally {
+      setSending(false);
+    }
+  };
+
   if (loading) {
     return <div style={{ padding: '40px', textAlign: 'center' }}>Loading voucher...</div>;
   }
@@ -121,7 +156,8 @@ const ReceiptPrint = () => {
 
   return (
     <div className="print-page-wrapper">
-      <div className="voucher-container" ref={printRef}>
+      <div className={`voucher-container ${receipt.isCancelled ? 'cancelled-view' : ''}`} ref={printRef}>
+        {receipt.isCancelled && <div className="cancelled-watermark">CANCELLED</div>}
         <div className="voucher-border">
           {/* Header Section */}
           <div className="voucher-header">
@@ -198,9 +234,10 @@ const ReceiptPrint = () => {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path></svg>
           Back
         </button>
-        <button className="print-btn print-btn-primary" onClick={() => {
-          console.log('Print button clicked');
-          handlePrint();
+        <button className="print-btn print-btn-primary" 
+          onClick={() => {
+            console.log('Print button clicked');
+            handlePrint();
         }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><path d="M6 14h12v8H6z"></path></svg>
           Print Voucher
@@ -219,6 +256,12 @@ const ReceiptPrint = () => {
           </svg>
           {sending ? 'Sending...' : 'Email Voucher'}
         </button>
+        {!receipt.isCancelled && (
+          <button className="print-btn print-btn-danger" onClick={handleCancelReceipt} disabled={sending}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
+            Cancel Receipt
+          </button>
+        )}
       </div>
 
       <EliteStatusModal 

@@ -34,7 +34,7 @@ class InvestmentService {
       } = investmentData;
 
       // 1. Generate Investment Number
-      const investmentNumber = await transactionUtils.generateDocumentNumber('investment', date);
+      const { documentNumber: investmentNumber } = await transactionUtils.generateDocumentNumber('investment', date);
 
       // 2. Create Investment
       const investment = await Investment.create([{

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import '../Dashboard/Dashboard.css';
 import UserIcon from '../../components/icons/UserIcon';
 import CompanyIcon from '../../components/icons/CompanyIcon';
@@ -18,14 +19,15 @@ import FileIcon from '../../components/icons/FileIcon';
 import './EntryForm.css';
 
 const PAYMENT_MODES = [
-  { value: 'Cash',   label: '💵  Cash' },
-  { value: 'Bank',   label: '🏦  Bank Transfer' },
+  { value: 'Cash', label: '💵  Cash' },
+  { value: 'Bank', label: '🏦  Bank Transfer' },
   { value: 'Cheque', label: '📄  Cheque' },
   { value: 'Online', label: '📱  Online / UPI' },
 ];
 
 const ReceiptEntry = () => {
   const navigate = useNavigate();
+  const { user } = useSelector((state) => state.auth);
   const [loading, setLoading] = useState(false);
   const [masters, setMasters] = useState({ clients: [], companies: [], ledgers: [], banks: [] });
   const [formData, setFormData] = useState({
@@ -41,7 +43,6 @@ const ReceiptEntry = () => {
     narration: '',
     isInternal: false
   });
-  const { user } = masters; // We'll add current user to masters or fetch separately
   const [error, setError] = useState('');
   const [modalType, setModalType] = useState(null); // 'Client', 'Company', 'Ledger', 'Bank'
 
@@ -73,10 +74,10 @@ const ReceiptEntry = () => {
   }, []);
 
   const handleQuickAddSuccess = (newData) => {
-    const typeKey = modalType === 'Client' ? 'clients' : 
-                    modalType === 'Company' ? 'companies' : 
-                    modalType === 'Ledger' ? 'ledgers' : 'banks';
-    
+    const typeKey = modalType === 'Client' ? 'clients' :
+      modalType === 'Company' ? 'companies' :
+        modalType === 'Ledger' ? 'ledgers' : 'banks';
+
     setMasters(prev => ({
       ...prev,
       [typeKey]: [...prev[typeKey], newData]
@@ -84,9 +85,9 @@ const ReceiptEntry = () => {
 
     // Auto-select the newly added item
     const idKey = modalType === 'Client' ? 'payerId' :
-                  modalType === 'Company' ? (formData.payerType === 'Company' && modalType === 'Company' ? 'payerId' : 'receiverId') :
-                  modalType === 'Ledger' ? 'ledgerId' : 'bankId';
-    
+      modalType === 'Company' ? (formData.payerType === 'Company' && modalType === 'Company' ? 'payerId' : 'receiverId') :
+        modalType === 'Ledger' ? 'ledgerId' : 'bankId';
+
     setFormData(prev => ({ ...prev, [idKey]: newData._id }));
     setModalType(null);
   };
@@ -114,8 +115,16 @@ const ReceiptEntry = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
+
+    // Frontend Validation
+    if (!formData.payerId) return setError('Please select a Client/Payer.');
+    if (!formData.receiverId) return setError('Please select a Receiver Company.');
+    if (!formData.ledgerId) return setError('Please select a Ledger Account.');
+    if (formData.paymentMode !== 'Cash' && !formData.bankId) return setError('Please select a Bank Account for this transaction.');
+    if (!formData.amount || Number(formData.amount) <= 0) return setError('Please enter a valid amount greater than zero.');
+
+    setLoading(true);
     try {
       const token = localStorage.getItem('token');
       const payload = {
@@ -144,12 +153,12 @@ const ReceiptEntry = () => {
   };
 
   /* ── option arrays for react-select ── */
-  const clientOptions  = masters.clients.map(c => ({ value: c._id, label: c.clientName }));
+  const clientOptions = masters.clients.map(c => ({ value: c._id, label: c.clientName }));
   const companyOptions = masters.companies.map(c => ({ value: c._id, label: c.companyName }));
-  const ledgerOptions  = masters.ledgers.map(l => ({ value: l._id, label: l.name }));
-  const bankOptions    = masters.banks.map(b => ({ value: b._id, label: `${b.bankName} — ${b.accountNumber}` }));
-  const payerOptions   = formData.payerType === 'Client' ? clientOptions : companyOptions;
-  const selectedBank   = masters.banks.find(b => b._id === formData.bankId);
+  const ledgerOptions = masters.ledgers.map(l => ({ value: l._id, label: l.name }));
+  const bankOptions = masters.banks.map(b => ({ value: b._id, label: `${b.bankName} — ${b.accountNumber}` }));
+  const payerOptions = formData.payerType === 'Client' ? clientOptions : companyOptions;
+  const selectedBank = masters.banks.find(b => b._id === formData.bankId);
 
   return (
     <main className="main-content">
@@ -164,7 +173,7 @@ const ReceiptEntry = () => {
         <form className="elite-form-padding" onSubmit={handleSubmit}>
 
           <div className="form-grid-elite">
-            {loading ? (
+            {loading && !masters.clients.length ? (
               <>
                 {[...Array(6)].map((_, i) => (
                   <div key={i} className="form-group">
@@ -187,14 +196,14 @@ const ReceiptEntry = () => {
 
                 {/* Select Payer */}
                 <div className="auth-input-group has-quick-add">
-                  <label className="form-label-elite">Select Client</label>
+                  <label className="form-label-elite">Select Client <span style={{ color: 'var(--error)' }}>*</span></label>
                   <div className="auth-input-wrapper">
                     <UserIcon className="auth-input-icon" />
                     <EliteSelect
                       options={payerOptions}
                       value={formData.payerId}
                       onChange={(val) => setFormData({ ...formData, payerId: val })}
-                       placeholder="-- Choose Client --"
+                      placeholder="Choose Client"
                     />
                     <button type="button" className="quick-add-btn" onClick={() => setModalType('Client')}>
                       <PlusCircleIcon size={16} />
@@ -204,14 +213,14 @@ const ReceiptEntry = () => {
 
                 {/* Receiver (Company) */}
                 <div className="auth-input-group has-quick-add">
-                  <label className="form-label-elite">Receiver (Company)</label>
+                  <label className="form-label-elite">Receiver (Company) <span style={{ color: 'var(--error)' }}>*</span></label>
                   <div className="auth-input-wrapper">
                     <CompanyIcon className="auth-input-icon" />
                     <EliteSelect
                       options={companyOptions}
                       value={formData.receiverId}
                       onChange={(val) => setFormData({ ...formData, receiverId: val })}
-                      placeholder="-- Choose Company --"
+                      placeholder="Choose Company"
                     />
                     <button type="button" className="quick-add-btn" onClick={() => setModalType('Company')}>
                       <PlusCircleIcon size={16} />
@@ -221,14 +230,14 @@ const ReceiptEntry = () => {
 
                 {/* Ledger */}
                 <div className="auth-input-group has-quick-add">
-                  <label className="form-label-elite">Ledger Account</label>
+                  <label className="form-label-elite">Ledger Account <span style={{ color: 'var(--error)' }}>*</span></label>
                   <div className="auth-input-wrapper">
                     <LedgerIcon className="auth-input-icon" />
                     <EliteSelect
                       options={ledgerOptions}
                       value={formData.ledgerId}
                       onChange={(val) => setFormData({ ...formData, ledgerId: val })}
-                      placeholder="-- Choose Ledger --"
+                      placeholder="Choose Ledger"
                     />
                     <button type="button" className="quick-add-btn" onClick={() => setModalType('Ledger')}>
                       <PlusCircleIcon size={16} />
@@ -238,7 +247,7 @@ const ReceiptEntry = () => {
 
                 {/* Payment Mode */}
                 <div className="auth-input-group">
-                  <label className="form-label-elite">Payment Mode</label>
+                  <label className="form-label-elite">Payment Mode <span style={{ color: 'var(--error)' }}>*</span></label>
                   <div className="auth-input-wrapper">
                     <WalletIcon className="auth-input-icon" />
                     <EliteSelect
@@ -256,7 +265,7 @@ const ReceiptEntry = () => {
                   <label className="form-label-elite">Payment Details</label>
                   <div className="auth-input-wrapper">
                     <FileIcon className="auth-input-icon" />
-                    <input type="text" name="paymentDetails" className="elite-input-classic" placeholder="Ref No / Cheque No / Notes..." 
+                    <input type="text" name="paymentDetails" className="elite-input-classic" placeholder="Ref No / Cheque No / Notes..."
                       value={formData.paymentDetails} onChange={handleInputChange} />
                   </div>
                 </div>
@@ -264,14 +273,14 @@ const ReceiptEntry = () => {
                 {/* Bank Account (conditional) */}
                 {formData.paymentMode !== 'Cash' && (
                   <div className="auth-input-group has-quick-add">
-                    <label className="form-label-elite">Bank Account</label>
+                    <label className="form-label-elite">Bank Account <span style={{ color: 'var(--error)' }}>*</span></label>
                     <div className="auth-input-wrapper">
                       <BankIcon className="auth-input-icon" />
                       <EliteSelect
                         options={bankOptions}
                         value={formData.bankId}
                         onChange={(val) => setFormData({ ...formData, bankId: val })}
-                        placeholder="-- Choose Bank --"
+                        placeholder="Choose Bank"
                       />
                       <button type="button" className="quick-add-btn" onClick={() => setModalType('Bank')}>
                         <PlusCircleIcon size={16} />
@@ -296,7 +305,7 @@ const ReceiptEntry = () => {
 
                 {/* Amount */}
                 <div className="auth-input-group">
-                  <label className="form-label-elite">Amount (₹)</label>
+                  <label className="form-label-elite">Amount (₹) <span style={{ color: 'var(--error)' }}>*</span></label>
                   <div className="auth-input-wrapper">
                     <RupeeIcon className="auth-input-icon" />
                     <input type="number" name="amount" min="0.01" step="0.01" className="elite-input-classic"
@@ -310,9 +319,9 @@ const ReceiptEntry = () => {
           {/* Received By (Read Only) */}
           <div className="auth-input-group elite-full-width" style={{ marginTop: '24px' }}>
             <label className="form-label-elite">Received By</label>
-            <div className="auth-input-wrapper">
+            <div className="auth-input-wrapper disabled-wrapper" style={{ opacity: 0.8 }}>
               <UserIcon className="auth-input-icon" />
-              <input type="text" value="admin" readOnly className="elite-input-classic" />
+              <input type="text" value={user?.name || 'admin'} readOnly className="elite-input-classic" style={{ backgroundColor: '#f1f5f9' }} />
             </div>
           </div>
 
@@ -328,13 +337,13 @@ const ReceiptEntry = () => {
             </div>
           )}
 
-          {error && <p style={{ color: 'var(--error)', marginBottom: '24px', fontWeight: 500 }}>{error}</p>}
+          {error && <p style={{ color: 'var(--error)', marginTop: '24px', fontWeight: 600 }}>{error}</p>}
 
-          <div className="entry-form-footer">
+          <div className="entry-form-footer" style={{ marginTop: '32px' }}>
             <button type="submit" className="btn-elite-primary" disabled={loading}>
               {loading ? 'Processing...' : 'Post Receipt'}
             </button>
-            <button type="button" className="btn-elite-red" 
+            <button type="button" className="btn-elite-red"
               onClick={() => setFormData({
                 payerType: 'Client', payerId: '', receiverId: masters.companies[0]?._id || '',
                 ledgerId: '', bankId: '', paymentMode: 'Cash', paymentDetails: '',

@@ -27,12 +27,14 @@ const createReceipt = async (receiptData) => {
     const date = new Date(dateTime || Date.now());
     
     // 1. Generate Receipt Number
-    const receiptNumber = await transactionUtils.generateDocumentNumber('receipt', date);
+    const { documentNumber: receiptNumber, financialYear } = await transactionUtils.generateDocumentNumber('receipt', date);
     
     // 2. Create Receipt
     const receiptDocs = await Receipt.create([{
       ...receiptData,
       receiptNumber,
+      financialYear,
+      payerModel: receiptData.isInternal ? 'Company' : 'Client',
       dateTime: date,
       isCancelled: false
     }], { session });
@@ -141,12 +143,14 @@ const createPayment = async (paymentData) => {
     const date = new Date(dateTime || Date.now());
     
     // 1. Generate Payment Number
-    const paymentNumber = await transactionUtils.generateDocumentNumber('payment', date);
+    const { documentNumber: paymentNumber, financialYear } = await transactionUtils.generateDocumentNumber('payment', date);
     
     // 2. Create Payment
     const paymentDocs = await Payment.create([{
       ...paymentData,
       paymentNumber,
+      financialYear,
+      receiverModel: paymentData.isInternal ? 'Company' : 'Client',
       dateTime: date,
       isCancelled: false
     }], { session });
@@ -185,24 +189,155 @@ const createPayment = async (paymentData) => {
 };
 
 /**
- * Update an existing Receipt (Only metadata, no amount/date changes)
+ * Update an existing Receipt (Only metadata, but handles Bank/Cash shift if mode changes)
  */
 const updateReceipt = async (id, updateData) => {
-  // We only allow updating fields that don't affect accounting balances
-  const allowedUpdates = {
-    paymentMode: updateData.paymentMode,
-    ledger: updateData.ledger,
-    paymentDetails: updateData.paymentDetails,
-    narration: updateData.narration
-  };
+  return await withTransaction(async (session) => {
+    // 1. Get original receipt
+    const receipt = await Receipt.findById(id).session(session);
+    if (!receipt) throw new ApiError(404, 'Receipt not found');
+    if (receipt.isCancelled) throw new ApiError(400, 'Cannot update a cancelled receipt');
 
-  const receipt = await Receipt.findByIdAndUpdate(
-    id,
-    { $set: allowedUpdates },
-    { new: true, runValidators: true }
-  );
+    const amount = receipt.amount;
+    const oldMode = receipt.paymentMode;
+    const oldBank = receipt.bank?.toString();
+    const receiver = receipt.receiver;
 
-  return receipt;
+    const newMode = updateData.paymentMode || oldMode;
+    const newBank = updateData.bank || receipt.bank;
+
+    // 2. Determine if a balance shift is needed
+    // Account for a receipt is either the Receiver (if Cash) or the Bank
+    const oldAccount = oldMode === 'Cash' ? receiver : receipt.bank;
+    const oldAccountModel = oldMode === 'Cash' ? 'Company' : 'Bank';
+
+    const newAccount = newMode === 'Cash' ? receiver : newBank;
+    const newAccountModel = newMode === 'Cash' ? 'Company' : 'Bank';
+
+    const accountChanged = oldAccount.toString() !== newAccount.toString() || oldAccountModel !== newAccountModel;
+
+    if (accountChanged) {
+      // Validation: If new mode is not Cash, newBank must be provided
+      if (newMode !== 'Cash' && !newBank) {
+        throw new ApiError(400, 'Bank account is required for the selected payment mode');
+      }
+
+      // a. Revert balance from OLD account
+      if (oldAccountModel === 'Bank') {
+        await Bank.findByIdAndUpdate(oldAccount, { $inc: { currentBalance: -amount } }, { session });
+      } else {
+        await Company.findByIdAndUpdate(oldAccount, { $inc: { currentCashBalance: -amount } }, { session });
+      }
+
+      // b. Apply balance to NEW account
+      if (newAccountModel === 'Bank') {
+        await Bank.findByIdAndUpdate(newAccount, { $inc: { currentBalance: amount } }, { session });
+      } else {
+        await Company.findByIdAndUpdate(newAccount, { $inc: { currentCashBalance: amount } }, { session });
+      }
+
+      // c. Update Passbook entry
+      await Passbook.findOneAndUpdate(
+        { receipt: id },
+        { 
+          account: newAccount, 
+          accountModel: newAccountModel,
+          isCash: newMode === 'Cash'
+        },
+        { session }
+      );
+    }
+
+    // 3. Update the Receipt
+    const allowedUpdates = {
+      paymentMode: newMode,
+      bank: newMode === 'Cash' ? undefined : newBank,
+      ledger: updateData.ledger,
+      paymentDetails: updateData.paymentDetails,
+      narration: updateData.narration
+    };
+
+    Object.assign(receipt, allowedUpdates);
+    await receipt.save({ session });
+
+    return receipt;
+  });
+};
+
+/**
+ * Update an existing Payment (Only metadata, but handles Bank/Cash shift if mode changes)
+ */
+const updatePayment = async (id, updateData) => {
+  return await withTransaction(async (session) => {
+    // 1. Get original payment
+    const payment = await Payment.findById(id).session(session);
+    if (!payment) throw new ApiError(404, 'Payment not found');
+    if (payment.isCancelled) throw new ApiError(400, 'Cannot update a cancelled payment');
+
+    const amount = payment.amount;
+    const oldMode = payment.paymentMode;
+    const oldBank = payment.bank?.toString();
+    const payer = payment.payer; // Company ID
+
+    const newMode = updateData.paymentMode || oldMode;
+    const newBank = updateData.bank || payment.bank;
+
+    // 2. Determine if a balance shift is needed
+    // Account for a payment is either the Payer (if Cash) or the Bank
+    const oldAccount = oldMode === 'Cash' ? payer : payment.bank;
+    const oldAccountModel = oldMode === 'Cash' ? 'Company' : 'Bank';
+
+    const newAccount = newMode === 'Cash' ? payer : newBank;
+    const newAccountModel = newMode === 'Cash' ? 'Company' : 'Bank';
+
+    const accountChanged = oldAccount.toString() !== newAccount.toString() || oldAccountModel !== newAccountModel;
+
+    if (accountChanged) {
+      // Validation: If new mode is not Cash, newBank must be provided
+      if (newMode !== 'Cash' && !newBank) {
+        throw new ApiError(400, 'Bank account is required for the selected payment mode');
+      }
+
+      // a. Revert balance from OLD account (Inflow the amount back)
+      if (oldAccountModel === 'Bank') {
+        await Bank.findByIdAndUpdate(oldAccount, { $inc: { currentBalance: amount } }, { session });
+      } else {
+        await Company.findByIdAndUpdate(oldAccount, { $inc: { currentCashBalance: amount } }, { session });
+      }
+
+      // b. Apply balance to NEW account (Outflow the amount)
+      if (newAccountModel === 'Bank') {
+        await Bank.findByIdAndUpdate(newAccount, { $inc: { currentBalance: -amount } }, { session });
+      } else {
+        await Company.findByIdAndUpdate(newAccount, { $inc: { currentCashBalance: -amount } }, { session });
+      }
+
+      // c. Update Passbook entry
+      await Passbook.findOneAndUpdate(
+        { payment: id },
+        { 
+          account: newAccount, 
+          accountModel: newAccountModel,
+          isCash: newMode === 'Cash'
+        },
+        { session }
+      );
+    }
+
+    // 3. Update the Payment
+    const allowedUpdates = {
+      paymentMode: newMode,
+      bank: newMode === 'Cash' ? undefined : newBank,
+      ledger: updateData.ledger,
+      paymentDetails: updateData.paymentDetails,
+      narration: updateData.narration
+    };
+
+    Object.assign(payment, allowedUpdates);
+    await payment.save({ session });
+
+    return payment;
+  });
 };
 
 const createSelfTransfer = async (transferData) => {
@@ -241,9 +376,9 @@ const createSelfTransfer = async (transferData) => {
 };
 
 /**
- * Delete a Receipt and revert its impact on balances
+ * Cancel a Receipt and revert its impact on balances and modules
  */
-const deleteReceipt = async (id) => {
+const cancelReceipt = async (id) => {
   return await withTransaction(async (session) => {
     // 1. Find the receipt
     const receipt = await Receipt.findById(id).session(session);
@@ -251,40 +386,135 @@ const deleteReceipt = async (id) => {
       throw new ApiError(404, 'Receipt not found');
     }
 
-    // 2. Find associated passbook entry (use .lean() so fields are plain JS properties)
+    if (receipt.isCancelled) {
+      throw new ApiError(400, 'Receipt is already cancelled');
+    }
+
+    // 2. Revert Balance via Passbook Entry
     const passbookEntry = await Passbook.findOne({ receipt: id }).session(session).lean();
-    if (!passbookEntry) {
-       // If no passbook entry, just delete the receipt (shouldn't happen in normal flow)
-       await Receipt.findByIdAndDelete(id).session(session);
-       return { message: 'Receipt deleted (No passbook entry found)' };
+    if (passbookEntry) {
+      const { account, accountModel, amount } = passbookEntry;
+
+      if (accountModel === 'Bank') {
+        await Bank.findByIdAndUpdate(
+          account,
+          { $inc: { currentBalance: -amount } },
+          { session }
+        );
+      } else {
+        await Company.findByIdAndUpdate(
+          account,
+          { $inc: { currentCashBalance: -amount } },
+          { session }
+        );
+      }
+
+      // Delete Passbook Entry
+      await Passbook.findByIdAndDelete(passbookEntry._id).session(session);
     }
 
-    // 3. Revert Balance
-    const account = passbookEntry.account;
-    const entryAccountModel = passbookEntry.accountModel;
-    const amount = passbookEntry.amount;
+    // 3. Revert Module Integrations
+    
+    // A. Investment Installment
+    if (receipt.investmentInstallmentId) {
+      const installment = await InvestmentInstallment.findById(receipt.investmentInstallmentId).session(session);
+      if (installment) {
+        installment.isPaid = false;
+        installment.paymentDate = null;
+        installment.receiptId = null;
+        await installment.save({ session });
 
-    if (entryAccountModel === 'Bank') {
-      await Bank.findByIdAndUpdate(
-        account,
-        { $inc: { currentBalance: -amount } },
-        { session }
-      );
-    } else {
-      await Company.findByIdAndUpdate(
-        account,
-        { $inc: { currentCashBalance: -amount } },
+        // Update Investment balance (re-increase balance)
+        await Investment.findByIdAndUpdate(
+          installment.investmentId,
+          {
+            $inc: {
+              balancePrincipal: installment.principalEmi,
+              balanceInterestTotal: installment.interestEmi
+            }
+          },
+          { session }
+        );
+      }
+    }
+
+    // B. Investment Lumpsum
+    if (receipt.investmentId && receipt.investmentType === 'investment_lumpsum') {
+      await InvestmentInstallment.findOneAndDelete({ receiptId: id }).session(session);
+      await Investment.findByIdAndUpdate(
+        receipt.investmentId,
+        { $inc: { balancePrincipal: receipt.amount } },
         { session }
       );
     }
 
-    // 4. Delete Passbook Entry
-    await Passbook.findByIdAndDelete(passbookEntry._id).session(session);
+    // C. Loan Cancellation (if created from this receipt)
+    // In reference project, canceling a primary receipt might delete the loan?
+    // Let's check for any loans created with this receipt as "receiptId" (if we store it)
+    // The current createReceipt doesn't store receiptId on the Loan model, but uses pendingLoanData.
+    // If we want to be safe, we'd need a link. For now, we'll focus on the balance.
 
-    // 5. Delete Receipt
-    await Receipt.findByIdAndDelete(id).session(session);
+    // 4. Mark Receipt as Cancelled
+    receipt.isCancelled = true;
+    await receipt.save({ session });
 
-    return { message: 'Receipt deleted and balances reverted successfully' };
+    return { message: 'Receipt cancelled and balances reverted successfully' };
+  });
+};
+
+/**
+ * Cancel a Payment and revert its impact on balances
+ */
+const cancelPayment = async (id) => {
+  return await withTransaction(async (session) => {
+    // 1. Find the payment
+    const payment = await Payment.findById(id).session(session);
+    if (!payment) {
+      throw new ApiError(404, 'Payment not found');
+    }
+
+    if (payment.isCancelled) {
+      throw new ApiError(400, 'Payment is already cancelled');
+    }
+
+    // 2. Revert Balance via Passbook Entry (Inflow back)
+    const passbookEntry = await Passbook.findOne({ payment: id }).session(session).lean();
+    if (passbookEntry) {
+      const { account, accountModel, amount } = passbookEntry;
+
+      // For Payment, amount in passbook is negative. To revert it, subtract it (effectively adds positive)
+      if (accountModel === 'Bank') {
+        await Bank.findByIdAndUpdate(
+          account,
+          { $inc: { currentBalance: -amount } },
+          { session }
+        );
+      } else {
+        await Company.findByIdAndUpdate(
+          account,
+          { $inc: { currentCashBalance: -amount } },
+          { session }
+        );
+      }
+
+      // Delete Passbook Entry
+      await Passbook.findByIdAndDelete(passbookEntry._id).session(session);
+    }
+
+    // 3. Revert Module Integrations
+    if (payment.reminderId) {
+      await Reminder.findByIdAndUpdate(
+        payment.reminderId,
+        { isPaid: false, paymentId: null },
+        { session }
+      );
+    }
+
+    // 4. Mark Payment as Cancelled
+    payment.isCancelled = true;
+    await payment.save({ session });
+
+    return { message: 'Payment cancelled and balances reverted successfully' };
   });
 };
 
@@ -370,12 +600,98 @@ const sendReceiptEmail = async (receiptId, attachment) => {
   });
 };
 
+/**
+ * Send Payment Email
+ */
+const sendPaymentEmail = async (paymentId, attachment) => {
+  const payment = await Payment.findById(paymentId)
+    .populate('payer')
+    .populate('receiver')
+    .populate('paidBy', 'name');
+
+  if (!payment) {
+    throw new ApiError(404, 'Payment not found');
+  }
+
+  const receiverName = payment.receiver?.clientName || payment.receiver?.companyName || 'Valued Client';
+  const amountFormatted = payment.amount.toLocaleString('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+  });
+
+  const html = `
+    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; color: #1e293b;">
+      <div style="background-color: #0f172a; padding: 30px; text-align: center;">
+        <h1 style="color: #ffffff; margin: 0; font-size: 24px; letter-spacing: 1px;">BLUECROWN CAPITAL</h1>
+        <p style="color: #94a3b8; margin: 5px 0 0; font-size: 14px;">Payment Voucher Confirmation</p>
+      </div>
+      <div style="padding: 40px; background-color: #ffffff;">
+        <p style="font-size: 16px; margin-bottom: 25px;">To <strong>${receiverName}</strong>,</p>
+        <p style="font-size: 15px; line-height: 1.6;">We have processed a payment in your favor. Below are the transaction details for your records.</p>
+        
+        <div style="background-color: #f8fafc; border-radius: 12px; padding: 25px; margin: 30px 0;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 8px 0; color: #64748b; font-size: 13px; text-transform: uppercase;">Payment Number</td>
+              <td style="padding: 8px 0; text-align: right; font-weight: 600;">${payment.paymentNumber}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #64748b; font-size: 13px; text-transform: uppercase;">Date</td>
+              <td style="padding: 8px 0; text-align: right; font-weight: 600;">${new Date(payment.dateTime).toLocaleDateString('en-GB')}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #64748b; font-size: 13px; text-transform: uppercase;">Mode</td>
+              <td style="padding: 8px 0; text-align: right; font-weight: 600;">${payment.paymentMode}</td>
+            </tr>
+            <tr style="border-top: 1px solid #e2e8f0;">
+              <td style="padding: 15px 0 8px; font-weight: 700; color: #0f172a; font-size: 15px;">TOTAL AMOUNT</td>
+              <td style="padding: 15px 0 8px; text-align: right; font-weight: 700; color: #0f172a; font-size: 18px;">${amountFormatted}</td>
+            </tr>
+          </table>
+        </div>
+
+        <p style="font-size: 14px; color: #64748b; margin-top: 30px;">
+          <strong>Narration:</strong> ${payment.narration || 'N/A'}
+        </p>
+        
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; font-size: 13px; color: #94a3b8; text-align: center;">
+          This is a computer-generated voucher and does not require a physical signature.
+        </div>
+      </div>
+      <div style="background-color: #f1f5f9; padding: 20px; text-align: center; font-size: 12px; color: #64748b;">
+        &copy; ${new Date().getFullYear()} BlueCrown Capital. All rights reserved.
+      </div>
+    </div>
+  `;
+
+  // PDF attachment handling
+  const pdfAttachments = [];
+  if (attachment) {
+    pdfAttachments.push({
+      filename: `Payment_${payment.paymentNumber}.pdf`,
+      content: attachment.buffer,
+      contentType: 'application/pdf'
+    });
+  }
+
+  await sendEmail({
+    email: payment.receiver?.email || process.env.FROM_EMAIL,
+    subject: `Payment Voucher - ${payment.paymentNumber}`,
+    html,
+    attachments: pdfAttachments
+  });
+};
+
 module.exports = {
   createReceipt,
   getReceiptById: async (id) => await Receipt.findById(id),
   updateReceipt,
-  deleteReceipt,
+  cancelReceipt,
   sendReceiptEmail,
   createPayment,
+  getPaymentById: async (id) => await Payment.findById(id),
+  updatePayment,
+  cancelPayment,
+  sendPaymentEmail,
   createSelfTransfer,
 };

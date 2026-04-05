@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import '../Dashboard/Dashboard.css';
 import CompanyIcon from '../../components/icons/CompanyIcon';
 import UserIcon from '../../components/icons/UserIcon';
@@ -26,6 +27,7 @@ const PAYMENT_MODES = [
 const PaymentEntry = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useSelector((state) => state.auth);
   const [loading, setLoading] = useState(false);
   const [masters, setMasters] = useState({ clients: [], companies: [], ledgers: [], banks: [] });
   const [formData, setFormData] = useState({
@@ -145,7 +147,9 @@ const PaymentEntry = () => {
         financialYear: getFinancialYear(formData.dateTime),
         narration: formData.narration,
         isInternal: formData.isInternal,
-        reminderId: formData.reminderId
+        reminderId: formData.reminderId || null,
+        loanId: formData.loanId || null,
+        paidBy: user?._id
       };
       await axios.post(`${import.meta.env.VITE_API_URL}/payments`, payload, {
         headers: { Authorization: `Bearer ${token}` }
@@ -193,7 +197,7 @@ const PaymentEntry = () => {
                 {/* Receiver Type Removed - defaulting to Client */}
 
                 <div className="auth-input-group">
-                  <label className="form-label-elite">Date & Time</label>
+                  <label className="form-label-elite">Date & Time <span className="text-danger">*</span></label>
                   <div className="auth-input-wrapper">
                     <CalendarIcon className="auth-input-icon" />
                     <input type="datetime-local" name="dateTime" className="elite-input-classic" value={formData.dateTime} onChange={handleInputChange} required />
@@ -202,7 +206,7 @@ const PaymentEntry = () => {
 
                 {/* Payer (Internal Company) */}
                 <div className="auth-input-group has-quick-add">
-                  <label className="form-label-elite">Payer (Company)</label>
+                  <label className="form-label-elite">Payer (Company) <span className="text-danger">*</span></label>
                   <div className="auth-input-wrapper">
                     <CompanyIcon className="auth-input-icon" />
                     <EliteSelect
@@ -219,7 +223,7 @@ const PaymentEntry = () => {
 
                 {/* Select Receiver */}
                 <div className="auth-input-group has-quick-add">
-                  <label className="form-label-elite">Select Client</label>
+                  <label className="form-label-elite">Select Client <span className="text-danger">*</span></label>
                   <div className="auth-input-wrapper">
                     <UserIcon className="auth-input-icon" />
                     <EliteSelect
@@ -236,7 +240,7 @@ const PaymentEntry = () => {
 
                 {/* Ledger */}
                 <div className="auth-input-group has-quick-add">
-                  <label className="form-label-elite">Ledger Account</label>
+                  <label className="form-label-elite">Ledger Account <span className="text-danger">*</span></label>
                   <div className="auth-input-wrapper">
                     <LedgerIcon className="auth-input-icon" />
                     <EliteSelect
@@ -253,7 +257,7 @@ const PaymentEntry = () => {
 
                 {/* Payment Mode */}
                 <div className="auth-input-group">
-                  <label className="form-label-elite">Payment Mode</label>
+                  <label className="form-label-elite">Payment Mode <span className="text-danger">*</span></label>
                   <div className="auth-input-wrapper">
                     <WalletIcon className="auth-input-icon" />
                     <EliteSelect
@@ -279,7 +283,7 @@ const PaymentEntry = () => {
                 {/* Bank Account (conditional) */}
                 {formData.paymentMode !== 'Cash' && (
                   <div className="auth-input-group has-quick-add">
-                    <label className="form-label-elite">Bank Account</label>
+                    <label className="form-label-elite">Bank Account <span className="text-danger">*</span></label>
                     <div className="auth-input-wrapper">
                       <BankIcon className="auth-input-icon" />
                       <EliteSelect
@@ -311,7 +315,7 @@ const PaymentEntry = () => {
 
                 {/* Amount */}
                 <div className="auth-input-group">
-                  <label className="form-label-elite">Amount (₹)</label>
+                  <label className="form-label-elite">Amount (₹) <span className="text-danger">*</span></label>
                   <div className="auth-input-wrapper">
                     <RupeeIcon className="auth-input-icon" />
                     <input type="number" name="amount" min="0.01" step="0.01" className="elite-input-classic"
@@ -325,9 +329,9 @@ const PaymentEntry = () => {
           {/* Paid By (Read Only) */}
           <div className="auth-input-group elite-full-width" style={{ marginTop: '24px' }}>
             <label className="form-label-elite">Paid By</label>
-            <div className="auth-input-wrapper">
+            <div className="auth-input-wrapper disabled-wrapper" style={{ opacity: 0.8 }}>
               <UserIcon className="auth-input-icon" />
-              <input type="text" value="admin" readOnly className="elite-input-classic" />
+              <input type="text" value={user?.name || 'admin'} readOnly className="elite-input-classic" style={{ backgroundColor: '#f1f5f9' }} />
             </div>
           </div>
 

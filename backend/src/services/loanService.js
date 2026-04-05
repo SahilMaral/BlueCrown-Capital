@@ -31,7 +31,7 @@ class LoanService {
       } = loanData;
 
       // 1. Generate Loan Number
-      const loanNumber = await transactionUtils.generateDocumentNumber('loan', date);
+      const { documentNumber: loanNumber } = await transactionUtils.generateDocumentNumber('loan', date);
 
       // 2. Create Loan
       const loan = await Loan.create([{

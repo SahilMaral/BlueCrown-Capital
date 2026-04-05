@@ -51,7 +51,9 @@ exports.generateDocumentNumber = async (counterName, date) => {
 
   const num = updatedCounter.countNumber;
   const formattedNum = String(num).padStart(4, '0');
-  return `${updatedCounter.prefix}${formattedNum}-${financialYear}`;
+  const documentNumber = `${updatedCounter.prefix}${formattedNum}-${financialYear}`;
+  
+  return { documentNumber, financialYear };
 };
 
 /**

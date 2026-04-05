@@ -202,6 +202,135 @@ export const generateVoucherPDF = (receipt) => {
   return doc.output('blob');
 };
 
+/**
+ * Generate a professional Payment Voucher PDF
+ * @param {Object} payment - Payment data
+ * @returns {Blob} - PDF Blob
+ */
+export const generatePaymentPDF = (payment) => {
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4'
+  });
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const margin = 15;
+  const contentWidth = pageWidth - (margin * 2);
+  let startY = 20;
+
+  // Outer Border
+  doc.setDrawColor(226, 232, 240); // #e2e8f0
+  doc.setLineWidth(0.5);
+  doc.rect(margin, margin, contentWidth, 260);
+
+  // Logo Placeholder
+  doc.setFillColor(15, 23, 42); // #0f172a
+  doc.circle(pageWidth / 2, startY + 5, 8, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(10);
+  doc.text("BC", pageWidth / 2, startY + 8.5, { align: "center" });
+
+  startY += 20;
+
+  // Header Title
+  doc.setTextColor(15, 23, 42);
+  doc.setFontSize(18);
+  doc.setFont("helvetica", "bold");
+  doc.text("BLUECROWN CAPITAL", pageWidth / 2, startY, { align: "center" });
+  startY += 7;
+
+  // Company/Branch
+  doc.setFontSize(12);
+  doc.text(payment.payer?.companyName || "BLUECROWN ELITE", pageWidth / 2, startY, { align: "center" });
+  startY += 5;
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.text(payment.payer?.city || "PUNE", pageWidth / 2, startY, { align: "center" });
+  startY += 10;
+
+  // Payment Voucher Pill
+  doc.setFillColor(15, 23, 42);
+  doc.roundedRect(pageWidth / 2 - 25, startY - 4, 50, 8, 4, 4, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text("PAYMENT VOUCHER", pageWidth / 2, startY + 1.5, { align: "center" });
+  startY += 15;
+
+  // Main Info Box
+  doc.setTextColor(15, 23, 42);
+  doc.setDrawColor(226, 232, 240);
+  doc.setLineWidth(0.3);
+  
+  const drawRow = (label, value, x, y, width) => {
+    doc.setFont("helvetica", "bold");
+    doc.text(`${label}:`, x + 2, y + 6);
+    doc.setFont("helvetica", "normal");
+    const labelWidth = doc.getTextWidth(`${label}: `);
+    doc.text(String(value), x + labelWidth + 3, y + 6);
+    doc.line(x, y + 10, x + width, y + 10);
+  };
+
+  const boxX = margin + 5;
+  const boxWidth = contentWidth - 10;
+  
+  // Row 1: Payment No & Date
+  doc.line(boxX, startY, boxX + boxWidth, startY);
+  drawRow("PAYMENT NO", payment.paymentNumber, boxX, startY, boxWidth / 2);
+  drawRow("DATE", new Date(payment.dateTime).toLocaleDateString('en-GB').replace(/\//g, '-'), boxX + boxWidth / 2, startY, boxWidth / 2);
+  doc.line(boxX + boxWidth / 2, startY, boxX + boxWidth / 2, startY + 10);
+  startY += 10;
+
+  // Row 2: Mode of Payment Header
+  doc.setFillColor(248, 250, 252);
+  doc.rect(boxX, startY, boxWidth, 10, 'F');
+  doc.setFont("helvetica", "bold");
+  doc.text("MODE OF PAYMENT", pageWidth / 2, startY + 6.5, { align: "center" });
+  doc.line(boxX, startY + 10, boxX + boxWidth, startY + 10);
+  startY += 10;
+
+  // Row 3: Online/Cash & Amount
+  drawRow("ONLINE/CASH", payment.paymentMode, boxX, startY, boxWidth / 2);
+  doc.setFont("helvetica", "bold");
+  doc.text(`Rs. ${payment.amount?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, boxX + boxWidth / 2 + 2, startY + 6);
+  doc.line(boxX, startY + 10, boxX + boxWidth, startY + 10);
+  doc.line(boxX + boxWidth / 2, startY, boxX + boxWidth / 2, startY + 10);
+  startY += 10;
+
+  // Row 4: Amount in Words
+  drawRow("AMOUNT IN WORDS", payment.amountInWords || "", boxX, startY, boxWidth);
+  startY += 10;
+
+  // Row 5: To & Mobile
+  const receiverName = payment.receiver?.clientName || payment.receiver?.companyName || "N/A";
+  drawRow("TO", receiverName, boxX, startY, boxWidth / 2);
+  drawRow("MOBILE NO", payment.receiver?.contactNo || "N/A", boxX + boxWidth / 2, startY, boxWidth / 2);
+  doc.line(boxX + boxWidth / 2, startY, boxX + boxWidth / 2, startY + 10);
+  startY += 10;
+
+  // Row 6: Narration
+  drawRow("NARRATION", payment.narration || "-", boxX, startY, boxWidth);
+  startY += 10;
+
+  // Row 7: Paid By
+  drawRow("PAID BY", payment.paidBy?.name || "admin", boxX, startY, boxWidth);
+  startY += 10;
+
+  // Border lines
+  doc.line(boxX, startY - 70, boxX, startY);
+  doc.line(boxX + boxWidth, startY - 70, boxX + boxWidth, startY);
+
+  // Disclaimer
+  startY += 10;
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "italic");
+  doc.setTextColor(148, 163, 184);
+  doc.text("This is a computer generated voucher. Signature not required.", pageWidth / 2, startY, { align: "center" });
+
+  return doc.output('blob');
+};
+
 export const formatIndianNumber = (x) => {
   if (x === 0) return "0.00";
   if (!x || isNaN(x)) return "0.00";
