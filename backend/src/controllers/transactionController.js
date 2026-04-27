@@ -110,6 +110,12 @@ const sendPaymentEmail = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, null, 'Payment email sent successfully'));
 });
 
+const checkBalance = asyncHandler(async (req, res) => {
+  const { entityId, accountModel, amount } = req.body;
+  const result = await transactionService.checkBalance(entityId, accountModel, amount);
+  res.status(200).json(new ApiResponse(200, result, 'Balance check completed'));
+});
+
 module.exports = {
   createReceipt,
   getReceipts,
@@ -123,5 +129,6 @@ module.exports = {
   updatePayment,
   cancelPayment,
   sendPaymentEmail,
-  createSelfTransfer
+  createSelfTransfer,
+  checkBalance
 };

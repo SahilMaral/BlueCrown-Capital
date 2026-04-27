@@ -751,4 +751,19 @@ module.exports = {
   cancelPayment,
   sendPaymentEmail,
   createSelfTransfer,
+  checkBalance: async (entityId, accountModel, amount) => {
+    let balance = 0;
+    if (accountModel === 'Bank') {
+      const bank = await Bank.findById(entityId);
+      balance = bank ? bank.currentBalance : 0;
+    } else {
+      const company = await Company.findById(entityId);
+      balance = company ? company.currentCashBalance : 0;
+    }
+    return {
+      isSufficient: balance >= amount,
+      balance,
+      message: balance >= amount ? 'Sufficient balance' : `Insufficient balance. Available: ₹${balance.toLocaleString()}`
+    };
+  }
 };

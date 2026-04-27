@@ -7,6 +7,8 @@ const {
   deleteInvestment,
   forecloseInvestment,
   lumpsumInvestment,
+  restructureInvestment,
+  getInvestmentInstallments
 } = require('../../controllers/investmentController');
 const { protect } = require('../../middlewares/authMiddleware');
 const validateRequest = require('../../middlewares/validateRequest');
@@ -20,6 +22,8 @@ router.route('/')
   .post(validateRequest(investmentSchema), createInvestment)
   .get(getInvestments);
 
+router.get('/installments', getInvestmentInstallments);
+
 router.route('/:id')
   .get(getInvestment)
   .put(validateRequest(updateInvestmentSchema), updateInvestment)
@@ -27,5 +31,6 @@ router.route('/:id')
 
 router.post('/:id/foreclose', forecloseInvestment);
 router.post('/:id/lumpsum', lumpsumInvestment);
+router.post('/:id/restructure', restructureInvestment);
 
 module.exports = router;

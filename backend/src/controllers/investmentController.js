@@ -22,8 +22,8 @@ const getInvestments = asyncHandler(async (req, res, next) => {
 // @route   GET /api/v1/investments/:id
 // @access  Private
 const getInvestment = asyncHandler(async (req, res, next) => {
-  const investment = await investmentService.getInvestmentById(req.params.id, req.user.id, req.user.role, req.user.clientId);
-  res.status(200).json(new ApiResponse(200, investment, 'Investment retrieved successfully'));
+  const investmentData = await investmentService.getInvestmentById(req.params.id, req.user.id, req.user.role, req.user.clientId);
+  res.status(200).json(new ApiResponse(200, investmentData, 'Investment retrieved successfully'));
 });
 
 // @desc    Update investment
@@ -64,6 +64,25 @@ const lumpsumInvestment = asyncHandler(async (req, res, next) => {
   res.status(200).json(new ApiResponse(200, investment, 'Lumpsum payment processed successfully'));
 });
 
+// @desc    Restructure investment
+// @route   POST /api/v1/investments/:id/restructure
+// @access  Private
+const restructureInvestment = asyncHandler(async (req, res, next) => {
+  const investment = await investmentService.handleRestructure({
+    investmentId: req.params.id,
+    ...req.body
+  }, req.user.id);
+  res.status(200).json(new ApiResponse(200, investment, 'Investment restructured successfully'));
+});
+
+// @desc    Get all investment installments (collections)
+// @route   GET /api/v1/investments/installments
+// @access  Private
+const getInvestmentInstallments = asyncHandler(async (req, res, next) => {
+  const installments = await investmentService.getInvestmentInstallments(req.query);
+  res.status(200).json(new ApiResponse(200, installments, 'Installments retrieved successfully'));
+});
+
 module.exports = {
   createInvestment,
   getInvestments,
@@ -71,5 +90,7 @@ module.exports = {
   updateInvestment,
   deleteInvestment,
   forecloseInvestment,
-  lumpsumInvestment
+  lumpsumInvestment,
+  restructureInvestment,
+  getInvestmentInstallments
 };

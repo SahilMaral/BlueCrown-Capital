@@ -19,6 +19,7 @@ const ResetPassword = lazy(() => import('../pages/Login/ResetPassword'));
 const Dashboard = lazy(() => import('../pages/Dashboard/Dashboard'));
 const InvestmentForm = lazy(() => import('../pages/Investment/InvestmentForm'));
 const InvestmentView = lazy(() => import('../pages/Investment/InvestmentView'));
+const InvestmentInstallmentList = lazy(() => import('../pages/Investment/InvestmentInstallmentList'));
 const InvestmentReport = lazy(() => import('../pages/Investment/InvestmentReport'));
 const LoanForm = lazy(() => import('../pages/Loan/LoanForm'));
 const LoanView = lazy(() => import('../pages/Loan/LoanView'));
@@ -87,8 +88,9 @@ const AppRoutes = () => {
            <Route path="/dashboard" element={<Suspense fallback={<DashboardSkeleton />}><Dashboard /></Suspense>} />
          
          {/* Investment Routes */}
-         <Route path="/investment/entry" element={<Suspense fallback={<FormSkeleton />}><InvestmentForm /></Suspense>} />
+         <Route path="/investment/new" element={<Suspense fallback={<FormSkeleton />}><InvestmentForm /></Suspense>} />
          <Route path="/investment/view" element={<Suspense fallback={<TableSkeleton />}><InvestmentView /></Suspense>} />
+         <Route path="/investment/collections" element={<Suspense fallback={<TableSkeleton />}><InvestmentInstallmentList /></Suspense>} />
          
          {/* Loan Routes */}
          <Route path="/loan/entry" element={<Suspense fallback={<FormSkeleton />}><LoanForm /></Suspense>} />

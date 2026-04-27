@@ -12,6 +12,8 @@ router
   .get(transactionController.getPayments)
   .post(validateRequest(paymentSchema), transactionController.createPayment);
 
+router.post('/check-balance', transactionController.checkBalance);
+
 router
   .route('/:id')
   .get(transactionController.getPaymentById)

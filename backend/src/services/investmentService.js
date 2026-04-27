@@ -66,22 +66,35 @@ class InvestmentService {
       const investmentId = investment[0]._id;
 
       // 3. Create Installments
-      if (installments && installments.length > 0) {
-        const installmentDocs = installments.map(inst => ({
-          investmentId,
-          installmentNumber: inst.installment_number,
-          emiAmount: inst.emi_amount,
-          principalEmi: inst.principal_emi,
-          interestEmi: inst.interest_emi,
-          balancePrincipal: inst.balance_principal,
-          balanceInterestTotal: inst.balance_interest_total,
-          dateOfInstallment: inst.date_of_installment,
-          isPaid: inst.is_paid || false,
-          receiptId: inst.receipt_id || null,
-          createdBy: userId
-        }));
-        await InvestmentInstallment.create(installmentDocs, { session });
+      if (installments) {
+        const parsedInstallments = typeof installments === 'string' ? JSON.parse(installments) : installments;
+        if (Array.isArray(parsedInstallments) && parsedInstallments.length > 0) {
+          const installmentDocs = parsedInstallments.map(inst => ({
+            investmentId,
+            installmentNumber: inst.installment_number,
+            emiAmount: inst.emi_amount,
+            principalEmi: inst.principal_emi,
+            interestEmi: inst.interest_emi,
+            balancePrincipal: inst.balance_principal,
+            balanceInterestTotal: inst.balance_interest_total,
+            dateOfInstallment: inst.date_of_installment,
+            isPaid: inst.is_paid || false,
+            receiptId: inst.receipt_id || null,
+            createdBy: userId
+          }));
+          await InvestmentInstallment.create(installmentDocs, { session });
+        }
       }
+
+      // 4. Record Initial Payment (Outflow from company to client)
+      await transactionUtils.recordTransaction({
+        account: bankId || lenderCompanyId,
+        accountModel: bankId ? 'Bank' : 'Company',
+        amount: -parseFloat(principalAmount), // Outflow
+        dateTime: date,
+        isCash: paymentMode === 'Cash',
+        paymentId: paymentId
+      }, session);
 
       return investment[0];
     });
@@ -92,7 +105,11 @@ class InvestmentService {
     if (role === 'checker' && clientId) {
       query.clientId = clientId;
     }
-    const investments = await Investment.find(query).populate('clientId lenderCompanyId bankId').sort('-date');
+    const investments = await Investment.find(query)
+      .populate('clientId')
+      .populate('lenderCompanyId')
+      .populate('bankId')
+      .sort('-date');
     return investments;
   }
 
@@ -101,12 +118,52 @@ class InvestmentService {
     if (role === 'checker' && clientId) {
       query.clientId = clientId;
     }
-    const investment = await Investment.findOne(query).populate('clientId lenderCompanyId bankId');
+    const investment = await Investment.findOne(query)
+      .populate('clientId')
+      .populate('lenderCompanyId')
+      .populate('bankId');
+
     if (!investment) {
       throw new ApiError(404, 'Investment not found');
     }
     const installments = await InvestmentInstallment.find({ investmentId: id }).sort('installmentNumber');
-    return { investment, installments };
+    const restructureHistory = await InvestmentRestructureHistory.find({ investmentId: id }).sort('-restructureDate');
+    
+    return { investment, installments, restructureHistory };
+  }
+
+  async getInvestmentInstallments(filters = {}) {
+    const { search, startDate, endDate, isPaid } = filters;
+    const query = {};
+
+    if (isPaid !== undefined) {
+      query.isPaid = isPaid;
+    }
+
+    if (startDate || endDate) {
+      query.dateOfInstallment = {};
+      if (startDate) query.dateOfInstallment.$gte = new Date(startDate);
+      if (endDate) query.dateOfInstallment.$lte = new Date(endDate);
+    }
+
+    // Search logic would be more complex with population, 
+    // for now we fetch and then filter if needed or use aggregation
+    const installments = await InvestmentInstallment.find(query)
+      .populate({
+        path: 'investmentId',
+        populate: ['clientId', 'lenderCompanyId']
+      })
+      .sort('dateOfInstallment');
+
+    if (search) {
+      const searchLower = search.toLowerCase();
+      return installments.filter(inst => 
+        inst.investmentId?.investmentNumber?.toLowerCase().includes(searchLower) ||
+        inst.investmentId?.clientId?.clientName?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    return installments;
   }
 
   async handleForeclosure(foreclosureData, userId) {
@@ -120,6 +177,7 @@ class InvestmentService {
       investment.balanceInterestTotal = 0;
       investment.isForeClosure = true;
       investment.foreClosureDate = foreclosureDate;
+      investment.updatedBy = userId;
       await investment.save({ session });
 
       // 2. Delete unpaid installments
@@ -132,17 +190,20 @@ class InvestmentService {
         emiAmount: foreclosureAmount,
         principalEmi: foreclosureAmount,
         interestEmi: 0,
+        balancePrincipal: 0,
+        balanceInterestTotal: 0,
         dateOfInstallment: foreclosureDate,
         isPaid: true,
         paymentDate: foreclosureDate,
-        createdBy: userId
+        createdBy: userId,
+        updatedBy: userId
       }], { session });
 
-      // 4. Record Payment (Inflow from client to company)
+      // 4. Record Receipt (Inflow from client to company)
       await transactionUtils.recordTransaction({
         account: bankId || investment.lenderCompanyId,
         accountModel: bankId ? 'Bank' : 'Company',
-        amount: parseFloat(foreclosureAmount),
+        amount: parseFloat(foreclosureAmount), // Inflow
         dateTime: foreclosureDate,
         isCash: paymentMode === 'Cash'
       }, session);
@@ -152,7 +213,19 @@ class InvestmentService {
   }
 
   async handleLumpsum(lumpsumData, userId) {
-    const { investmentId, lumpsumAmount, lumpsumDate, newBalance, newTenure, paymentMode, bankId } = lumpsumData;
+    const { 
+      investmentId, 
+      lumpsumAmount, 
+      lumpsumDate, 
+      newBalancePrincipal, 
+      newBalanceInterest, 
+      newTenure, 
+      newEmi,
+      paymentMode, 
+      bankId,
+      installments // New schedule
+    } = lumpsumData;
+
     return await withTransaction(async (session) => {
       const investment = await Investment.findById(investmentId).session(session);
       if (!investment) throw new ApiError(404, 'Investment not found');
@@ -160,46 +233,63 @@ class InvestmentService {
       // 1. Save History
       await InvestmentRestructureHistory.create([{
         investmentId,
-        oldPrincipal: investment.balancePrincipal,
-        oldTenure: investment.tenure,
-        oldRoi: investment.rateOfInterest,
-        newPrincipal: newBalance,
-        newTenure: newTenure,
-        newRoi: investment.rateOfInterest,
-        restructureDate: lumpsumDate
+        previousTenure: investment.tenure,
+        previousEmi: investment.emiAmount,
+        previousBalancePrincipal: investment.balancePrincipal,
+        previousBalanceInterestTotal: investment.balanceInterestTotal,
+        previousTotalInterest: investment.totalInterest,
+        previousInterestType: investment.interestType,
+        previousRepaymentSchedule: investment.isInterestOrPrincipal,
+        restructureDate: lumpsumDate,
+        createdBy: userId
       }], { session });
 
-      // 2. Update Investment
-      investment.balancePrincipal = newBalance;
-      investment.tenure = newTenure;
-      await investment.save({ session });
+      // 2. Remove old unpaid installments
+      await InvestmentInstallment.deleteMany({ investmentId, isPaid: false }).session(session);
 
-      // 3. Handle installments
-      const unpaidCount = await InvestmentInstallment.countDocuments({ investmentId, isPaid: false }).session(session);
-      
-      if (unpaidCount > newTenure) {
-        const toDelete = unpaidCount - newTenure;
-        const extras = await InvestmentInstallment.find({ investmentId, isPaid: false })
-          .sort('-installmentNumber')
-          .limit(toDelete)
-          .session(session);
-        await InvestmentInstallment.deleteMany({ _id: { $in: extras.map(e => e._id) } }).session(session);
-      }
-
-      // 4. Create paid lumpsum installment
+      // 3. Create paid lumpsum installment
       await InvestmentInstallment.create([{
         investmentId,
         installmentNumber: 888, // Lumpsum mark
         emiAmount: lumpsumAmount,
         principalEmi: lumpsumAmount,
         interestEmi: 0,
+        balancePrincipal: newBalancePrincipal,
+        balanceInterestTotal: newBalanceInterest,
         dateOfInstallment: lumpsumDate,
         isPaid: true,
         paymentDate: lumpsumDate,
-        createdBy: userId
+        createdBy: userId,
+        updatedBy: userId
       }], { session });
 
-      // 5. Record Transaction (Inflow)
+      // 4. Insert new installment schedule
+      if (installments && Array.isArray(installments)) {
+        const installmentDocs = installments.map(inst => ({
+          investmentId,
+          installmentNumber: inst.installment_number,
+          emiAmount: inst.emi_amount,
+          principalEmi: inst.principal_emi,
+          interestEmi: inst.interest_emi,
+          balancePrincipal: inst.balance_principal,
+          balanceInterestTotal: inst.balance_interest_total,
+          dateOfInstallment: inst.date_of_installment,
+          isPaid: false,
+          createdBy: userId,
+          updatedBy: userId
+        }));
+        await InvestmentInstallment.create(installmentDocs, { session });
+      }
+
+      // 5. Update Investment
+      investment.balancePrincipal = newBalancePrincipal;
+      investment.balanceInterestTotal = newBalanceInterest;
+      investment.tenure = newTenure;
+      investment.emiAmount = newEmi;
+      investment.updatedBy = userId;
+      await investment.save({ session });
+
+      // 6. Record Transaction (Inflow)
       await transactionUtils.recordTransaction({
         account: bankId || investment.lenderCompanyId,
         accountModel: bankId ? 'Bank' : 'Company',
@@ -212,12 +302,79 @@ class InvestmentService {
     });
   }
 
+  async handleRestructure(restructureData, userId) {
+    const {
+      investmentId,
+      restructureDate,
+      newTenure,
+      newPrincipal,
+      repaymentSchedule,
+      newEmi,
+      newTotalInterest,
+      installments
+    } = restructureData;
+
+    return await withTransaction(async (session) => {
+      const investment = await Investment.findById(investmentId).session(session);
+      if (!investment) throw new ApiError(404, 'Investment not found');
+
+      // 1. Save History
+      await InvestmentRestructureHistory.create([{
+        investmentId,
+        previousTenure: investment.tenure,
+        previousEmi: investment.emiAmount,
+        previousBalancePrincipal: investment.balancePrincipal,
+        previousBalanceInterestTotal: investment.balanceInterestTotal,
+        previousTotalInterest: investment.totalInterest,
+        previousInterestType: investment.interestType,
+        previousRepaymentSchedule: investment.isInterestOrPrincipal,
+        restructureDate: restructureDate,
+        createdBy: userId
+      }], { session });
+
+      // 2. Remove old unpaid installments
+      await InvestmentInstallment.deleteMany({ investmentId, isPaid: false }).session(session);
+
+      // 3. Insert new installment schedule
+      if (installments && Array.isArray(installments)) {
+        const installmentDocs = installments.map(inst => ({
+          investmentId,
+          installmentNumber: inst.installment_number,
+          emiAmount: inst.emi_amount,
+          principalEmi: inst.principal_emi,
+          interestEmi: inst.interest_emi,
+          balancePrincipal: inst.balance_principal,
+          balanceInterestTotal: inst.balance_interest_total,
+          dateOfInstallment: inst.date_of_installment,
+          isPaid: false,
+          createdBy: userId,
+          updatedBy: userId
+        }));
+        await InvestmentInstallment.create(installmentDocs, { session });
+      }
+
+      // 4. Update Investment
+      investment.balancePrincipal = newPrincipal;
+      investment.balanceInterestTotal = newTotalInterest;
+      investment.totalInterest = newTotalInterest;
+      investment.tenure = newTenure;
+      investment.emiAmount = newEmi;
+      investment.isInterestOrPrincipal = repaymentSchedule;
+      investment.restructureDate = restructureDate;
+      investment.updatedBy = userId;
+      await investment.save({ session });
+
+      return investment;
+    });
+  }
+
   async deleteInvestment(id) {
     const investment = await Investment.findById(id);
     if (!investment) {
       throw new ApiError(404, 'Investment not found');
     }
     await InvestmentInstallment.deleteMany({ investmentId: id });
+    await InvestmentRestructureHistory.deleteMany({ investmentId: id });
     await investment.deleteOne();
     return { id };
   }

@@ -3,6 +3,7 @@ import { X, Menu } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { NavLink, useLocation } from 'react-router-dom';
 import { logout } from '../../store/slices/authSlice';
+import CloseIcon from '../icons/CloseIcon';
 import OverviewIcon from '../icons/OverviewIcon';
 import InvestmentIcon from '../icons/InvestmentIcon';
 import LoanIcon from '../icons/LoanIcon';
@@ -23,6 +24,7 @@ import CalendarIcon from '../icons/CalendarIcon';
 import ClockIcon from '../icons/ClockIcon';
 import PlusCircleIcon from '../icons/PlusCircleIcon';
 import RupeeIcon from '../icons/RupeeIcon';
+import TrendingUpIcon from '../icons/TrendingUpIcon';
 import '../icons/AnimatedIcons.css';
 import '../../pages/Dashboard/Dashboard.css';
 import LogoIcon from '../icons/LogoIcon';
@@ -118,9 +120,6 @@ const SignOutModal = ({ onConfirm, onCancel }) => (
     `}</style>
   </div>
 );
-
-
-
 
 /* ── Sidebar ─────────────────────────────────────────────────── */
 const Sidebar = ({ isOpen, onClose }) => {
@@ -251,16 +250,22 @@ const Sidebar = ({ isOpen, onClose }) => {
             </svg>
           </div>
           <div style={{
-            maxHeight: isInvestmentOpen ? '200px' : '0',
+            maxHeight: isInvestmentOpen ? '250px' : '0',
             overflow: 'hidden',
             transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
           }}>
+            {user?.role?.toLowerCase() !== 'checker' && (
+              <NavLink to="/investment/new" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+                <PlusCircleIcon />
+                Investment Entry
+              </NavLink>
+            )}
             <NavLink to="/investment/view" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
               <PiggyBankIcon />
-              Investment
+              Active Investments
             </NavLink>
             {user?.role?.toLowerCase() !== 'checker' && (
-              <NavLink to="/investment/entry" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+              <NavLink to="/investment/collections" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                 <ReceiptIcon />
                 Investment Collection
               </NavLink>

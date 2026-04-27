@@ -6,15 +6,20 @@ const investmentRestructureHistorySchema = new mongoose.Schema({
     ref: 'Investment',
     required: true
   },
-  oldPrincipal: Number,
-  oldTenure: Number,
-  oldRoi: Number,
-  newPrincipal: Number,
-  newTenure: Number,
-  newRoi: Number,
+  previousTenure: Number,
+  previousEmi: Number,
+  previousBalancePrincipal: Number,
+  previousBalanceInterestTotal: Number,
+  previousTotalInterest: Number,
+  previousInterestType: String,
+  previousRepaymentSchedule: String,
   restructureDate: {
     type: Date,
-    default: Date.now
+    required: true
+  },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   }
 }, {
   timestamps: true

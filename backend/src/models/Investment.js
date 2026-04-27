@@ -56,7 +56,7 @@ const InvestmentSchema = new mongoose.Schema(
     },
     paymentType: {
       type: String,
-      enum: ['Cash', 'Bank', 'Cheque', 'Online'],
+      enum: ['Cash', 'Bank', 'Cheque', 'Online', 'Bank Transfer'],
     },
     emiAmount: {
       type: Number,
@@ -111,6 +111,9 @@ const InvestmentSchema = new mongoose.Schema(
     updatedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
+    },
+    restructureDate: {
+      type: Date,
     }
   },
   {
