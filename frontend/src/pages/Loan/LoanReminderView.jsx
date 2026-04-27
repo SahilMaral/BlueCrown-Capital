@@ -31,6 +31,20 @@ const LoanReminderView = () => {
     }
   };
 
+  const handleUpdateReminder = async (reminderId, field, value) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`${import.meta.env.VITE_API_URL}/loans/reminders/${reminderId}`, { [field]: Number(value) }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      // Update local state
+      setReminders(prev => prev.map(r => r._id === reminderId ? { ...r, [field]: Number(value) } : r));
+    } catch (err) {
+      console.error('Error updating reminder', err);
+      alert('Failed to update reminder');
+    }
+  };
+
   const filteredReminders = reminders.filter(rem => 
     rem.loanId?.companyId?.companyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     rem.loanId?.loanNumber?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -69,6 +83,7 @@ const LoanReminderView = () => {
                   <th>Company</th>
                   <th>Loan Number</th>
                   <th>EMI Amount</th>
+                  <th>Penalty</th>
                   <th>Bank</th>
                   <th>Status</th>
                   <th>Actions</th>
@@ -78,7 +93,7 @@ const LoanReminderView = () => {
                 {loading ? (
                   [1, 2, 3, 4, 5].map((i) => (
                     <tr key={`sk-row-${i}`}>
-                      <td colSpan="7" style={{ padding: '8px 32px' }}>
+                      <td colSpan="8" style={{ padding: '8px 32px' }}>
                         <div className="skeleton-row skeleton" style={{ margin: 0, height: '60px', borderRadius: '12px' }}></div>
                       </td>
                     </tr>
@@ -94,7 +109,24 @@ const LoanReminderView = () => {
                       </td>
                       <td style={{ fontWeight: 800 }}>{rem.loanId?.companyId?.companyName || 'N/A'}</td>
                       <td style={{ fontWeight: 600, color: 'var(--elite-blue)' }}>{rem.loanId?.loanNumber}</td>
-                      <td style={{ fontWeight: 700 }}>₹{rem.emiAmount?.toLocaleString('en-IN')}</td>
+                      <td>
+                        <input 
+                          type="number" 
+                          className="elite-input-classic" 
+                          style={{ width: '120px', padding: '4px 8px', height: '32px', fontSize: '13px' }}
+                          defaultValue={rem.emiAmount}
+                          onBlur={(e) => handleUpdateReminder(rem._id, 'emiAmount', e.target.value)}
+                        />
+                      </td>
+                      <td>
+                        <input 
+                          type="number" 
+                          className="elite-input-classic" 
+                          style={{ width: '100px', padding: '4px 8px', height: '32px', fontSize: '13px', color: rem.penaltyAmount > 0 ? 'var(--error)' : 'inherit' }}
+                          defaultValue={rem.penaltyAmount || 0}
+                          onBlur={(e) => handleUpdateReminder(rem._id, 'penaltyAmount', e.target.value)}
+                        />
+                      </td>
                       <td>{rem.loanId?.bankId?.bankName || 'N/A'}</td>
                       <td>
                         <span className={`status-badge ${rem.isPaid ? 'success' : 'pending'}`}>
@@ -129,10 +161,12 @@ const LoanReminderView = () => {
                               onClick={() => navigate('/accounting/payments/new', { 
                                 state: { 
                                   prefill: {
-                                    receiverId: rem.loanId?.clientId?._id,
+                                    receiverId: rem.loanId?.clientId?._id || rem.loanId?.clientId,
                                     payerId: rem.loanId?.companyId?._id,
+                                    amount: rem.penaltyAmount || 0,
                                     reminderId: rem._id,
-                                    narration: `Penalty for Loan #${rem.loanId?.loanNumber}`
+                                    narration: `Penalty Payment for Loan #${rem.loanId?.loanNumber} (Reminder: ${new Date(rem.reminderDate).toLocaleDateString('en-GB')})`,
+                                    ledgerName: 'Penalty'
                                   } 
                                 } 
                               })}

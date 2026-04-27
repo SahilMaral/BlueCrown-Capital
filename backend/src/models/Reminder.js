@@ -14,6 +14,10 @@ const reminderSchema = new mongoose.Schema({
     type: Date,
     required: true
   },
+  penaltyAmount: {
+    type: Number,
+    default: 0
+  },
   isPaid: {
     type: Boolean,
     default: false

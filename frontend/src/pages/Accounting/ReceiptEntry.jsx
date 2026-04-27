@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import '../Dashboard/Dashboard.css';
 import UserIcon from '../../components/icons/UserIcon';
@@ -27,6 +27,7 @@ const PAYMENT_MODES = [
 
 const ReceiptEntry = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useSelector((state) => state.auth);
   const [loading, setLoading] = useState(false);
   const [masters, setMasters] = useState({ clients: [], companies: [], ledgers: [], banks: [] });
@@ -41,7 +42,8 @@ const ReceiptEntry = () => {
     amount: '',
     dateTime: new Date().toISOString().slice(0, 16),
     narration: '',
-    isInternal: false
+    isInternal: false,
+    pendingLoanData: null
   });
   const [error, setError] = useState('');
   const [modalType, setModalType] = useState(null); // 'Client', 'Company', 'Ledger', 'Bank'
@@ -63,7 +65,22 @@ const ReceiptEntry = () => {
           ledgers: ledgers.data.data,
           banks: banks.data.data
         });
-        if (companies.data.data.length > 0) {
+
+        // Handle pre-fill from location state
+        if (location.state?.prefill) {
+          const { prefill } = location.state;
+          setFormData(prev => ({
+            ...prev,
+            payerId: prefill.payerId || '',
+            receiverId: prefill.receiverId || (companies.data.data.length > 0 ? companies.data.data[0]._id : ''),
+            amount: prefill.amount || '',
+            narration: prefill.narration || '',
+            bankId: prefill.bankId || '',
+            paymentMode: prefill.paymentMode || 'Cash',
+            pendingLoanData: prefill.pendingLoanData || null,
+            ledgerId: ledgers.data.data.find(l => l.name?.toLowerCase() === (prefill.ledgerName?.toLowerCase() || 'loan'))?._id || ''
+          }));
+        } else if (companies.data.data.length > 0) {
           setFormData(prev => ({ ...prev, receiverId: companies.data.data[0]._id }));
         }
       } catch (err) {
@@ -139,7 +156,8 @@ const ReceiptEntry = () => {
         dateTime: formData.dateTime,
         financialYear: getFinancialYear(formData.dateTime),
         narration: formData.narration,
-        isInternal: formData.isInternal
+        isInternal: formData.isInternal,
+        pendingLoanData: formData.pendingLoanData
       };
       await axios.post(`${import.meta.env.VITE_API_URL}/receipts`, payload, {
         headers: { Authorization: `Bearer ${token}` }

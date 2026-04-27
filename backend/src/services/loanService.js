@@ -228,8 +228,29 @@ class LoanService {
     const loans = await Loan.find(query).select('_id');
     const loanIds = loans.map(loan => loan._id);
 
-    // 2. Get reminders for those loans
-    const reminders = await Reminder.find({ loanId: { $in: loanIds } })
+    // 2. Get reminders for those loans (Current month unpaid OR past unpaid)
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+
+    const reminders = await Reminder.find({ 
+      loanId: { $in: loanIds },
+      $or: [
+        { 
+          $expr: { 
+            $and: [
+              { $eq: [{ $month: "$reminderDate" }, currentMonth] },
+              { $eq: [{ $year: "$reminderDate" }, currentYear] },
+              { $eq: ["$isPaid", false] }
+            ]
+          } 
+        },
+        { 
+          reminderDate: { $lt: now },
+          isPaid: false
+        }
+      ]
+    })
       .populate({
         path: 'loanId',
         populate: { path: 'companyId bankId clientId' }
@@ -246,6 +267,89 @@ class LoanService {
     await Reminder.deleteMany({ loanId: id });
     await loan.deleteOne();
     return { id };
+  }
+
+  async handleRestructure(restructureData, userId) {
+    const { loanId, restructureDate, newBalance, newTenure, isInterestOrPrincipal } = restructureData;
+    return await withTransaction(async (session) => {
+      const loan = await Loan.findOne({ _id: loanId, user: userId }).session(session);
+      if (!loan) throw new ApiError(404, 'Loan not found');
+
+      // 1. Save History
+      await LoanHistory.create([{
+        loanId: loan._id,
+        oldPrincipal: loan.totalBalanceAmount,
+        oldTenure: loan.tenure,
+        newPrincipal: newBalance,
+        newTenure: newTenure,
+        changeType: 'Restructure',
+        changeDate: restructureDate
+      }], { session });
+
+      // 2. Update Loan
+      loan.totalBalanceAmount = newBalance;
+      loan.tenure = newTenure;
+      if (isInterestOrPrincipal) loan.isInterestOrPrincipal = isInterestOrPrincipal;
+      await loan.save({ session });
+
+      // 3. Adjust reminders
+      const unpaidReminders = await Reminder.find({ loanId, isPaid: false })
+        .sort('reminderDate')
+        .session(session);
+      
+      const unpaidCount = unpaidReminders.length;
+
+      if (unpaidCount > newTenure) {
+        // Delete extra reminders from the end
+        const toDelete = unpaidCount - newTenure;
+        const extras = unpaidReminders.slice(-toDelete);
+        await Reminder.deleteMany({ _id: { $in: extras.map(e => e._id) } }).session(session);
+      } else if (unpaidCount < newTenure) {
+        // Add missing reminders
+        const toAdd = newTenure - unpaidCount;
+        let lastDate;
+        if (unpaidCount > 0) {
+          lastDate = new Date(unpaidReminders[unpaidCount - 1].reminderDate);
+        } else {
+          const lastPaid = await Reminder.findOne({ loanId, isPaid: true })
+            .sort('-reminderDate')
+            .session(session);
+          lastDate = lastPaid ? new Date(lastPaid.reminderDate) : new Date(loan.dateOfPayment);
+        }
+
+        const newReminders = [];
+        for (let i = 1; i <= toAdd; i++) {
+          const rDate = new Date(lastDate);
+          rDate.setMonth(lastDate.getMonth() + i);
+          newReminders.push({
+            loanId,
+            emiAmount: newBalance / newTenure, // Estimated
+            reminderDate: rDate,
+            isPaid: false
+          });
+        }
+        await Reminder.insertMany(newReminders, { session });
+      }
+
+      return loan;
+    });
+  }
+
+  async updateReminder(reminderId, updateData, userId) {
+    const reminder = await Reminder.findById(reminderId);
+    if (!reminder) throw new ApiError(404, 'Reminder not found');
+    
+    // Authorization check
+    const loan = await Loan.findById(reminder.loanId);
+    if (loan.user.toString() !== userId.toString()) {
+      throw new ApiError(403, 'Unauthorized to update this reminder');
+    }
+
+    if (updateData.emiAmount !== undefined) reminder.emiAmount = updateData.emiAmount;
+    if (updateData.penaltyAmount !== undefined) reminder.penaltyAmount = updateData.penaltyAmount;
+    
+    await reminder.save();
+    return reminder;
   }
 }
 

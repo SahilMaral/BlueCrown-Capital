@@ -15,7 +15,7 @@ const LoanView = () => {
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showActionModal, setShowActionModal] = useState(false);
-  const [actionType, setActionType] = useState(''); // 'foreclose' or 'lumpsum'
+  const [actionType, setActionType] = useState(''); // 'foreclose', 'lumpsum', or 'restructure'
   const [formData, setFormData] = useState({
     amount: '',
     date: new Date().toISOString().split('T')[0],
@@ -86,8 +86,8 @@ const LoanView = () => {
     setFormData({
       ...formData,
       amount: type === 'foreclose' ? loan.totalBalanceAmount : '',
-      newBalance: '',
-      newTenure: ''
+      newBalance: type === 'restructure' ? loan.totalBalanceAmount : '',
+      newTenure: type === 'restructure' ? (loan.tenure || '') : ''
     });
     setShowActionModal(true);
   };
@@ -187,6 +187,9 @@ const LoanView = () => {
                               <button className="btn-elite-ghost" style={{ padding: '8px 12px', fontSize: '11px', color: 'var(--elite-blue)' }} onClick={() => openActionModal(loan, 'lumpsum')}>
                                 Lumpsum
                               </button>
+                              <button className="btn-elite-ghost" style={{ padding: '8px 12px', fontSize: '11px', color: 'var(--elite-blue)' }} onClick={() => openActionModal(loan, 'restructure')}>
+                                Restructure
+                              </button>
                               <button className="btn-elite-ghost" style={{ padding: '8px 12px', fontSize: '11px', color: '#ef4444' }} onClick={() => openActionModal(loan, 'foreclose')}>
                                 Foreclose
                               </button>
@@ -283,14 +286,16 @@ const LoanView = () => {
                   required
                 />
               </div>
-              <div className="input-field-elite">
-                <label>Payment Mode</label>
-                <select value={formData.paymentMode} onChange={(e) => setFormData({...formData, paymentMode: e.target.value})}>
-                  <option value="Bank">Bank</option>
-                  <option value="Cash">Cash</option>
-                </select>
-              </div>
-              {formData.paymentMode === 'Bank' && (
+              {actionType !== 'restructure' && (
+                <div className="input-field-elite">
+                  <label>Payment Mode</label>
+                  <select value={formData.paymentMode} onChange={(e) => setFormData({...formData, paymentMode: e.target.value})}>
+                    <option value="Bank">Bank</option>
+                    <option value="Cash">Cash</option>
+                  </select>
+                </div>
+              )}
+              {actionType !== 'restructure' && formData.paymentMode === 'Bank' && (
                 <div className="input-field-elite">
                   <label>Select Bank</label>
                   <select value={formData.bankId} onChange={(e) => setFormData({...formData, bankId: e.target.value})} required>
@@ -299,7 +304,7 @@ const LoanView = () => {
                   </select>
                 </div>
               )}
-              {actionType === 'lumpsum' && (
+              {(actionType === 'lumpsum' || actionType === 'restructure') && (
                 <>
                   <div className="input-field-elite">
                     <label>New Balance Amount</label>

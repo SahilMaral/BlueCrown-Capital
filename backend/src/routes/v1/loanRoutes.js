@@ -8,6 +8,8 @@ const {
   forecloseLoan,
   lumpsumLoan,
   getReminders,
+  restructureLoan,
+  updateReminder
 } = require('../../controllers/loanController');
 const { protect } = require('../../middlewares/authMiddleware');
 const validateRequest = require('../../middlewares/validateRequest');
@@ -30,5 +32,7 @@ router.route('/:id')
 
 router.post('/:id/foreclose', forecloseLoan);
 router.post('/:id/lumpsum', lumpsumLoan);
+router.post('/:id/restructure', restructureLoan);
+router.put('/reminders/:reminderId', updateReminder);
 
 module.exports = router;

@@ -72,6 +72,16 @@ const getReminders = asyncHandler(async (req, res, next) => {
   res.status(200).json(new ApiResponse(200, reminders, 'Loan reminders retrieved successfully'));
 });
 
+const restructureLoan = asyncHandler(async (req, res) => {
+  const result = await loanService.handleRestructure({ ...req.body, loanId: req.params.id }, req.user._id);
+  res.status(200).json(new ApiResponse(200, result, 'Loan restructured successfully'));
+});
+
+const updateReminder = asyncHandler(async (req, res) => {
+  const result = await loanService.updateReminder(req.params.reminderId, req.body, req.user._id);
+  res.status(200).json(new ApiResponse(200, result, 'Reminder updated successfully'));
+});
+
 module.exports = {
   createLoan,
   getLoans,
@@ -80,5 +90,7 @@ module.exports = {
   deleteLoan,
   forecloseLoan,
   lumpsumLoan,
-  getReminders
+  getReminders,
+  restructureLoan,
+  updateReminder
 };

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import '../Dashboard/Dashboard.css';
 import CompanyIcon from '../../components/icons/CompanyIcon';
 import ClockIcon from '../../components/icons/ClockIcon';
@@ -14,6 +15,7 @@ import '../Accounting/EntryForm.css';
 
 
 const LoanForm = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [masters, setMasters] = useState({ companies: [], banks: [], clients: [] });
@@ -38,6 +40,35 @@ const LoanForm = () => {
   React.useEffect(() => {
     fetchMasters();
   }, []);
+
+  const handleContinueToReceipt = () => {
+    // Frontend Validation (basic)
+    if (!formData.companyId || !formData.clientId || !formData.principalAmount) {
+      setMessage({ type: 'error', text: 'Please fill essential fields (Company, Client, Amount) first.' });
+      return;
+    }
+
+    const payload = {
+      ...formData,
+      date: new Date().toISOString(),
+      totalBalanceAmount: formData.totalAmount || formData.principalAmount
+    };
+
+    navigate('/accounting/receipts/new', {
+      state: {
+        prefill: {
+          payerId: formData.clientId,
+          receiverId: formData.companyId,
+          amount: formData.principalAmount,
+          bankId: formData.bankId,
+          paymentMode: formData.bankId ? 'Bank' : 'Cash',
+          narration: `Principal Receipt for Loan initialized on ${new Date().toLocaleDateString()}`,
+          pendingLoanData: payload,
+          ledgerName: 'Loan'
+        }
+      }
+    });
+  };
 
   const fetchMasters = async () => {
     try {
@@ -324,8 +355,11 @@ const LoanForm = () => {
           </div>
 
           <div style={{ display: 'flex', gap: '16px', marginTop: '16px' }}>
-            <button type="submit" className="btn-elite-primary" disabled={submitting}>
-              {submitting ? 'Initializing...' : 'Activate Credit'}
+            <button type="button" className="btn-elite-primary" onClick={handleContinueToReceipt}>
+              Continue to Receipt
+            </button>
+            <button type="submit" className="btn-elite-ghost" disabled={submitting}>
+              {submitting ? 'Initializing...' : 'Initialize without Receipt'}
             </button>
             <button type="button" className="btn-elite-outline" onClick={() => window.history.back()}>Discard</button>
           </div>

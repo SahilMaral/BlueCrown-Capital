@@ -76,8 +76,8 @@ const PaymentEntry = () => {
             amount: prefill.amount || '',
             narration: prefill.narration || '',
             reminderId: prefill.reminderId || '',
-            // If it's a loan payment, auto-select 'Loan' ledger if available
-            ledgerId: ledgers.data.data.find(l => l.name?.toLowerCase() === 'loan')?._id || prev.ledgerId
+            // If it's a loan payment, auto-select 'Loan' or provided ledger
+            ledgerId: ledgers.data.data.find(l => l.name?.toLowerCase() === (prefill.ledgerName?.toLowerCase() || 'loan'))?._id || prev.ledgerId
           }));
         } else if (companies.data.data.length > 0) {
           setFormData(prev => ({ ...prev, payerId: companies.data.data[0]._id }));
