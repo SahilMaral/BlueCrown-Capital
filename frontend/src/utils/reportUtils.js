@@ -1,7 +1,14 @@
 import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
+/**
+ * Export data to Excel
+ * @param {Array} headers - Table headers
+ * @param {Array} data - Table data (2D array)
+ * @param {string} fileName - Name of the file
+ * @param {Array} metaData - Optional header rows (e.g. Company Name, Date)
+ */
 /**
  * Export data to Excel
  * @param {Array} headers - Table headers
@@ -16,8 +23,16 @@ export const exportToExcel = (headers, data, fileName = 'report', metaData = [])
   const wsData = [...metaData, [], headers, ...data];
   const ws = XLSX.utils.aoa_to_sheet(wsData);
 
-  // Set column widths
-  ws['!cols'] = headers.map(() => ({ wch: 20 }));
+  // Auto-size columns
+  const colWidths = headers.map((h, i) => {
+    let max = h.length;
+    data.forEach(row => {
+      const val = row[i] ? row[i].toString() : '';
+      if (val.length > max) max = val.length;
+    });
+    return { wch: Math.min(max + 5, 50) }; // Cap at 50
+  });
+  ws['!cols'] = colWidths;
 
   XLSX.utils.book_append_sheet(wb, ws, "Report");
   XLSX.writeFile(wb, `${fileName}.xlsx`);
@@ -39,35 +54,65 @@ export const generatePDF = (options) => {
   let pageWidth = doc.internal.pageSize.getWidth();
   let startY = 20;
 
+  // Header Background
+  doc.setFillColor(15, 23, 42);
+  doc.rect(0, 0, pageWidth, 40, 'F');
+
   // Company Name
-  doc.setFontSize(16);
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(22);
   doc.setFont("helvetica", "bold");
   doc.text(companyName || 'BlueCrown Capital', pageWidth / 2, startY, { align: "center" });
-  startY += 8;
+  startY += 10;
 
   // Title
-  doc.setFontSize(12);
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "normal");
   doc.text(title, pageWidth / 2, startY, { align: "center" });
-  startY += 6;
+  startY += 8;
 
   // Subtitle
   if (subTitle) {
     doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
     doc.text(subTitle, pageWidth / 2, startY, { align: "center" });
-    startY += 8;
   }
 
+  startY = 50;
+
   // Table
-  doc.autoTable({
+  autoTable(doc, {
     startY: startY,
     head: [headers],
     body: body,
     theme: 'grid',
-    styles: { fontSize: 8, cellPadding: 2 },
-    headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-    margin: { top: 20 }
+    styles: { 
+      fontSize: 8, 
+      cellPadding: 3,
+      valign: 'middle',
+      font: 'helvetica'
+    },
+    headStyles: { 
+      fillColor: [15, 23, 42], 
+      textColor: 255,
+      fontStyle: 'bold',
+      halign: 'center'
+    },
+    columnStyles: {
+      0: { halign: 'center' },
+      1: { halign: 'left' }
+    },
+    margin: { top: 20, left: 10, right: 10 }
   });
+
+  // Footer
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(100);
+    doc.text(`Page ${i} of ${pageCount}`, pageWidth - 20, doc.internal.pageSize.getHeight() - 10);
+    doc.text(`Generated on ${new Date().toLocaleString()}`, 20, doc.internal.pageSize.getHeight() - 10);
+  }
 
   return doc.output('blob');
 };

@@ -2,10 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import useDocumentTitle from '../../hooks/useDocumentTitle';
 import axios from 'axios';
 import '../Dashboard/Dashboard.css';
+import './Reports.css';
 import ReportSkeleton from '../../components/common/skeletons/ReportSkeleton';
 import { exportToExcel, formatIndianNumber } from '../../utils/reportUtils';
 import ReportEmailModal from '../../components/common/ReportEmailModal';
 import { Printer, FileSpreadsheet, Mail, RefreshCw } from 'lucide-react';
+import EliteSelect from '../../components/common/EliteSelect';
+import CompanyIcon from '../../components/icons/CompanyIcon';
+import CalendarIcon from '../../components/icons/CalendarIcon';
 
 const DayReport = () => {
   useDocumentTitle('Daily Report');
@@ -58,25 +62,57 @@ const DayReport = () => {
 
   const handleExportExcel = () => {
     if (!report) return;
-    const headers = ['Sr', 'Receipt #', 'Particulars', 'Mode', 'Amount', 'Sr', 'Payment #', 'Particulars', 'Mode', 'Amount'];
-    const data = report.reportData.map((row, idx) => [
-      idx + 1,
-      row.receipt.receiptNumber || '',
-      row.receipt.particular || '',
-      row.receipt.paymentMode || '',
-      row.receipt.amount || '',
-      idx + 1,
-      row.payment.paymentNumber || '',
-      row.payment.particular || '',
-      row.payment.paymentMode || '',
-      row.payment.amount || ''
-    ]);
+    const headers = [
+      '#', 'Receipt No', 'Payer', 'Bank / Narration', 'Cash (Rec)', 'Online (Rec)',
+      '|', // Divider
+      '#', 'Payment No', 'Receiver', 'Bank / Narration', 'Cash (Pay)', 'Online (Pay)'
+    ];
+
+    const data = [
+      // Opening Balance Row
+      ['', '', 'Opening Balance', '', report.cashOpeningSum, report.onlineOpeningSum, '|', '', '', '', '', '', ''],
+      ...report.reportData.map((row, idx) => [
+        row.receipt.amount ? idx + 1 : '',
+        row.receipt.receiptNumber || '',
+        row.receipt.particular || '',
+        `${row.receipt.bankName ? '(' + row.receipt.bankName + ') ' : ''}${row.receipt.narration || ''}`,
+        row.receipt.isCash ? row.receipt.amount : '',
+        !row.receipt.isCash && row.receipt.amount ? row.receipt.amount : '',
+        '|',
+        row.payment.amount ? idx + 1 : '',
+        row.payment.paymentNumber || '',
+        row.payment.particular || '',
+        `${row.payment.bankName ? '(' + row.payment.bankName + ') ' : ''}${row.payment.narration || ''}`,
+        row.payment.isCash ? row.payment.amount : '',
+        !row.payment.isCash && row.payment.amount ? row.payment.amount : ''
+      ]),
+      // Closing Balance Rows
+      ['', '', 'Closing Balance', '', 
+        report.cashDifferenceSide === 'receipt' ? report.cashDifference : '', 
+        report.onlineDifferenceSide === 'receipt' ? report.onlineDifference : '', 
+        '|',
+        '', '', 'Closing Balance', '', 
+        report.cashDifferenceSide === 'payment' ? report.cashDifference : '', 
+        report.onlineDifferenceSide === 'payment' ? report.onlineDifference : ''
+      ],
+      // Total Row
+      ['', '', 'Total', '', 
+        report.totalCashReceipts + report.cashOpeningSum, 
+        report.totalOnlineReceipts + report.onlineOpeningSum, 
+        '|',
+        '', '', 'Total', '', 
+        report.totalCashReceipts + report.cashOpeningSum, 
+        report.totalOnlineReceipts + report.onlineOpeningSum
+      ]
+    ];
     
     const company = companies.find(c => c._id === selectedCompany);
     const metaData = [
-      [company?.companyName || 'Daily Report'],
-      [`Date: ${new Date(date).toLocaleDateString()}`],
-      ['Detailed Day Report']
+      [company?.companyName || 'Daily Financial Report'],
+      [report.companyAddress || ''],
+      [`Date: ${new Date(date).toLocaleDateString('en-GB')}`],
+      ['Detailed Day Report'],
+      []
     ];
 
     exportToExcel(headers, data, `DayReport_${date}`, metaData);
@@ -90,20 +126,22 @@ const DayReport = () => {
     if (!report) return {};
     const company = companies.find(c => c._id === selectedCompany);
     return {
-      title: `Daily Financial Report - ${new Date(date).toLocaleDateString()}`,
+      title: `Daily Financial Report - ${new Date(date).toLocaleDateString('en-GB')}`,
       subTitle: `Company: ${company?.companyName}`,
       companyName: company?.companyName,
       fileName: `DayReport_${date}`,
-      headers: ['Receipt #', 'Payer', 'Mode', 'Amount (Rec)', 'Payment #', 'Receiver', 'Mode', 'Amount (Pay)'],
-      body: report.reportData.map(row => [
+      headers: ['#', 'Receipt #', 'Payer', 'Cash (R)', 'Online (R)', '#', 'Payment #', 'Receiver', 'Cash (P)', 'Online (P)'],
+      body: report.reportData.map((row, idx) => [
+        row.receipt.amount ? idx + 1 : '',
         row.receipt.receiptNumber || '-',
         row.receipt.particular || '-',
-        row.receipt.paymentMode || '-',
-        row.receipt.amount ? `₹${row.receipt.amount}` : '-',
+        row.receipt.isCash ? `₹${formatIndianNumber(row.receipt.amount)}` : '-',
+        !row.receipt.isCash && row.receipt.amount ? `₹${formatIndianNumber(row.receipt.amount)}` : '-',
+        row.payment.amount ? idx + 1 : '',
         row.payment.paymentNumber || '-',
         row.payment.particular || '-',
-        row.payment.paymentMode || '-',
-        row.payment.amount ? `₹${row.payment.amount}` : '-'
+        row.payment.isCash ? `₹${formatIndianNumber(row.payment.amount)}` : '-',
+        !row.payment.isCash && row.payment.amount ? `₹${formatIndianNumber(row.payment.amount)}` : '-'
       ])
     };
   };
@@ -131,18 +169,27 @@ const DayReport = () => {
       <section className="content-section content-section-elite">
         <div className="filter-card-elite no-print">
           <div className="filter-grid-elite">
-            <div className="input-field-elite">
+            <div className="input-field-elite auth-input-group">
               <label>Our Company</label>
-              <select value={selectedCompany} onChange={(e) => setSelectedCompany(e.target.value)}>
-                {companies.map(c => <option key={c._id} value={c._id}>{c.companyName}</option>)}
-              </select>
+              <div className="auth-input-wrapper">
+                <CompanyIcon className="auth-input-icon" />
+                <EliteSelect
+                  options={companies.map(c => ({ value: c._id, label: c.companyName }))}
+                  value={selectedCompany}
+                  onChange={(val) => setSelectedCompany(val)}
+                  placeholder="Choose Company"
+                />
+              </div>
             </div>
-            <div className="input-field-elite">
+            <div className="input-field-elite auth-input-group">
               <label>Report Date</label>
-              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+              <div className="auth-input-wrapper">
+                <CalendarIcon className="auth-input-icon" />
+                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="elite-input-classic" />
+              </div>
             </div>
-            <div className="filter-actions-elite">
-               <button className="btn-elite" onClick={fetchReport} style={{ height: '48px' }}>
+            <div className="filter-actions-elite" style={{ border: 'none', paddingTop: 0 }}>
+               <button className="btn-elite" onClick={fetchReport} style={{ height: '56px', width: '100%' }}>
                  <RefreshCw size={18} /> Refresh Data
                </button>
             </div>
@@ -153,17 +200,19 @@ const DayReport = () => {
           <ReportSkeleton />
         ) : report ? (
           <>
-            <div className="print-only">
+            <div className="print-only header-print">
                <center>
                  <h1>{companies.find(c => c._id === selectedCompany)?.companyName}</h1>
-                 <h3>Daily Financial Report - {new Date(date).toLocaleDateString()}</h3>
+                 <p>{report.companyAddress}</p>
+                 <h3 className="report-badge-print">Day Report</h3>
+                 <p><strong>Date:</strong> {new Date(date).toLocaleDateString('en-GB')}</p>
                </center>
             </div>
 
-            <div className="section-header">
+            <div className="section-header no-print">
               <h2>Cash & Online Summary</h2>
             </div>
-            <div className="summary-cards-grid">
+            <div className="summary-cards-grid no-print">
               <div className="summary-card-elite">
                 <span className="label">Opening Cash Balance</span>
                 <span className="value">₹{formatIndianNumber(report.cashOpeningSum)}</span>
@@ -191,57 +240,95 @@ const DayReport = () => {
               <table className="elite-table day-report-table">
                 <thead>
                   <tr className="table-header-group">
-                    <th colSpan="5" className="text-center bg-success-light">RECEIPTS</th>
-                    <th colSpan="5" className="text-center bg-danger-light">PAYMENTS</th>
+                    <th colSpan="6" className="text-center bg-success-light divider-right">RECEIPTS</th>
+                    <th colSpan="6" className="text-center bg-danger-light">PAYMENTS</th>
                   </tr>
                   <tr>
                     <th>#</th>
                     <th>Ref #</th>
-                    <th>Particulars</th>
-                    <th>Mode</th>
-                    <th className="text-right">Amount</th>
+                    <th>Payer / Receiver</th>
+                    <th>Bank / Narration</th>
+                    <th className="text-right">Cash</th>
+                    <th className="text-right divider-right">Online</th>
                     <th>#</th>
                     <th>Ref #</th>
-                    <th>Particulars</th>
-                    <th>Mode</th>
-                    <th className="text-right">Amount</th>
+                    <th>Receiver / Payer</th>
+                    <th>Bank / Narration</th>
+                    <th className="text-right">Cash</th>
+                    <th className="text-right">Online</th>
                   </tr>
                 </thead>
                 <tbody>
+                  {/* Opening Balance Row */}
+                  <tr className="opening-balance-row">
+                    <td colSpan="4" className="font-bold text-left bg-success-lightest">Opening Balance</td>
+                    <td className="text-right font-bold success-text bg-success-lightest">₹{formatIndianNumber(report.cashOpeningSum)}</td>
+                    <td className="text-right font-bold success-text bg-success-lightest divider-right">₹{formatIndianNumber(report.onlineOpeningSum)}</td>
+                    <td colSpan="6" className="bg-white payment-side"></td>
+                  </tr>
+
                   {report.reportData.map((row, idx) => (
                     <tr key={idx} className="hoverable">
                       {/* Receipt Side */}
                       <td className="text-secondary">{row.receipt.amount ? idx + 1 : ''}</td>
                       <td className="font-bold">{row.receipt.receiptNumber || ''}</td>
+                      <td>{row.receipt.particular || ''}</td>
                       <td>
-                        <div className="particular-cell">
-                           <span className="main">{row.receipt.particular || ''}</span>
-                           <span className="sub">{row.receipt.narration}</span>
+                        <div className="narration-cell">
+                          {row.receipt.bankName && <span className="bank-badge">{row.receipt.bankName}</span>}
+                          <span className="narration-text">{row.receipt.narration}</span>
                         </div>
                       </td>
-                      <td>{row.receipt.paymentMode}</td>
-                      <td className="text-right success-text">{row.receipt.amount ? `₹${formatIndianNumber(row.receipt.amount)}` : ''}</td>
+                      <td className="text-right success-text">{row.receipt.isCash ? `₹${formatIndianNumber(row.receipt.amount)}` : ''}</td>
+                      <td className="text-right success-text divider-right">{(!row.receipt.isCash && row.receipt.amount) ? `₹${formatIndianNumber(row.receipt.amount)}` : ''}</td>
                       
                       {/* Payment Side */}
                       <td className="text-secondary">{row.payment.amount ? idx + 1 : ''}</td>
                       <td className="font-bold">{row.payment.paymentNumber || ''}</td>
+                      <td>{row.payment.particular || ''}</td>
                       <td>
-                        <div className="particular-cell">
-                           <span className="main">{row.payment.particular || ''}</span>
-                           <span className="sub">{row.payment.narration}</span>
+                        <div className="narration-cell">
+                          {row.payment.bankName && <span className="bank-badge">{row.payment.bankName}</span>}
+                          <span className="narration-text">{row.payment.narration}</span>
                         </div>
                       </td>
-                      <td>{row.payment.paymentMode}</td>
-                      <td className="text-right danger-text">{row.payment.amount ? `₹${formatIndianNumber(row.payment.amount)}` : ''}</td>
+                      <td className="text-right danger-text">{row.payment.isCash ? `₹${formatIndianNumber(row.payment.amount)}` : ''}</td>
+                      <td className="text-right danger-text">{(!row.payment.isCash && row.payment.amount) ? `₹${formatIndianNumber(row.payment.amount)}` : ''}</td>
                     </tr>
                   ))}
+
+                  {/* Closing Balance Row */}
+                  <tr className="closing-balance-row font-bold">
+                    <td colSpan="4" className="text-right bg-success-lightest">
+                      {report.cashDifferenceSide === 'receipt' || report.onlineDifferenceSide === 'receipt' ? 'Closing Balance' : ''}
+                    </td>
+                    <td className="text-right success-text bg-success-lightest">
+                      {report.cashDifferenceSide === 'receipt' ? `₹${formatIndianNumber(report.cashDifference)}` : ''}
+                    </td>
+                    <td className="text-right success-text bg-success-lightest divider-right">
+                      {report.onlineDifferenceSide === 'receipt' ? `₹${formatIndianNumber(report.onlineDifference)}` : ''}
+                    </td>
+                    
+                    <td colSpan="4" className="text-right bg-danger-lightest">
+                      {report.cashDifferenceSide === 'payment' || report.onlineDifferenceSide === 'payment' ? 'Closing Balance' : ''}
+                    </td>
+                    <td className="text-right danger-text bg-danger-lightest">
+                      {report.cashDifferenceSide === 'payment' ? `₹${formatIndianNumber(report.cashDifference)}` : ''}
+                    </td>
+                    <td className="text-right danger-text bg-danger-lightest">
+                      {report.onlineDifferenceSide === 'payment' ? `₹${formatIndianNumber(report.onlineDifference)}` : ''}
+                    </td>
+                  </tr>
                 </tbody>
                 <tfoot>
-                   <tr className="font-bold">
-                     <td colSpan="4" className="text-right">Total Receipts:</td>
-                     <td className="text-right success-text">₹{formatIndianNumber(report.totalCashReceipts + report.totalOnlineReceipts)}</td>
-                     <td colSpan="4" className="text-right">Total Payments:</td>
-                     <td className="text-right danger-text">₹{formatIndianNumber(report.totalCashPayments + report.totalOnlinePayments)}</td>
+                   <tr className="font-bold tally-row">
+                     <td colSpan="4" className="text-right">Total:</td>
+                     <td className="text-right success-text">₹{formatIndianNumber(report.totalCashReceipts + report.cashOpeningSum)}</td>
+                     <td className="text-right success-text divider-right">₹{formatIndianNumber(report.totalOnlineReceipts + report.onlineOpeningSum)}</td>
+                     
+                     <td colSpan="4" className="text-right">Total:</td>
+                     <td className="text-right danger-text">₹{formatIndianNumber(report.totalCashReceipts + report.cashOpeningSum)}</td>
+                     <td className="text-right danger-text">₹{formatIndianNumber(report.totalOnlineReceipts + report.onlineOpeningSum)}</td>
                    </tr>
                 </tfoot>
               </table>
@@ -281,6 +368,17 @@ const DayReport = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            <div className="print-validation-footer">
+              <div className="validation-box">
+                <div className="validation-line"></div>
+                <div className="validation-label">Prepared By</div>
+              </div>
+              <div className="validation-box">
+                <div className="validation-line"></div>
+                <div className="validation-label">Authorized Signatory</div>
+              </div>
             </div>
           </>
         ) : (

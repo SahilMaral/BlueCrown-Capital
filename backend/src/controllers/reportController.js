@@ -98,10 +98,11 @@ const getTransactionHistory = asyncHandler(async (req, res, next) => {
 // @route   POST /api/v1/reports/email
 // @access  Private
 const sendReportEmail = asyncHandler(async (req, res) => {
-  const { recipientEmail, ccEmail, bccEmail, subject, message, reportType, reportData } = req.body;
+  const { recipientEmail, subject, message, reportType } = req.body;
 
-  // Note: Attachment handling will be done by receiving a base64 or file upload.
-  // For now, let's assume the frontend sends the PDF as a base64 or we generate it if needed.
+  if (!recipientEmail || !message) {
+    return res.status(400).json(new ApiResponse(400, null, 'Recipient email and message are required'));
+  }
 
   const sendEmail = require('../utils/sendEmail');
 
@@ -111,17 +112,28 @@ const sendReportEmail = asyncHandler(async (req, res) => {
       filename: req.file.originalname,
       content: req.file.buffer
     });
+  } else {
+    console.warn('Email request received without attachment');
   }
 
-  await sendEmail({
-    email: recipientEmail,
-    subject: subject,
-    message: message,
-    html: `<p>${message.replace(/\n/g, '<br>')}</p>`,
-    attachments: attachments
-  });
+  try {
+    await sendEmail({
+      email: recipientEmail,
+      subject: subject || 'New Report from BlueCrown Capital',
+      message: message,
+      html: `<div style="font-family: sans-serif; line-height: 1.5; color: #333;">
+               <p>${message.replace(/\n/g, '<br>')}</p>
+               <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+               <p style="font-size: 0.8em; color: #777;">This is an automated report from BlueCrown Capital Elite Dashboard.</p>
+             </div>`,
+      attachments: attachments
+    });
 
-  res.status(200).json(new ApiResponse(200, null, 'Email sent successfully'));
+    res.status(200).json(new ApiResponse(200, null, 'Email sent successfully'));
+  } catch (error) {
+    console.error('Email Service Error:', error);
+    res.status(500).json(new ApiResponse(500, null, `Email delivery failed: ${error.message}`));
+  }
 });
 
 module.exports = {

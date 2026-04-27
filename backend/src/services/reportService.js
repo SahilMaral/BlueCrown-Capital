@@ -113,7 +113,8 @@ class ReportService {
           bankName: r.receipt?.bankName || '',
           paymentDetails: r.receipt?.paymentDetails || '',
           narration: r.receipt?.narration || '',
-          amount: r.amount
+          amount: r.amount,
+          isCash: r.isCash
         } : {},
         payment: p ? {
           date: p.dateTime,
@@ -124,14 +125,24 @@ class ReportService {
           bankName: p.payment?.bankName || '',
           paymentDetails: p.payment?.paymentDetails || '',
           narration: p.payment?.narration || '',
-          amount: Math.abs(p.amount)
+          amount: Math.abs(p.amount),
+          isCash: p.isCash
         } : {}
       });
     }
 
     // 6. Calculate Differences
-    const cashDifference = Math.abs(cashOpeningSum + totalCashReceipts - totalCashPayments);
-    const onlineDifference = Math.abs(onlineOpeningSum + totalOnlineReceipts - totalOnlinePayments);
+    const cashTotalReceiptsSide = cashOpeningSum + totalCashReceipts;
+    const cashTotalPaymentsSide = totalCashPayments; 
+    const cashDifference = Math.abs(cashTotalReceiptsSide - cashTotalPaymentsSide);
+    const cashDifferenceSide = cashTotalReceiptsSide < cashTotalPaymentsSide ? 'receipt' : 'payment';
+
+    const onlineTotalReceiptsSide = onlineOpeningSum + totalOnlineReceipts;
+    const onlineTotalPaymentsSide = totalOnlinePayments;
+    const onlineDifference = Math.abs(onlineTotalReceiptsSide - onlineTotalPaymentsSide);
+    const onlineDifferenceSide = onlineTotalReceiptsSide < onlineTotalPaymentsSide ? 'receipt' : 'payment';
+
+    const company = await Company.findById(companyId);
 
     return {
       reportData,
@@ -147,7 +158,10 @@ class ReportService {
       onlineOpeningSum,
       onlineClosingSum,
       cashDifference,
-      onlineDifference
+      cashDifferenceSide,
+      onlineDifference,
+      onlineDifferenceSide,
+      companyAddress: company?.address || ''
     };
   }
 
