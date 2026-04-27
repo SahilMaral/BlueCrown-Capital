@@ -74,6 +74,8 @@ const getPaymentById = asyncHandler(async (req, res) => {
 });
 
 const createSelfTransfer = asyncHandler(async (req, res) => {
+  // Add processedBy from logged in user
+  req.body.processedBy = req.user._id;
   const transfer = await transactionService.createSelfTransfer(req.body);
   res.status(201).json(new ApiResponse(201, transfer, 'Self-transfer completed successfully'));
 });

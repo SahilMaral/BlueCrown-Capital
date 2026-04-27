@@ -343,35 +343,92 @@ const updatePayment = async (id, updateData) => {
 const createSelfTransfer = async (transferData) => {
   return await withTransaction(async (session) => {
     const { 
-      fromAccount, fromModel, 
-      toAccount, toModel, 
-      amount, dateTime, narration 
+      payerCompanyId, receiverCompanyId,
+      payerPaymentMode, receiverPaymentMode,
+      payerBankId, receiverBankId,
+      payerLedgerId, receiverLedgerId,
+      amount, dateTime, narration, paymentDetails,
+      processedBy // Added to track who performed the transfer
     } = transferData;
     
     const date = new Date(dateTime || Date.now());
     const amountVal = parseFloat(amount);
 
-    // 1. Record Outflow from source account
-    await transactionUtils.recordTransaction({
-      account: fromAccount,
-      accountModel: fromModel,
-      amount: -amountVal,
-      dateTime: date,
-      isCash: fromModel === 'Company',
-      narration: `Self Transfer to ${toAccount} (${toModel}): ${narration}`
-    }, session);
+    // 1. Generate Document Numbers
+    const { documentNumber: paymentNumber, financialYear: pFY } = await transactionUtils.generateDocumentNumber('payment', date);
+    const { documentNumber: receiptNumber, financialYear: rFY } = await transactionUtils.generateDocumentNumber('receipt', date);
 
-    // 2. Record Inflow to destination account
-    await transactionUtils.recordTransaction({
-      account: toAccount,
-      accountModel: toModel,
+    // 2. Create Payment Document (Source)
+    const paymentDocs = await Payment.create([{
+      paymentNumber,
+      dateTime: date,
+      payer: payerCompanyId,
+      receiver: receiverCompanyId,
+      receiverModel: 'Company',
+      ledger: payerLedgerId,
+      bank: payerPaymentMode === 'Cash' ? undefined : payerBankId,
+      paymentMode: payerPaymentMode,
+      paymentDetails,
+      narration: `Self Transfer to ${receiverCompanyId}: ${narration}`,
+      paidBy: processedBy,
       amount: amountVal,
+      isInternal: true,
+      financialYear: pFY
+    }], { session });
+    const payment = paymentDocs[0];
+
+    // 3. Create Receipt Document (Destination)
+    const receiptDocs = await Receipt.create([{
+      receiptNumber,
       dateTime: date,
-      isCash: toModel === 'Company',
-      narration: `Self Transfer from ${fromAccount} (${fromModel}): ${narration}`
+      payer: payerCompanyId,
+      payerModel: 'Company',
+      receiver: receiverCompanyId,
+      ledger: receiverLedgerId,
+      bank: receiverPaymentMode === 'Cash' ? undefined : receiverBankId,
+      paymentMode: receiverPaymentMode,
+      paymentDetails,
+      narration: `Self Transfer from ${payerCompanyId}: ${narration}`,
+      receivedBy: processedBy,
+      amount: amountVal,
+      isInternal: true,
+      financialYear: rFY,
+      paymentId: payment._id // Link to payment
+    }], { session });
+    const receipt = receiptDocs[0];
+
+    // 4. Update Payment with link to Receipt
+    payment.receiptId = receipt._id;
+    await payment.save({ session });
+
+    // 5. Record Passbook Entries & Update Balances
+    
+    // Outflow from source
+    await transactionUtils.recordTransaction({
+      account: payerPaymentMode === 'Cash' ? payerCompanyId : payerBankId,
+      accountModel: payerPaymentMode === 'Cash' ? 'Company' : 'Bank',
+      amount: -amountVal,
+      paymentId: payment._id,
+      dateTime: date,
+      isCash: payerPaymentMode === 'Cash'
     }, session);
 
-    return { success: true, message: "Self transfer completed successfully" };
+    // Inflow to destination
+    await transactionUtils.recordTransaction({
+      account: receiverPaymentMode === 'Cash' ? receiverCompanyId : receiverBankId,
+      accountModel: receiverPaymentMode === 'Cash' ? 'Company' : 'Bank',
+      amount: amountVal,
+      receiptId: receipt._id,
+      dateTime: date,
+      isCash: receiverPaymentMode === 'Cash'
+    }, session);
+
+    return { 
+      success: true, 
+      message: "Self transfer completed successfully",
+      paymentId: payment._id,
+      receiptId: receipt._id
+    };
   });
 };
 

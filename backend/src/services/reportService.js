@@ -430,11 +430,13 @@ class ReportService {
   }
 
   async getSelfTransferData() {
-    const [companies, banks] = await Promise.all([
+    const Ledger = require('../models/Ledger');
+    const [companies, banks, ledgers] = await Promise.all([
       Company.find().select('companyName'),
-      Bank.find().select('bankName companyId')
+      Bank.find().select('bankName companyId accountNumber'),
+      Ledger.find({ isActive: true }).select('name')
     ]);
-    return { companies, banks };
+    return { companies, banks, ledgers };
   }
 }
 
