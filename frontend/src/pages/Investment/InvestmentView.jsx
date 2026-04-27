@@ -12,6 +12,8 @@ import TrendingUpIcon from '../../components/icons/TrendingUpIcon';
 import ClockIcon from '../../components/icons/ClockIcon';
 import Skeleton from '../../components/common/Skeleton';
 
+import EliteSelect from '../../components/common/EliteSelect';
+
 const InvestmentView = () => {
   useDocumentTitle('Investment Portfolio');
   const [investments, setInvestments] = useState([]);
@@ -123,8 +125,11 @@ const InvestmentView = () => {
       </header>
 
       <section className="content-section" style={{ padding: 0 }}>
-        <div className="section-header" style={{ padding: '32px 32px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2>Active Investments</h2>
+        <div className="section-header-elite">
+          <div className="header-info-elite">
+            <h2>Active Investments</h2>
+            <span className="count-badge-elite">{filteredInvestments.length} Active</span>
+          </div>
           <div className="search-container-elite">
             <SearchIcon className="search-icon-elite" />
             <input 
@@ -142,14 +147,14 @@ const InvestmentView = () => {
             <table className="elite-table">
               <thead>
                 <tr>
-                  <th>Sr. No.</th>
-                  <th>Inv Number</th>
-                  <th>Client Name</th>
-                  <th>Principal</th>
-                  <th>Bal Principal</th>
+                  <th>SR. NO.</th>
+                  <th>INV NUMBER</th>
+                  <th>CLIENT NAME</th>
+                  <th>PRINCIPAL</th>
+                  <th>BAL PRINCIPAL</th>
                   <th>ROI</th>
-                  <th>Date</th>
-                  <th>Actions</th>
+                  <th>DATE</th>
+                  <th>ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
@@ -172,38 +177,45 @@ const InvestmentView = () => {
                         ₹{inv.balancePrincipal?.toLocaleString()}
                       </td>
                       <td><span className="status-badge pending">{inv.rateOfInterest}%</span></td>
-                      <td>{new Date(inv.date).toLocaleDateString()}</td>
+                      <td style={{ fontSize: '13px', color: '#64748b' }}>{new Date(inv.date).toLocaleDateString('en-GB')}</td>
                       <td>
-                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                          <button className="btn-elite-ghost" style={{ padding: '8px 12px', fontSize: '11px' }} onClick={() => handleViewSchedule(inv)}>
-                            Schedule
+                        <div className="action-group-elite">
+                          <button className="action-btn-elite secondary" title="View Schedule" onClick={() => handleViewSchedule(inv)}>
+                            <ClockIcon size={16} />
+                            <span>Schedule</span>
                           </button>
+                          
                           {inv.balancePrincipal > 0 && !inv.isForeClosure && (
                             <>
                               <button 
-                                className="btn-elite" 
-                                style={{ padding: '6px 12px', fontSize: '11px', minWidth: 'auto', background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' }} 
+                                className="action-btn-elite primary" 
+                                title="Add Lumpsum"
                                 onClick={() => openActionModal(inv, 'lumpsum')}
                               >
-                                Lumpsum
+                                <RupeeIcon size={16} />
+                                <span>Lumpsum</span>
                               </button>
+                              
                               <button 
-                                className="btn-elite" 
-                                style={{ padding: '6px 12px', fontSize: '11px', minWidth: 'auto', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }} 
+                                className="action-btn-elite info" 
+                                title="Restructure"
                                 onClick={() => openActionModal(inv, 'restructure')}
                               >
-                                Restructure
+                                <TrendingUpIcon size={16} />
+                                <span>Restruct</span>
                               </button>
+
                               <button 
-                                className="btn-elite-danger" 
-                                style={{ padding: '6px 12px', fontSize: '11px', borderRadius: '12px' }} 
+                                className="action-btn-elite danger" 
+                                title="Foreclose"
                                 onClick={() => openActionModal(inv, 'foreclose')}
                               >
-                                Foreclose
+                                <CloseIcon size={16} />
+                                <span>Close</span>
                               </button>
                             </>
                           )}
-                          {inv.isForeClosure && <span className="status-badge success" style={{ fontSize: '10px' }}>Closed</span>}
+                          {inv.isForeClosure && <span className="status-badge success">CLOSED</span>}
                         </div>
                       </td>
                     </tr>
@@ -288,7 +300,7 @@ const InvestmentView = () => {
                 
                 {actionType !== 'restructure' && (
                   <div className="auth-input-group">
-                    <label>{actionType === 'foreclose' ? 'Foreclosure Amount' : 'Lumpsum Amount'}</label>
+                    <label>{actionType === 'foreclose' ? 'FORECLOSURE AMOUNT' : 'LUMPSUM AMOUNT'}</label>
                     <div className="auth-input-wrapper">
                       <RupeeIcon className="auth-input-icon" />
                       <input 
@@ -302,7 +314,7 @@ const InvestmentView = () => {
                 )}
 
                 <div className="auth-input-group">
-                  <label>Processing Date</label>
+                  <label>PROCESSING DATE</label>
                   <div className="auth-input-wrapper">
                     <CalendarIcon className="auth-input-icon" />
                     <input 
@@ -317,7 +329,7 @@ const InvestmentView = () => {
                 {(actionType === 'lumpsum' || actionType === 'restructure') && (
                   <>
                     <div className="auth-input-group">
-                      <label>New Bal Principal</label>
+                      <label>NEW BAL PRINCIPAL</label>
                       <div className="auth-input-wrapper">
                         <TrendingUpIcon className="auth-input-icon" />
                         <input 
@@ -329,7 +341,7 @@ const InvestmentView = () => {
                       </div>
                     </div>
                     <div className="auth-input-group">
-                      <label>Rem Tenure (Months)</label>
+                      <label>REM TENURE (MONTHS)</label>
                       <div className="auth-input-wrapper">
                         <ClockIcon className="auth-input-icon" />
                         <input 
@@ -341,7 +353,7 @@ const InvestmentView = () => {
                       </div>
                     </div>
                     <div className="auth-input-group">
-                      <label>New EMI Amount</label>
+                      <label>NEW EMI AMOUNT</label>
                       <div className="auth-input-wrapper">
                         <RupeeIcon className="auth-input-icon" />
                         <input 
@@ -358,26 +370,33 @@ const InvestmentView = () => {
                 {actionType !== 'restructure' && (
                   <>
                     <div className="auth-input-group">
-                      <label>Payment Mode</label>
+                      <label>PAYMENT MODE</label>
                       <div className="auth-input-wrapper">
                         <WalletIcon className="auth-input-icon" />
-                        <select value={formData.paymentMode} onChange={(e) => setFormData({...formData, paymentMode: e.target.value})}>
-                          <option value="Bank Transfer">Bank Transfer</option>
-                          <option value="Online">Online</option>
-                          <option value="Cash">Cash</option>
-                        </select>
+                        <EliteSelect
+                          options={[
+                            { value: 'Bank Transfer', label: '🏦  Bank Transfer' },
+                            { value: 'Online', label: '📱  Online' },
+                            { value: 'Cash', label: '💵  Cash' }
+                          ]}
+                          value={formData.paymentMode}
+                          onChange={(val) => setFormData({ ...formData, paymentMode: val })}
+                          isSearchable={false}
+                        />
                       </div>
                     </div>
 
                     {formData.paymentMode !== 'Cash' && (
                       <div className="auth-input-group">
-                        <label>Select Bank</label>
+                        <label>SELECT BANK</label>
                         <div className="auth-input-wrapper">
                           <CompanyIcon className="auth-input-icon" />
-                          <select value={formData.bankId} onChange={(e) => setFormData({...formData, bankId: e.target.value})} required>
-                            <option value="">Choose Bank...</option>
-                            {banks.map(b => <option key={b._id} value={b._id}>{b.bankName} ({b.accountNo})</option>)}
-                          </select>
+                          <EliteSelect
+                            options={banks.map(b => ({ value: b._id, label: `${b.bankName} (${b.accountNumber})` }))}
+                            value={formData.bankId}
+                            onChange={(val) => setFormData({ ...formData, bankId: val })}
+                            placeholder="Choose Bank..."
+                          />
                         </div>
                       </div>
                     )}
@@ -386,9 +405,9 @@ const InvestmentView = () => {
               </div>
               <div style={{ marginTop: '32px', display: 'flex', gap: '16px' }}>
                 <button type="submit" className="btn-elite" style={{ flex: 1 }} disabled={submitting}>
-                  {submitting ? 'Processing...' : `Confirm ${actionType}`}
+                  {submitting ? 'PROCESSING...' : `CONFIRM ${actionType.toUpperCase()}`}
                 </button>
-                <button type="button" className="btn-elite-ghost" style={{ flex: 0.4 }} onClick={() => setShowActionModal(false)}>Cancel</button>
+                <button type="button" className="btn-elite-ghost" style={{ flex: 0.4 }} onClick={() => setShowActionModal(false)}>CANCEL</button>
               </div>
             </form>
           </div>

@@ -15,11 +15,16 @@
   font-size: 13px;
   font-weight: 800;
   color: #1e293b;
-  opacity: 0.8;
+  opacity: 0.9;
   margin-bottom: 12px;
   margin-left: 4px;
   text-transform: uppercase;
   letter-spacing: 0.12em;
+}
+
+.auth-input-group label .required-mark {
+  color: #ef4444;
+  margin-left: 4px;
 }
 
 .auth-input-wrapper {
@@ -45,6 +50,11 @@
   opacity: 0.7;
   transition: opacity 0.3s ease, color 0.3s ease;
   flex-shrink: 0;
+}
+
+.auth-input-icon.textarea-icon {
+  top: 18px;
+  margin-top: 0;
 }
 
 /* When animated-icon is used as the icon span */
@@ -111,6 +121,91 @@
   min-height: 100px;
   resize: vertical;
   line-height: 1.5;
+}
+
+/* Quick Add Button Integration - Matches Premium Image */
+.has-quick-add .auth-input-wrapper {
+  gap: 12px;
+  padding-right: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: white;
+  min-height: 56px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.02);
+}
+
+.has-quick-add .auth-input-wrapper:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 12px 32px -12px rgba(59, 130, 246, 0.2), 0 0 0 5px rgba(59, 130, 246, 0.06);
+  transform: translateY(-2px);
+}
+
+.auth-input-wrapper.is-invalid, .is-invalid .auth-input-wrapper, input.is-invalid, select.is-invalid, textarea.is-invalid {
+  border-color: #ef4444 !important;
+}
+
+.error-text-elite {
+  color: #ef4444;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 8px;
+  margin-left: 4px;
+  display: block;
+  animation: slideInError 0.3s ease-out;
+}
+
+@keyframes slideInError {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Remove internal borders when inside a wrapper */
+.has-quick-add .elite-select__control {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+  min-height: 54px !important;
+}
+
+.quick-add-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%; /* Perfect Circle */
+  border: none;
+  background: #3b82f6;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  flex-shrink: 0;
+  z-index: 5;
+}
+
+.quick-add-btn:hover {
+  background: #2563eb;
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 12px 28px rgba(59, 130, 246, 0.45);
+}
+
+.quick-add-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.quick-add-btn .icon-stroke,
+.quick-add-btn .icon-stroke-accent {
+  stroke: #ffffff !important;
+  opacity: 1 !important;
+}
+
+.quick-add-btn .icon-fill {
+  fill: #ffffff !important;
+  opacity: 0.2 !important;
 }
 
 /* Elite Radios */
@@ -187,6 +282,182 @@
   border-color: rgba(15, 23, 42, 0.05);
   box-shadow: 0 10px 20px rgba(15, 23, 42, 0.03);
   color: #0f172a;
+}
+
+/* Button Groups & Alignment */
+.elite-form-footer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 40px;
+}
+
+.btn-elite.btn-primary {
+  flex: 3;
+}
+
+.btn-elite-ghost.btn-secondary {
+  flex: 1;
+}
+
+/* Elite Table System */
+.section-header-elite {
+  padding: 32px 32px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.header-info-elite {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-info-elite h2 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.count-badge-elite {
+  padding: 6px 14px;
+  background: rgba(59, 130, 246, 0.08);
+  color: #3b82f6;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 20px;
+}
+
+.search-container-elite {
+  position: relative;
+  width: 320px;
+}
+
+.search-icon-elite {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.search-input-elite {
+  width: 100%;
+  padding: 12px 16px 12px 42px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  font-size: 14px;
+  background: #f8fafc;
+  transition: all 0.3s ease;
+}
+
+.search-input-elite:focus {
+  background: white;
+  border-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.06);
+  outline: none;
+}
+
+.elite-table-container {
+  padding: 0 32px 32px;
+  background: white;
+}
+
+.elite-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 12px;
+}
+
+.elite-table th {
+  padding: 16px 20px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-align: left;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.elite-table tbody tr {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: default;
+}
+
+.elite-table td {
+  padding: 16px 20px;
+  background: white;
+  border-top: 1px solid #f1f5f9;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 14px;
+  color: #334155;
+}
+
+.elite-table td:first-child {
+  border-left: 1px solid #f1f5f9;
+  border-top-left-radius: 16px;
+  border-bottom-left-radius: 16px;
+}
+
+.elite-table td:last-child {
+  border-right: 1px solid #f1f5f9;
+  border-top-right-radius: 16px;
+  border-bottom-right-radius: 16px;
+}
+
+.elite-table tbody tr:hover td {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  transform: scale(1.002);
+}
+
+/* Action Group & Buttons */
+.action-group-elite {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.action-btn-elite {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.action-btn-elite.primary { background: #eff6ff; color: #2563eb; }
+.action-btn-elite.primary:hover { background: #2563eb; color: white; }
+
+.action-btn-elite.secondary { background: #f8fafc; color: #64748b; }
+.action-btn-elite.secondary:hover { background: #64748b; color: white; }
+
+.action-btn-elite.danger { background: #fef2f2; color: #ef4444; }
+.action-btn-elite.danger:hover { background: #ef4444; color: white; }
+
+.action-btn-elite.info { background: #f0fdf4; color: #10b981; }
+.action-btn-elite.info:hover { background: #10b981; color: white; }
+
+.action-btn-elite svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
 }
 
 /* Responsive Elite Forms */

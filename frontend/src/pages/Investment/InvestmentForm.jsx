@@ -13,6 +13,11 @@ import PlusCircleIcon from '../../components/icons/PlusCircleIcon';
 import Skeleton from '../../components/common/Skeleton';
 import WalletIcon from '../../components/icons/WalletIcon';
 import AnalyticsIcon from '../../components/icons/AnalyticsIcon';
+import EliteSelect from '../../components/common/EliteSelect';
+import QuickMasterModal from '../../components/common/QuickMasterModal';
+import BankIcon from '../../components/icons/BankIcon';
+import MapPinIcon from '../../components/icons/MapPinIcon';
+import FileIcon from '../../components/icons/FileIcon';
 
 const InvestmentForm = () => {
   const navigate = useNavigate();
@@ -44,6 +49,7 @@ const InvestmentForm = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState(null);
+  const [modalType, setModalType] = useState(null); // 'Client', 'Company', 'Bank'
 
   useEffect(() => {
     const fetchData = async () => {
@@ -94,7 +100,7 @@ const InvestmentForm = () => {
       let emi = 0;
       let totalInterest = 0;
 
-      if (formData.isInterestOrPrincipal === 'Only interest') {
+      if (formData.isInterestOrPrincipal === 'Interest Only') {
         const monthlyInterest = (principal * annualRate) / (12 * 100);
         emi = monthlyInterest;
         totalInterest = monthlyInterest * tenureMonths;
@@ -105,8 +111,8 @@ const InvestmentForm = () => {
 
       const installments = [];
       if (startDate) {
-        let monthlyInterest = formData.isInterestOrPrincipal === 'Only interest' ? emi : totalInterest / tenureMonths;
-        let monthlyPrincipal = formData.isInterestOrPrincipal === 'Only interest' ? 0 : principal / tenureMonths;
+        let monthlyInterest = formData.isInterestOrPrincipal === 'Interest Only' ? emi : totalInterest / tenureMonths;
+        let monthlyPrincipal = formData.isInterestOrPrincipal === 'Interest Only' ? 0 : principal / tenureMonths;
         
         let remainingPrincipal = principal;
         let remainingInterest = totalInterest;
@@ -125,7 +131,9 @@ const InvestmentForm = () => {
             principal_emi: monthlyPrincipal.toFixed(2),
             interest_emi: monthlyInterest.toFixed(2),
             balance_principal: remainingPrincipal.toFixed(2),
-            balance_interest_total: remainingInterest.toFixed(2)
+            balance_interest_total: remainingInterest.toFixed(2),
+            is_paid: false,
+            receipt_id: null
           });
         }
       }
@@ -139,21 +147,82 @@ const InvestmentForm = () => {
     }
   };
 
+  const getFinancialYear = (dateStr) => {
+    const date = new Date(dateStr);
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    if (month >= 3) {
+      return `${year}-${(year + 1).toString().slice(-2)}`;
+    } else {
+      return `${year - 1}-${year.toString().slice(-2)}`;
+    }
+  };
+
+  const [dateError, setDateError] = useState(null);
+
+  // Real-time Date Validation
+  useEffect(() => {
+    if (formData.date && formData.dateOfPayment) {
+      const invDate = new Date(formData.date);
+      const payDate = new Date(formData.dateOfPayment);
+      if (payDate <= invDate) {
+        setDateError("First payment date must be after the investment date.");
+      } else {
+        setDateError(null);
+      }
+    }
+  }, [formData.date, formData.dateOfPayment]);
+
+  const handleQuickAddSuccess = (newData) => {
+    if (modalType === 'Client') {
+      setClients(prev => [...prev, newData]);
+      setFormData(prev => ({ ...prev, clientId: newData._id }));
+    } else if (modalType === 'Company') {
+      setCompanies(prev => [...prev, newData]);
+      setFormData(prev => ({ ...prev, lenderCompanyId: newData._id }));
+    } else if (modalType === 'Bank') {
+      setBanks(prev => [...prev, newData]);
+      setFormData(prev => ({ ...prev, bankId: newData._id }));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (dateError) return;
+    
     setSubmitting(true);
     setMessage(null);
 
     try {
-      // 1. Balance Check
       const entityId = formData.paymentMode === 'Cash' ? formData.lenderCompanyId : formData.bankId;
       const accountModel = formData.paymentMode === 'Cash' ? 'Company' : 'Bank';
       
+      // 1. Passbook Entry Date Validation (as per project reference)
+      try {
+        const dateCheck = await api.post('/payments/validate-entry-date', {
+          dateTime: formData.date,
+          paymentMode: formData.paymentMode,
+          entityId: entityId,
+          counterType: "investment"
+        });
+        if (dateCheck.data && !dateCheck.data.isValid) {
+          setMessage({ type: 'error', text: dateCheck.data.message });
+          setSubmitting(false);
+          return;
+        }
+      } catch (err) {
+        // Fallback if endpoint doesn't exist yet, but logging it
+        console.warn('Date validation endpoint failed or missing:', err);
+      }
+
+      // 2. Balance Check
       if (entityId) {
         const balanceCheck = await api.post('/payments/check-balance', {
           entityId,
           accountModel,
-          amount: formData.principalAmount
+          amount: formData.principalAmount,
+          financialYear: getFinancialYear(formData.date),
+          date: formData.date
         });
 
         if (!balanceCheck.data.isSufficient) {
@@ -163,8 +232,11 @@ const InvestmentForm = () => {
         }
       }
 
-      // 2. Submit Investment
-      await api.post('/investments', formData);
+      // 3. Submit Investment
+      await api.post('/investments', {
+        ...formData,
+        financialYear: getFinancialYear(formData.date)
+      });
       setMessage({ type: 'success', text: 'Investment established successfully.' });
       setTimeout(() => navigate('/investment/view'), 2000);
     } catch (err) {
@@ -213,7 +285,7 @@ const InvestmentForm = () => {
           <div className="form-grid-elite">
             {/* Row 1: Date & Client */}
             <div className="auth-input-group">
-              <label>Investment Date</label>
+              <label>INVESTMENT DATE <span className="required-mark">*</span></label>
               <div className="auth-input-wrapper">
                 <CalendarIcon className="auth-input-icon" />
                 <input
@@ -225,77 +297,83 @@ const InvestmentForm = () => {
               </div>
             </div>
 
-            <div className="auth-input-group">
-              <label>Client (Investor)</label>
+            <div className="auth-input-group has-quick-add">
+              <label>SELECT CLIENT <span className="required-mark">*</span></label>
               <div className="auth-input-wrapper">
                 <UserIcon className="auth-input-icon" />
-                <select
+                <EliteSelect
+                  options={clients.map(c => ({ value: c._id, label: c.clientName }))}
                   value={formData.clientId}
-                  onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
-                  required
-                >
-                  <option value="">Select Client</option>
-                  {clients.map(c => <option key={c._id} value={c._id}>{c.clientName}</option>)}
-                </select>
+                  onChange={(val) => setFormData({ ...formData, clientId: val })}
+                  placeholder="Choose Client"
+                />
+                <button type="button" className="quick-add-btn" onClick={() => setModalType('Client')}>
+                  <PlusCircleIcon size={16} />
+                </button>
               </div>
             </div>
 
             {/* Row 2: Lender & Payment Mode */}
-            <div className="auth-input-group">
-              <label>Lender Company</label>
+            <div className="auth-input-group has-quick-add">
+              <label>SELECT COMPANY <span className="required-mark">*</span></label>
               <div className="auth-input-wrapper">
                 <CompanyIcon className="auth-input-icon" />
-                <select
+                <EliteSelect
+                  options={companies.map(c => ({ value: c._id, label: c.companyName }))}
                   value={formData.lenderCompanyId}
-                  onChange={(e) => setFormData({ ...formData, lenderCompanyId: e.target.value })}
-                  required
-                >
-                  <option value="">Select Company</option>
-                  {companies.map(c => <option key={c._id} value={c._id}>{c.companyName}</option>)}
-                </select>
+                  onChange={(val) => setFormData({ ...formData, lenderCompanyId: val })}
+                  placeholder="Choose Company"
+                />
+                <button type="button" className="quick-add-btn" onClick={() => setModalType('Company')}>
+                  <PlusCircleIcon size={16} />
+                </button>
               </div>
             </div>
 
             <div className="auth-input-group">
-              <label>Payment Mode</label>
+              <label>Payment Mode <span className="required-mark">*</span></label>
               <div className="auth-input-wrapper">
                 <WalletIcon className="auth-input-icon" />
-                <select
+                <EliteSelect
+                  options={[
+                    { value: 'Bank Transfer', label: '🏦  Bank Transfer' },
+                    { value: 'Online', label: '📱  Online' },
+                    { value: 'Cash', label: '💵  Cash' }
+                  ]}
                   value={formData.paymentMode}
-                  onChange={(e) => setFormData({ ...formData, paymentMode: e.target.value })}
-                  required
-                >
-                  <option value="Bank Transfer">Bank Transfer</option>
-                  <option value="Online">Online</option>
-                  <option value="Cash">Cash</option>
-                </select>
+                  onChange={(val) => setFormData({ ...formData, paymentMode: val })}
+                  isSearchable={false}
+                />
               </div>
             </div>
 
             {/* Row 3: Bank (Optional) & Principal */}
-            <div className="auth-input-group">
-              <label>Lender Bank</label>
-              <div className="auth-input-wrapper">
-                <CompanyIcon className="auth-input-icon" />
-                <select
+            <div className={`auth-input-group ${formData.paymentMode !== 'Cash' ? 'has-quick-add' : ''}`}>
+              <label>SELECT BANK {formData.paymentMode !== 'Cash' && <span className="required-mark">*</span>}</label>
+              <div className={`auth-input-wrapper ${formData.paymentMode === 'Cash' ? 'disabled-wrapper' : ''}`} style={formData.paymentMode === 'Cash' ? { opacity: 0.6, cursor: 'not-allowed' } : {}}>
+                <BankIcon className="auth-input-icon" />
+                <EliteSelect
+                  options={banks.map(b => ({ value: b._id, label: `${b.bankName} (${b.accountNumber})` }))}
                   value={formData.bankId}
-                  onChange={(e) => setFormData({ ...formData, bankId: e.target.value })}
-                  disabled={formData.paymentMode === 'Cash'}
-                  required={formData.paymentMode !== 'Cash'}
-                >
-                  <option value="">Select Bank</option>
-                  {banks.map(b => <option key={b._id} value={b._id}>{b.bankName} ({b.accountNo})</option>)}
-                </select>
+                  onChange={(val) => setFormData({ ...formData, bankId: val })}
+                  placeholder="Choose Bank"
+                  isDisabled={formData.paymentMode === 'Cash'}
+                />
+                {formData.paymentMode !== 'Cash' && (
+                  <button type="button" className="quick-add-btn" onClick={() => setModalType('Bank')}>
+                    <PlusCircleIcon size={16} />
+                  </button>
+                )}
               </div>
             </div>
 
             <div className="auth-input-group">
-              <label>Principal Amount</label>
+              <label>PRINCIPAL AMOUNT <span className="required-mark">*</span></label>
               <div className="auth-input-wrapper">
                 <RupeeIcon className="auth-input-icon" />
                 <input
                   type="number"
-                  placeholder="₹8,00,000"
+                  placeholder="8,00,000"
                   value={formData.principalAmount}
                   onChange={(e) => setFormData({ ...formData, principalAmount: e.target.value })}
                   required
@@ -305,7 +383,7 @@ const InvestmentForm = () => {
 
             {/* Row 4: Tenure & ROI */}
             <div className="auth-input-group">
-              <label>Tenure (Months)</label>
+              <label>TENURE (MONTHS) <span className="required-mark">*</span></label>
               <div className="auth-input-wrapper">
                 <ClockIcon className="auth-input-icon" />
                 <input
@@ -319,7 +397,7 @@ const InvestmentForm = () => {
             </div>
 
             <div className="auth-input-group">
-              <label>ROI per year (%)</label>
+              <label>ROI PER YEAR (%) <span className="required-mark">*</span></label>
               <div className="auth-input-wrapper">
                 <TrendingUpIcon className="auth-input-icon" />
                 <input
@@ -335,32 +413,33 @@ const InvestmentForm = () => {
 
             {/* Row 5: Investment Type & Schedule */}
             <div className="auth-input-group">
-              <label>Investment Type</label>
+              <label>INVESTMENT TYPE <span className="required-mark">*</span></label>
               <div className="auth-input-wrapper">
                 <PlusCircleIcon className="auth-input-icon" />
-                <select
+                <EliteSelect
+                  options={[
+                    { value: 'Secured', label: '🛡️  Secured' },
+                    { value: 'Unsecured', label: '🔓  Unsecured' }
+                  ]}
                   value={formData.investmentType}
-                  onChange={(e) => setFormData({ ...formData, investmentType: e.target.value })}
-                  required
-                >
-                  <option value="">Select Type</option>
-                  <option value="Secured">Secured</option>
-                  <option value="Unsecured">Unsecured</option>
-                </select>
+                  onChange={(val) => setFormData({ ...formData, investmentType: val })}
+                  placeholder="Select Type"
+                  isSearchable={false}
+                />
               </div>
             </div>
 
             <div className="auth-input-group">
-              <label>Repayment Schedule</label>
+              <label>REPAYMENT SCHEDULE</label>
               <div className="elite-radio-group">
                 <label className="elite-radio-label">
                   <input
                     type="radio"
                     name="schedule"
-                    value="Only interest"
-                    checked={formData.isInterestOrPrincipal === 'Only interest'}
+                    value="Interest Only"
+                    checked={formData.isInterestOrPrincipal === 'Interest Only'}
                     onChange={(e) => setFormData({ ...formData, isInterestOrPrincipal: e.target.value })}
-                  /> Only interest
+                  /> INTEREST ONLY
                 </label>
                 <label className="elite-radio-label">
                   <input
@@ -369,27 +448,29 @@ const InvestmentForm = () => {
                     value="Principal + Interest"
                     checked={formData.isInterestOrPrincipal === 'Principal + Interest'}
                     onChange={(e) => setFormData({ ...formData, isInterestOrPrincipal: e.target.value })}
-                  /> Principal + Interest
+                  /> PRINCIPAL + INTEREST
                 </label>
               </div>
             </div>
 
             {/* Row 6: First Payment Date & Reason */}
             <div className="auth-input-group">
-              <label>First Payment Date</label>
+              <label>FIRST PAYMENT DATE <span className="required-mark">*</span></label>
               <div className="auth-input-wrapper">
                 <CalendarIcon className="auth-input-icon" />
                 <input
                   type="date"
+                  className={dateError ? 'is-invalid' : ''}
                   value={formData.dateOfPayment}
                   onChange={(e) => setFormData({ ...formData, dateOfPayment: e.target.value })}
                   required
                 />
               </div>
+              {dateError && <span className="error-text-elite">{dateError}</span>}
             </div>
 
             <div className="auth-input-group">
-              <label>Investment Reason</label>
+              <label>INVESTMENT REASON</label>
               <div className="auth-input-wrapper">
                 <PlusCircleIcon className="auth-input-icon" />
                 <input
@@ -438,8 +519,9 @@ const InvestmentForm = () => {
           {/* Details Section */}
           <div className="form-grid-elite">
             <div className="auth-input-group">
-              <label>Mortgage Details</label>
+              <label>MORTGAGE DETAILS</label>
               <div className="auth-input-wrapper">
+                <FileIcon className="auth-input-icon textarea-icon" />
                 <textarea
                   placeholder="Property documents, assets..."
                   value={formData.mortgageDetails}
@@ -448,8 +530,9 @@ const InvestmentForm = () => {
               </div>
             </div>
             <div className="auth-input-group">
-              <label>Guarantor Details</label>
+              <label>GUARANTOR DETAILS</label>
               <div className="auth-input-wrapper">
+                <UserIcon className="auth-input-icon textarea-icon" />
                 <textarea
                   placeholder="Name, Contact, Address of guarantor..."
                   value={formData.guranterDetails}
@@ -459,9 +542,10 @@ const InvestmentForm = () => {
             </div>
           </div>
 
-          <div className="auth-input-group" style={{ marginBottom: '32px' }}>
-            <label>Official Address</label>
+          <div className="auth-input-group" style={{ marginTop: '24px' }}>
+            <label>OFFICIAL ADDRESS</label>
             <div className="auth-input-wrapper">
+              <MapPinIcon className="auth-input-icon textarea-icon" />
               <textarea
                 placeholder="Business site address..."
                 value={formData.officialAddress}
@@ -470,14 +554,23 @@ const InvestmentForm = () => {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <button type="submit" className="btn-elite" disabled={submitting}>
+          <div className="elite-form-footer">
+            <button type="submit" className="btn-elite btn-primary" disabled={submitting}>
               {submitting ? 'Establishing...' : 'Establish Account'}
             </button>
-            <button type="button" className="btn-elite-ghost btn-elite-danger" onClick={() => navigate(-1)}>Discard</button>
+            <button type="button" className="btn-elite-ghost btn-secondary btn-elite-danger" onClick={() => navigate(-1)}>Discard</button>
           </div>
         </form>
       </section>
+
+      {/* Quick Add Modal */}
+      <QuickMasterModal
+        type={modalType}
+        isOpen={!!modalType}
+        onClose={() => setModalType(null)}
+        onSuccess={handleQuickAddSuccess}
+        companyId={modalType === 'Bank' ? formData.lenderCompanyId : undefined}
+      />
     </main>
   );
 };
