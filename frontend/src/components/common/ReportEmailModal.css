@@ -27,7 +27,11 @@
 }
 
 .email-modal-premium {
-  width: 550px !important;
+  width: 95vw !important;
+  max-width: 550px !important;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
   padding: 0 !important;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -98,10 +102,37 @@
 }
 
 .email-form-elite {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden; /* Form itself doesn't scroll, its content does */
+}
+
+.form-body-elite {
   padding: 32px;
   display: flex;
   flex-direction: column;
   gap: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Custom scrollbar for the modal form */
+.form-body-elite::-webkit-scrollbar {
+  width: 6px;
+}
+
+.form-body-elite::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.form-body-elite::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.1);
+  border-radius: 10px;
+}
+
+.form-body-elite::-webkit-scrollbar-thumb:hover {
+  background: rgba(37, 99, 235, 0.2);
 }
 
 .input-hint {
@@ -162,10 +193,48 @@
 }
 
 .modal-footer-elite {
-  margin-top: 12px;
+  padding: 20px 32px;
+  background: #f8fafc;
+  border-top: 1px solid var(--elite-border);
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+}
+
+/* Secondary Button Style - Updated to be primary blue as per user request */
+.btn-elite.secondary {
+  background: var(--elite-blue);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  border: 1px solid var(--elite-blue);
+}
+
+.btn-elite.secondary:hover {
+  background: var(--elite-blue-dark);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+}
+
+@media (max-width: 480px) {
+  .modal-footer-elite {
+    flex-direction: column-reverse;
+    padding: 16px;
+    gap: 10px;
+  }
+  
+  .modal-footer-elite .btn-elite {
+    width: 100% !important;
+    margin: 0;
+  }
+
+  .modal-header {
+    padding: 20px;
+  }
+
+  .form-body-elite {
+    padding: 20px;
+  }
 }
 
 .primary-glow {

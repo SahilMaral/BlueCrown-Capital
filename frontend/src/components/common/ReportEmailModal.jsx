@@ -158,71 +158,73 @@ const ReportEmailModal = ({ isOpen, onClose, reportData, reportType, fileName, c
         )}
 
         <form onSubmit={handleSend} className="email-form-elite">
-          <div className="input-field-elite auth-input-group">
-            <label>Recipient Email(s)</label>
-            <div className="auth-input-wrapper email-chip-container">
-              <Mail className="auth-input-icon" size={18} />
-              <div className="chips-wrapper">
-                {emails.map((email, idx) => (
-                  <div key={idx} className="email-chip">
-                    <span>{email}</span>
-                    {!isSending && (
-                      <button type="button" onClick={() => removeEmail(idx)} className="remove-chip">
-                        <X size={12} />
-                      </button>
-                    )}
-                  </div>
-                ))}
+          <div className="form-body-elite">
+            <div className="input-field-elite auth-input-group">
+              <label>Recipient Email(s)</label>
+              <div className="auth-input-wrapper email-chip-container">
+                <Mail className="auth-input-icon" size={18} />
+                <div className="chips-wrapper">
+                  {emails.map((email, idx) => (
+                    <div key={idx} className="email-chip">
+                      <span>{email}</span>
+                      {!isSending && (
+                        <button type="button" onClick={() => removeEmail(idx)} className="remove-chip">
+                          <X size={12} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  <input 
+                    type="text" 
+                    placeholder={emails.length === 0 ? "recipient@example.com" : ""}
+                    value={emailInput} 
+                    onChange={handleEmailInput}
+                    onKeyDown={handleKeyDown}
+                    className="chip-input"
+                    disabled={isSending}
+                  />
+                </div>
+              </div>
+              <span className="input-hint"><Info size={12} /> Press Enter or Comma to add multiple recipients</span>
+            </div>
+
+            <div className="input-field-elite auth-input-group">
+              <label>Subject</label>
+              <div className="auth-input-wrapper">
+                <FileText className="auth-input-icon" size={18} />
                 <input 
                   type="text" 
-                  placeholder={emails.length === 0 ? "recipient@example.com" : ""}
-                  value={emailInput} 
-                  onChange={handleEmailInput}
-                  onKeyDown={handleKeyDown}
-                  className="chip-input"
+                  value={emailData.subject} 
+                  onChange={(e) => setEmailData({...emailData, subject: e.target.value})}
+                  className="elite-input-classic"
                   disabled={isSending}
+                  required 
                 />
               </div>
             </div>
-            <span className="input-hint"><Info size={12} /> Press Enter or Comma to add multiple recipients</span>
-          </div>
 
-          <div className="input-field-elite auth-input-group">
-            <label>Subject</label>
-            <div className="auth-input-wrapper">
-              <FileText className="auth-input-icon" size={18} />
-              <input 
-                type="text" 
-                value={emailData.subject} 
-                onChange={(e) => setEmailData({...emailData, subject: e.target.value})}
-                className="elite-input-classic"
-                disabled={isSending}
-                required 
-              />
+            <div className="input-field-elite auth-input-group">
+              <label>Message Body</label>
+              <div className="auth-input-wrapper textarea-wrapper">
+                <textarea 
+                  rows="5"
+                  value={emailData.message} 
+                  onChange={(e) => setEmailData({...emailData, message: e.target.value})}
+                  className="elite-input-classic elite-textarea"
+                  disabled={isSending}
+                  required
+                ></textarea>
+              </div>
             </div>
-          </div>
 
-          <div className="input-field-elite auth-input-group">
-            <label>Message Body</label>
-            <div className="auth-input-wrapper textarea-wrapper">
-              <textarea 
-                rows="5"
-                value={emailData.message} 
-                onChange={(e) => setEmailData({...emailData, message: e.target.value})}
-                className="elite-input-classic elite-textarea"
-                disabled={isSending}
-                required
-              ></textarea>
-            </div>
-          </div>
-
-          <div className="attachment-pill-elite">
-            <div className="attachment-icon">
-              <Paperclip size={16} />
-            </div>
-            <div className="attachment-details">
-              <span className="file-name">{fileName}.pdf</span>
-              <span className="file-type">Portable Document Format</span>
+            <div className="attachment-pill-elite">
+              <div className="attachment-icon">
+                <Paperclip size={16} />
+              </div>
+              <div className="attachment-details">
+                <span className="file-name">{fileName}.pdf</span>
+                <span className="file-type">Portable Document Format</span>
+              </div>
             </div>
           </div>
 

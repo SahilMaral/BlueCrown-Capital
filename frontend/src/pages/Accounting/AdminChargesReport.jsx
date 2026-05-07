@@ -5,7 +5,8 @@ import './Reports.css';
 import ReportSkeleton from '../../components/common/skeletons/ReportSkeleton';
 import { exportToExcel, formatIndianNumber } from '../../utils/reportUtils';
 import ReportEmailModal from '../../components/common/ReportEmailModal';
-import { Printer, FileSpreadsheet, Mail } from 'lucide-react';
+import EliteSelect from '../../components/common/EliteSelect';
+import { Printer, FileSpreadsheet, Mail, Building2, User, FileText } from 'lucide-react';
 
 const AdminChargesReport = () => {
   const [report, setReport] = useState(null);
@@ -146,26 +147,42 @@ const AdminChargesReport = () => {
       <section className="content-section content-section-elite">
         <div className="filter-card-elite no-print">
           <div className="filter-grid-elite">
-            <div className="input-field-elite">
+            <div className="input-field-elite auth-input-group">
               <label>Our Company</label>
-              <select value={selectedCompany} onChange={(e) => setSelectedCompany(e.target.value)}>
-                <option value="">Select Company</option>
-                {companies.map(c => <option key={c._id} value={c._id}>{c.companyName}</option>)}
-              </select>
+              <div className="auth-input-wrapper">
+                <Building2 className="auth-input-icon" />
+                <EliteSelect
+                  options={companies.map(c => ({ value: c._id, label: c.companyName }))}
+                  value={selectedCompany}
+                  onChange={setSelectedCompany}
+                  placeholder="Select Company"
+                />
+              </div>
             </div>
-            <div className="input-field-elite">
+            <div className="input-field-elite auth-input-group">
               <label>Client</label>
-              <select value={selectedClient} onChange={(e) => setSelectedClient(e.target.value)}>
-                <option value="">Select Client</option>
-                {clients.map(c => <option key={c._id} value={c._id}>{c.clientName}</option>)}
-              </select>
+              <div className="auth-input-wrapper">
+                <User className="auth-input-icon" />
+                <EliteSelect
+                  options={clients.map(c => ({ value: c._id, label: c.clientName }))}
+                  value={selectedClient}
+                  onChange={setSelectedClient}
+                  placeholder="Select Client"
+                />
+              </div>
             </div>
-            <div className="input-field-elite">
+            <div className="input-field-elite auth-input-group">
               <label>Investment</label>
-              <select value={selectedInvestment} onChange={(e) => setSelectedInvestment(e.target.value)} disabled={!selectedCompany}>
-                <option value="">Select Investment</option>
-                {investments.map(i => <option key={i._id} value={i._id}>{i.investmentNumber}</option>)}
-              </select>
+              <div className="auth-input-wrapper">
+                <FileText className="auth-input-icon" />
+                <EliteSelect
+                  options={investments.map(i => ({ value: i._id, label: i.investmentNumber }))}
+                  value={selectedInvestment}
+                  onChange={setSelectedInvestment}
+                  placeholder="Select Investment"
+                  isDisabled={!selectedCompany}
+                />
+              </div>
             </div>
             <div className="filter-actions-elite">
                <button className="btn-elite" onClick={fetchReport} disabled={loading || !selectedInvestment}>

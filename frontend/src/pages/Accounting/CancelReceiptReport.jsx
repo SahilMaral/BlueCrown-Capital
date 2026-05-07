@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../Dashboard/Dashboard.css';
+import './Reports.css';
+import EliteSelect from '../../components/common/EliteSelect';
 import ReportSkeleton from '../../components/common/skeletons/ReportSkeleton';
+import { Building2, Calendar, Search } from 'lucide-react';
 
 const CancelReceiptReport = () => {
   const [report, setReport] = useState(null);
@@ -46,6 +49,8 @@ const CancelReceiptReport = () => {
     }
   };
 
+  const companyOptions = companies.map(c => ({ value: c._id, label: c.companyName }));
+
   return (
     <main className="main-content">
       <header className="dashboard-header">
@@ -58,21 +63,32 @@ const CancelReceiptReport = () => {
       <section className="content-section content-section-elite">
         <div className="filter-card-elite">
           <div className="filter-grid-elite">
-            <div className="input-field-elite">
+            <div className="input-field-elite auth-input-group">
               <label>Our Company</label>
-              <select value={selectedCompany} onChange={(e) => setSelectedCompany(e.target.value)}>
-                <option value="">Select Company</option>
-                {companies.map(c => <option key={c._id} value={c._id}>{c.companyName}</option>)}
-              </select>
+              <div className="auth-input-wrapper">
+                <Building2 className="auth-input-icon" />
+                <EliteSelect
+                  options={companyOptions}
+                  value={selectedCompany}
+                  onChange={setSelectedCompany}
+                  placeholder="Select Company"
+                />
+              </div>
             </div>
             <div className="date-range-elite">
-              <div className="input-field-elite">
+              <div className="input-field-elite auth-input-group">
                 <label>From Date</label>
-                <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
+                <div className="auth-input-wrapper">
+                  <Calendar className="auth-input-icon" />
+                  <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="elite-input-classic" />
+                </div>
               </div>
-              <div className="input-field-elite">
+              <div className="input-field-elite auth-input-group">
                 <label>To Date</label>
-                <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
+                <div className="auth-input-wrapper">
+                  <Calendar className="auth-input-icon" />
+                  <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="elite-input-classic" />
+                </div>
               </div>
             </div>
             <div className="filter-actions-elite">
@@ -81,7 +97,7 @@ const CancelReceiptReport = () => {
                  onClick={fetchReport}
                  disabled={!selectedCompany || loading}
                >
-                 Search Records
+                 <Search size={18} /> Search Records
                </button>
             </div>
           </div>

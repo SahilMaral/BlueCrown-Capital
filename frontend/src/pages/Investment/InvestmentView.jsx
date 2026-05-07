@@ -295,121 +295,123 @@ const InvestmentView = () => {
               <h2 style={{ fontFamily: 'Outfit', fontSize: '28px', marginBottom: '8px', textTransform: 'capitalize' }}>{actionType} Investment</h2>
               <p style={{ color: 'var(--elite-text-secondary)', marginBottom: 0 }}>Processing for <strong>{selectedInvestment.investment.investmentNumber}</strong></p>
             </div>
-            <form className="elite-form" onSubmit={handleActionSubmit} style={{ padding: '40px' }}>
-              <div className="form-grid-elite" style={{ gridTemplateColumns: actionType === 'foreclose' ? '1fr' : '1fr 1fr', gap: '24px' }}>
-                
-                {actionType !== 'restructure' && (
-                  <div className="auth-input-group">
-                    <label>{actionType === 'foreclose' ? 'FORECLOSURE AMOUNT' : 'LUMPSUM AMOUNT'}</label>
-                    <div className="auth-input-wrapper">
-                      <RupeeIcon className="auth-input-icon" />
-                      <input 
-                        type="number" 
-                        value={formData.amount} 
-                        onChange={(e) => setFormData({...formData, amount: e.target.value})} 
-                        required
-                      />
-                    </div>
-                  </div>
-                )}
-
-                <div className="auth-input-group">
-                  <label>PROCESSING DATE</label>
-                  <div className="auth-input-wrapper">
-                    <CalendarIcon className="auth-input-icon" />
-                    <input 
-                      type="date" 
-                      value={formData.date} 
-                      onChange={(e) => setFormData({...formData, date: e.target.value})} 
-                      required
-                    />
-                  </div>
-                </div>
-
-                {(actionType === 'lumpsum' || actionType === 'restructure') && (
-                  <>
+            <div className="elite-modal-content" style={{ padding: 0 }}>
+              <form className="elite-form" onSubmit={handleActionSubmit} style={{ padding: '40px' }}>
+                <div className="form-grid-elite" style={{ gridTemplateColumns: actionType === 'foreclose' ? '1fr' : '1fr 1fr', gap: '24px' }}>
+                  
+                  {actionType !== 'restructure' && (
                     <div className="auth-input-group">
-                      <label>NEW BAL PRINCIPAL</label>
-                      <div className="auth-input-wrapper">
-                        <TrendingUpIcon className="auth-input-icon" />
-                        <input 
-                          type="number" 
-                          value={formData.newBalancePrincipal} 
-                          onChange={(e) => setFormData({...formData, newBalancePrincipal: e.target.value})} 
-                          required
-                        />
-                      </div>
-                    </div>
-                    <div className="auth-input-group">
-                      <label>REM TENURE (MONTHS)</label>
-                      <div className="auth-input-wrapper">
-                        <ClockIcon className="auth-input-icon" />
-                        <input 
-                          type="number" 
-                          value={formData.newTenure} 
-                          onChange={(e) => setFormData({...formData, newTenure: e.target.value})} 
-                          required
-                        />
-                      </div>
-                    </div>
-                    <div className="auth-input-group">
-                      <label>NEW EMI AMOUNT</label>
+                      <label>{actionType === 'foreclose' ? 'FORECLOSURE AMOUNT' : 'LUMPSUM AMOUNT'}</label>
                       <div className="auth-input-wrapper">
                         <RupeeIcon className="auth-input-icon" />
                         <input 
                           type="number" 
-                          value={formData.newEmi} 
-                          onChange={(e) => setFormData({...formData, newEmi: e.target.value})} 
+                          value={formData.amount} 
+                          onChange={(e) => setFormData({...formData, amount: e.target.value})} 
                           required
                         />
                       </div>
                     </div>
-                  </>
-                )}
+                  )}
 
-                {actionType !== 'restructure' && (
-                  <>
-                    <div className="auth-input-group">
-                      <label>PAYMENT MODE</label>
-                      <div className="auth-input-wrapper">
-                        <WalletIcon className="auth-input-icon" />
-                        <EliteSelect
-                          options={[
-                            { value: 'Bank Transfer', label: '🏦  Bank Transfer' },
-                            { value: 'Online', label: '📱  Online' },
-                            { value: 'Cash', label: '💵  Cash' }
-                          ]}
-                          value={formData.paymentMode}
-                          onChange={(val) => setFormData({ ...formData, paymentMode: val })}
-                          isSearchable={false}
-                        />
-                      </div>
+                  <div className="auth-input-group">
+                    <label>PROCESSING DATE</label>
+                    <div className="auth-input-wrapper">
+                      <CalendarIcon className="auth-input-icon" />
+                      <input 
+                        type="date" 
+                        value={formData.date} 
+                        onChange={(e) => setFormData({...formData, date: e.target.value})} 
+                        required
+                      />
                     </div>
+                  </div>
 
-                    {formData.paymentMode !== 'Cash' && (
+                  {(actionType === 'lumpsum' || actionType === 'restructure') && (
+                    <>
                       <div className="auth-input-group">
-                        <label>SELECT BANK</label>
+                        <label>NEW BAL PRINCIPAL</label>
                         <div className="auth-input-wrapper">
-                          <CompanyIcon className="auth-input-icon" />
-                          <EliteSelect
-                            options={banks.map(b => ({ value: b._id, label: `${b.bankName} (${b.accountNumber})` }))}
-                            value={formData.bankId}
-                            onChange={(val) => setFormData({ ...formData, bankId: val })}
-                            placeholder="Choose Bank..."
+                          <TrendingUpIcon className="auth-input-icon" />
+                          <input 
+                            type="number" 
+                            value={formData.newBalancePrincipal} 
+                            onChange={(e) => setFormData({...formData, newBalancePrincipal: e.target.value})} 
+                            required
                           />
                         </div>
                       </div>
-                    )}
-                  </>
-                )}
-              </div>
-              <div style={{ marginTop: '32px', display: 'flex', gap: '16px' }}>
-                <button type="submit" className="btn-elite" style={{ flex: 1 }} disabled={submitting}>
-                  {submitting ? 'PROCESSING...' : `CONFIRM ${actionType.toUpperCase()}`}
-                </button>
-                <button type="button" className="btn-elite-ghost" style={{ flex: 0.4 }} onClick={() => setShowActionModal(false)}>CANCEL</button>
-              </div>
-            </form>
+                      <div className="auth-input-group">
+                        <label>REM TENURE (MONTHS)</label>
+                        <div className="auth-input-wrapper">
+                          <ClockIcon className="auth-input-icon" />
+                          <input 
+                            type="number" 
+                            value={formData.newTenure} 
+                            onChange={(e) => setFormData({...formData, newTenure: e.target.value})} 
+                            required
+                          />
+                        </div>
+                      </div>
+                      <div className="auth-input-group">
+                        <label>NEW EMI AMOUNT</label>
+                        <div className="auth-input-wrapper">
+                          <RupeeIcon className="auth-input-icon" />
+                          <input 
+                            type="number" 
+                            value={formData.newEmi} 
+                            onChange={(e) => setFormData({...formData, newEmi: e.target.value})} 
+                            required
+                          />
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {actionType !== 'restructure' && (
+                    <>
+                      <div className="auth-input-group">
+                        <label>PAYMENT MODE</label>
+                        <div className="auth-input-wrapper">
+                          <WalletIcon className="auth-input-icon" />
+                          <EliteSelect
+                            options={[
+                              { value: 'Bank Transfer', label: '🏦  Bank Transfer' },
+                              { value: 'Online', label: '📱  Online' },
+                              { value: 'Cash', label: '💵  Cash' }
+                            ]}
+                            value={formData.paymentMode}
+                            onChange={(val) => setFormData({ ...formData, paymentMode: val })}
+                            isSearchable={false}
+                          />
+                        </div>
+                      </div>
+
+                      {formData.paymentMode !== 'Cash' && (
+                        <div className="auth-input-group">
+                          <label>SELECT BANK</label>
+                          <div className="auth-input-wrapper">
+                            <CompanyIcon className="auth-input-icon" />
+                            <EliteSelect
+                              options={banks.map(b => ({ value: b._id, label: `${b.bankName} (${b.accountNumber})` }))}
+                              value={formData.bankId}
+                              onChange={(val) => setFormData({ ...formData, bankId: val })}
+                              placeholder="Choose Bank..."
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+                <div style={{ marginTop: '32px', display: 'flex', gap: '16px' }}>
+                  <button type="submit" className="btn-elite" style={{ flex: 1 }} disabled={submitting}>
+                    {submitting ? 'PROCESSING...' : `CONFIRM ${actionType.toUpperCase()}`}
+                  </button>
+                  <button type="button" className="btn-elite-ghost" style={{ flex: 0.4 }} onClick={() => setShowActionModal(false)}>CANCEL</button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

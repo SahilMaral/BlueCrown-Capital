@@ -5,6 +5,13 @@ import '../Dashboard/Dashboard.css';
 import SearchIcon from '../../components/icons/SearchIcon';
 import CloseIcon from '../../components/icons/CloseIcon';
 import Skeleton from '../../components/common/Skeleton';
+import EliteSelect from '../../components/common/EliteSelect';
+import WalletIcon from '../../components/icons/WalletIcon';
+import BankIcon from '../../components/icons/BankIcon';
+import RupeeIcon from '../../components/icons/RupeeIcon';
+import CalendarIcon from '../../components/icons/CalendarIcon';
+import TrendingUpIcon from '../../components/icons/TrendingUpIcon';
+import ClockIcon from '../../components/icons/ClockIcon';
 
 const LoanView = () => {
   useDocumentTitle('Loan Portfolio');
@@ -267,69 +274,101 @@ const LoanView = () => {
               <h2 style={{ fontFamily: 'Outfit', fontSize: '28px', marginBottom: '8px', textTransform: 'capitalize' }}>{actionType} Loan</h2>
               <p style={{ color: 'var(--elite-text-secondary)' }}>Processing for <strong>{selectedLoan.loan.loanNumber}</strong></p>
             </div>
-            <form onSubmit={handleActionSubmit} style={{ display: 'grid', gap: '20px', padding: '24px' }}>
-              <div className="input-field-elite">
-                <label>Amount</label>
-                <input 
-                  type="number" 
-                  value={formData.amount} 
-                  onChange={(e) => setFormData({...formData, amount: e.target.value})} 
-                  required
-                />
-              </div>
-              <div className="input-field-elite">
-                <label>Date</label>
-                <input 
-                  type="date" 
-                  value={formData.date} 
-                  onChange={(e) => setFormData({...formData, date: e.target.value})} 
-                  required
-                />
-              </div>
-              {actionType !== 'restructure' && (
-                <div className="input-field-elite">
-                  <label>Payment Mode</label>
-                  <select value={formData.paymentMode} onChange={(e) => setFormData({...formData, paymentMode: e.target.value})}>
-                    <option value="Bank">Bank</option>
-                    <option value="Cash">Cash</option>
-                  </select>
-                </div>
-              )}
-              {actionType !== 'restructure' && formData.paymentMode === 'Bank' && (
-                <div className="input-field-elite">
-                  <label>Select Bank</label>
-                  <select value={formData.bankId} onChange={(e) => setFormData({...formData, bankId: e.target.value})} required>
-                    <option value="">Choose Bank...</option>
-                    {banks.map(b => <option key={b._id} value={b._id}>{b.bankName}</option>)}
-                  </select>
-                </div>
-              )}
-              {(actionType === 'lumpsum' || actionType === 'restructure') && (
-                <>
+              <div className="elite-modal-content" style={{ padding: 0 }}>
+                <form onSubmit={handleActionSubmit} style={{ display: 'grid', gap: '24px', padding: '24px' }}>
                   <div className="input-field-elite">
-                    <label>New Balance Amount</label>
-                    <input 
-                      type="number" 
-                      value={formData.newBalance} 
-                      onChange={(e) => setFormData({...formData, newBalance: e.target.value})} 
-                      required
-                    />
+                    <label>Amount</label>
+                    <div className="auth-input-wrapper">
+                      <RupeeIcon className="auth-input-icon" />
+                      <input 
+                        type="number" 
+                        className="elite-input-classic"
+                        value={formData.amount} 
+                        onChange={(e) => setFormData({...formData, amount: e.target.value})} 
+                        required
+                      />
+                    </div>
                   </div>
                   <div className="input-field-elite">
-                    <label>Remaining Tenure (Reminders)</label>
-                    <input 
-                      type="number" 
-                      value={formData.newTenure} 
-                      onChange={(e) => setFormData({...formData, newTenure: e.target.value})} 
-                      required
-                    />
+                    <label>Date</label>
+                    <div className="auth-input-wrapper">
+                      <CalendarIcon className="auth-input-icon" />
+                      <input 
+                        type="date" 
+                        className="elite-input-classic"
+                        value={formData.date} 
+                        onChange={(e) => setFormData({...formData, date: e.target.value})} 
+                        required
+                      />
+                    </div>
                   </div>
-                </>
-              )}
-              <button type="submit" className="btn-elite" style={{ padding: '16px' }}>
-                Submit {actionType}
-              </button>
-            </form>
+                  {actionType !== 'restructure' && (
+                    <div className="input-field-elite">
+                      <label>Payment Mode</label>
+                      <div className="auth-input-wrapper">
+                        <WalletIcon className="auth-input-icon" />
+                        <EliteSelect 
+                          options={[
+                            { value: 'Bank', label: '🏦  Bank' },
+                            { value: 'Cash', label: '💵  Cash' }
+                          ]}
+                          value={formData.paymentMode} 
+                          onChange={(val) => setFormData({...formData, paymentMode: val})} 
+                          isSearchable={false}
+                        />
+                      </div>
+                    </div>
+                  )}
+                  {actionType !== 'restructure' && formData.paymentMode === 'Bank' && (
+                    <div className="input-field-elite">
+                      <label>Select Bank</label>
+                      <div className="auth-input-wrapper">
+                        <BankIcon className="auth-input-icon" />
+                        <EliteSelect 
+                          options={banks.map(b => ({ value: b._id, label: b.bankName }))}
+                          value={formData.bankId} 
+                          onChange={(val) => setFormData({...formData, bankId: val})} 
+                          placeholder="Choose Bank..."
+                          required
+                        />
+                      </div>
+                    </div>
+                  )}
+                  {(actionType === 'lumpsum' || actionType === 'restructure') && (
+                    <>
+                      <div className="input-field-elite">
+                        <label>New Balance Amount</label>
+                        <div className="auth-input-wrapper">
+                          <TrendingUpIcon className="auth-input-icon" />
+                          <input 
+                            type="number" 
+                            className="elite-input-classic"
+                            value={formData.newBalance} 
+                            onChange={(e) => setFormData({...formData, newBalance: e.target.value})} 
+                            required
+                          />
+                        </div>
+                      </div>
+                      <div className="input-field-elite">
+                        <label>Remaining Tenure (Reminders)</label>
+                        <div className="auth-input-wrapper">
+                          <ClockIcon className="auth-input-icon" />
+                          <input 
+                            type="number" 
+                            className="elite-input-classic"
+                            value={formData.newTenure} 
+                            onChange={(e) => setFormData({...formData, newTenure: e.target.value})} 
+                            required
+                          />
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  <button type="submit" className="btn-elite" style={{ padding: '16px', borderRadius: '16px' }}>
+                    Submit {actionType}
+                  </button>
+                </form>
+              </div>
           </div>
         </div>
       )}

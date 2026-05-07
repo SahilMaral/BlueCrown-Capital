@@ -300,14 +300,136 @@
   flex: 1;
 }
 
+@media (max-width: 640px) {
+  .elite-form-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .btn-elite.btn-primary, .btn-elite-ghost.btn-secondary {
+    flex: none;
+    width: 100%;
+  }
+}
+
 /* Elite Table System */
 .section-header-elite {
-  padding: 32px 32px 24px;
+  padding: 24px 32px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   background: white;
   border-bottom: 1px solid #f1f5f9;
+  max-width: 100%;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.installment-header-refinement {
+  padding: 24px 32px;
+}
+
+.title-with-badge-elite {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.elite-select-mini {
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  font-family: var(--font-primary);
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.elite-select-mini:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.filters-group-elite {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.date-range-elite {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.elite-date-input {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  font-family: var(--font-primary);
+  font-size: 13px;
+  color: #0f172a;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.elite-date-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.range-separator {
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+@media (max-width: 1100px) {
+  .installment-header-refinement {
+    padding: 24px 20px;
+  }
+  
+  .filters-group-elite {
+    width: 100%;
+    gap: 12px;
+  }
+  
+  .filters-group-elite .search-container-elite {
+    flex: 1;
+    min-width: 200px;
+  }
+  
+  .date-range-elite {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .elite-date-input {
+    flex: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .title-with-badge-elite {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .date-range-elite {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  
+  .range-separator {
+    text-align: center;
+  }
 }
 
 .header-info-elite {
@@ -367,8 +489,10 @@
 }
 
 .elite-table-container {
-  padding: 0 32px 32px;
+  padding: 0 32px 24px;
   background: white;
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 .elite-table {
@@ -460,6 +584,50 @@
   flex-shrink: 0;
 }
 
+@media (max-width: 1100px) {
+  .section-header-elite {
+    padding: 24px 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  
+  .header-info-elite {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .search-container-elite {
+    width: 100%;
+  }
+  
+  .search-input-elite {
+    width: 100%;
+  }
+  
+  .elite-table-container {
+    padding: 0 16px 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .action-group-elite {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .action-btn-elite {
+    flex: 1;
+    min-width: 110px;
+    justify-content: center;
+    padding: 10px 12px;
+  }
+  
+  .elite-table td, .elite-table th {
+    padding: 14px 12px;
+  }
+}
+
 /* Responsive Elite Forms */
 @media (max-width: 768px) {
   .auth-form, .elite-form {
@@ -501,6 +669,19 @@
   gap: 24px;
   margin: 40px 0;
   perspective: 1000px;
+}
+
+@media (max-width: 1100px) {
+  .calculation-summary-elite {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .calculation-summary-elite {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
 }
 
 .summary-item-elite {

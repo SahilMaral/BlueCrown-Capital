@@ -4,6 +4,8 @@ import api from '../../services/api';
 import '../Dashboard/Dashboard.css';
 import SearchIcon from '../../components/icons/SearchIcon';
 import Skeleton from '../../components/common/Skeleton';
+import RupeeIcon from '../../components/icons/RupeeIcon';
+import EliteSelect from '../../components/common/EliteSelect';
 
 const InvestmentInstallmentList = () => {
   useDocumentTitle('Investment Collections');
@@ -55,22 +57,27 @@ const InvestmentInstallmentList = () => {
       </header>
 
       <section className="content-section" style={{ padding: 0 }}>
-        <div className="section-header" style={{ padding: '32px 32px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
-          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-             <h2 style={{ margin: 0 }}>Pending Installments</h2>
-             <select 
-               className="btn-elite-ghost" 
-               style={{ padding: '8px', border: '1px solid #e2e8f0' }}
-               value={filters.isPaid}
-               onChange={(e) => setFilters({...filters, isPaid: e.target.value === 'true'})}
-             >
-                <option value="false">Unpaid Only</option>
-                <option value="true">Paid Only</option>
-             </select>
+        <div className="section-header-elite installment-header-refinement">
+          <div className="header-info-elite">
+             <div className="title-with-badge-elite">
+               <h2 style={{ margin: 0 }}>Pending Installments</h2>
+               <div style={{ width: '140px' }}>
+                 <EliteSelect 
+                   options={[
+                     { value: 'false', label: 'Unpaid Only' },
+                     { value: 'true', label: 'Paid Only' }
+                   ]}
+                   value={String(filters.isPaid)}
+                   onChange={(val) => setFilters({...filters, isPaid: val === 'true'})}
+                   mini={true}
+                   isSearchable={false}
+                 />
+               </div>
+             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-            <div className="search-container-elite" style={{ width: '250px' }}>
+          <div className="filters-group-elite">
+            <div className="search-container-elite">
               <SearchIcon className="search-icon-elite" />
               <input 
                 type="text" 
@@ -81,21 +88,21 @@ const InvestmentInstallmentList = () => {
                 onKeyDown={handleSearch}
               />
             </div>
-            <input 
-              type="date" 
-              className="btn-elite-ghost" 
-              style={{ padding: '8px', border: '1px solid #e2e8f0' }} 
-              value={filters.startDate}
-              onChange={(e) => setFilters({...filters, startDate: e.target.value})}
-            />
-            <span style={{ color: '#64748b' }}>to</span>
-            <input 
-              type="date" 
-              className="btn-elite-ghost" 
-              style={{ padding: '8px', border: '1px solid #e2e8f0' }} 
-              value={filters.endDate}
-              onChange={(e) => setFilters({...filters, endDate: e.target.value})}
-            />
+            <div className="date-range-elite">
+              <input 
+                type="date" 
+                className="elite-date-input" 
+                value={filters.startDate}
+                onChange={(e) => setFilters({...filters, startDate: e.target.value})}
+              />
+              <span className="range-separator">to</span>
+              <input 
+                type="date" 
+                className="elite-date-input" 
+                value={filters.endDate}
+                onChange={(e) => setFilters({...filters, endDate: e.target.value})}
+              />
+            </div>
           </div>
         </div>
 

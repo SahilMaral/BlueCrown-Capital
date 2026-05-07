@@ -276,14 +276,20 @@ class ReportService {
 
   async getAdminChargesReport(companyId, investmentId, clientId) {
     // 1. Get Investment details to show in header
-    const investment = await Investment.findById(investmentId).populate('client lenderCompany');
+    const investment = await Investment.findById(investmentId).populate('clientId lenderCompanyId');
 
     // 2. We search for receipts linked to this investment's installments that have the "Admin Charges" ledger
     // Or simpler: find all receipts for this receiver/payer with the "Admin Charges" ledger
     const Ledger = require('../models/Ledger');
-    const adminLedger = await Ledger.findOne({ ledgerName: /admin charges/i });
+    const adminLedger = await Ledger.findOne({ name: /admin charges/i });
 
-    if (!adminLedger) throw new ApiError(404, 'Admin Charges ledger not found');
+    if (!adminLedger) {
+      return {
+        investment,
+        receipts: [],
+        payments: []
+      };
+    }
 
     const receipts = await Receipt.find({
       receiver: companyId,
@@ -307,11 +313,17 @@ class ReportService {
   }
 
   async getPenaltyChargesReport(companyId, loanId, clientId) {
-    const loan = await Loan.findById(loanId).populate('client lenderCompany');
+    const loan = await Loan.findById(loanId).populate('clientId companyId');
     const Ledger = require('../models/Ledger');
-    const penaltyLedger = await Ledger.findOne({ ledgerName: /penalty/i });
+    const penaltyLedger = await Ledger.findOne({ name: /penalty/i });
 
-    if (!penaltyLedger) throw new ApiError(404, 'Penalty ledger not found');
+    if (!penaltyLedger) {
+      return {
+        loan,
+        receipts: [],
+        payments: []
+      };
+    }
 
     const receipts = await Receipt.find({
       receiver: companyId,

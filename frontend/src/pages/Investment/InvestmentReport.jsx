@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../Dashboard/Dashboard.css';
+import '../Accounting/Reports.css';
 import ReportSkeleton from '../../components/common/skeletons/ReportSkeleton';
+import EliteSelect from '../../components/common/EliteSelect';
+
+import { Building2, FileText, Search } from 'lucide-react';
 
 const InvestmentReport = () => {
   const [report, setReport] = useState(null);
@@ -84,27 +88,34 @@ const InvestmentReport = () => {
       <section className="content-section content-section-elite">
         <div className="filter-card-elite">
           <div className="filter-grid-elite">
-            <div className="input-field-elite">
+            <div className="input-field-elite auth-input-group">
               <label>Our Company</label>
-              <select value={selectedCompany} onChange={(e) => setSelectedCompany(e.target.value)}>
-                <option value="">Select Company</option>
-                {companies.map(c => <option key={c._id} value={c._id}>{c.companyName}</option>)}
-              </select>
+              <div className="auth-input-wrapper">
+                <Building2 className="auth-input-icon" />
+                <EliteSelect
+                  options={companies.map(c => ({ value: c._id, label: c.companyName }))}
+                  value={selectedCompany}
+                  onChange={setSelectedCompany}
+                  placeholder="Select Company"
+                />
+              </div>
             </div>
-            <div className="input-field-elite">
+            <div className="input-field-elite auth-input-group">
               <label>Investment No.</label>
-              <select 
-                value={selectedInvestment} 
-                onChange={(e) => setSelectedInvestment(e.target.value)}
-                disabled={!selectedCompany}
-              >
-                <option value="">Select Investment</option>
-                {investments.map(i => <option key={i._id} value={i._id}>{i.investmentNumber}</option>)}
-              </select>
+              <div className="auth-input-wrapper">
+                <FileText className="auth-input-icon" />
+                <EliteSelect
+                  options={investments.map(i => ({ value: i._id, label: i.investmentNumber }))}
+                  value={selectedInvestment}
+                  onChange={setSelectedInvestment}
+                  placeholder="Select Investment"
+                  isDisabled={!selectedCompany}
+                />
+              </div>
             </div>
             <div className="filter-actions-elite">
                <button className="btn-elite" onClick={fetchReport} disabled={loading || !selectedInvestment}>
-                 Generate Analysis
+                 <Search size={18} /> Generate Analysis
                </button>
             </div>
           </div>

@@ -10,6 +10,7 @@ import { Printer, FileSpreadsheet, Mail, RefreshCw } from 'lucide-react';
 import EliteSelect from '../../components/common/EliteSelect';
 import CompanyIcon from '../../components/icons/CompanyIcon';
 import CalendarIcon from '../../components/icons/CalendarIcon';
+import LogoIcon from '../../components/icons/LogoIcon';
 
 const DayReport = () => {
   useDocumentTitle('Daily Report');
@@ -154,13 +155,13 @@ const DayReport = () => {
           <p>Real-time snapshot of cash flow and bank balances.</p>
         </div>
         <div className="header-actions-elite">
-          <button className="btn-elite secondary" onClick={handlePrint}>
+          <button className="btn-elite" onClick={handlePrint}>
             <Printer size={18} /> Print
           </button>
-          <button className="btn-elite secondary" onClick={handleExportExcel}>
+          <button className="btn-elite" onClick={handleExportExcel}>
             <FileSpreadsheet size={18} /> Excel
           </button>
-          <button className="btn-elite secondary" onClick={() => setIsEmailModalOpen(true)}>
+          <button className="btn-elite" onClick={() => setIsEmailModalOpen(true)}>
             <Mail size={18} /> Email
           </button>
         </div>
@@ -201,12 +202,21 @@ const DayReport = () => {
         ) : report ? (
           <>
             <div className="print-only header-print">
-               <center>
-                 <h1>{companies.find(c => c._id === selectedCompany)?.companyName}</h1>
-                 <p>{report.companyAddress}</p>
-                 <h3 className="report-badge-print">Day Report</h3>
-                 <p><strong>Date:</strong> {new Date(date).toLocaleDateString('en-GB')}</p>
-               </center>
+               <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '10px' }}>
+                   <LogoIcon className="logo-icon-print" style={{ width: '40px', height: '40px' }} />
+                   <h1 style={{ margin: 0, fontSize: '24pt', color: '#0f172a' }}>
+                     {companies.find(c => c._id === selectedCompany)?.companyName || 'BlueCrown'}
+                   </h1>
+                 </div>
+                 <p style={{ margin: '5px 0', fontSize: '10pt', color: '#64748b' }}>{report.companyAddress}</p>
+                 <div style={{ margin: '15px 0' }}>
+                   <span className="report-badge-print">DAY REPORT</span>
+                 </div>
+                 <p style={{ margin: '5px 0', fontSize: '11pt', fontWeight: 'bold' }}>
+                   Date: {new Date(date).toLocaleDateString('en-GB')}
+                 </p>
+               </div>
             </div>
 
             <div className="section-header no-print">
@@ -262,8 +272,8 @@ const DayReport = () => {
                   {/* Opening Balance Row */}
                   <tr className="opening-balance-row">
                     <td colSpan="4" className="font-bold text-left bg-success-lightest">Opening Balance</td>
-                    <td className="text-right font-bold success-text bg-success-lightest">₹{formatIndianNumber(report.cashOpeningSum)}</td>
-                    <td className="text-right font-bold success-text bg-success-lightest divider-right">₹{formatIndianNumber(report.onlineOpeningSum)}</td>
+                    <td className="text-right font-bold success-text bg-success-lightest amount-cell-elite">₹{formatIndianNumber(report.cashOpeningSum)}</td>
+                    <td className="text-right font-bold success-text bg-success-lightest divider-right amount-cell-elite">₹{formatIndianNumber(report.onlineOpeningSum)}</td>
                     <td colSpan="6" className="bg-white payment-side"></td>
                   </tr>
 
@@ -279,8 +289,8 @@ const DayReport = () => {
                           <span className="narration-text">{row.receipt.narration}</span>
                         </div>
                       </td>
-                      <td className="text-right success-text">{row.receipt.isCash ? `₹${formatIndianNumber(row.receipt.amount)}` : ''}</td>
-                      <td className="text-right success-text divider-right">{(!row.receipt.isCash && row.receipt.amount) ? `₹${formatIndianNumber(row.receipt.amount)}` : ''}</td>
+                      <td className="text-right success-text amount-cell-elite">{row.receipt.isCash ? `₹${formatIndianNumber(row.receipt.amount)}` : ''}</td>
+                      <td className="text-right success-text divider-right amount-cell-elite">{(!row.receipt.isCash && row.receipt.amount) ? `₹${formatIndianNumber(row.receipt.amount)}` : ''}</td>
                       
                       {/* Payment Side */}
                       <td className="text-secondary">{row.payment.amount ? idx + 1 : ''}</td>
@@ -292,8 +302,8 @@ const DayReport = () => {
                           <span className="narration-text">{row.payment.narration}</span>
                         </div>
                       </td>
-                      <td className="text-right danger-text">{row.payment.isCash ? `₹${formatIndianNumber(row.payment.amount)}` : ''}</td>
-                      <td className="text-right danger-text">{(!row.payment.isCash && row.payment.amount) ? `₹${formatIndianNumber(row.payment.amount)}` : ''}</td>
+                      <td className="text-right danger-text amount-cell-elite">{row.payment.isCash ? `₹${formatIndianNumber(row.payment.amount)}` : ''}</td>
+                      <td className="text-right danger-text amount-cell-elite">{(!row.payment.isCash && row.payment.amount) ? `₹${formatIndianNumber(row.payment.amount)}` : ''}</td>
                     </tr>
                   ))}
 
@@ -302,20 +312,20 @@ const DayReport = () => {
                     <td colSpan="4" className="text-right bg-success-lightest">
                       {report.cashDifferenceSide === 'receipt' || report.onlineDifferenceSide === 'receipt' ? 'Closing Balance' : ''}
                     </td>
-                    <td className="text-right success-text bg-success-lightest">
+                    <td className="text-right success-text bg-success-lightest amount-cell-elite">
                       {report.cashDifferenceSide === 'receipt' ? `₹${formatIndianNumber(report.cashDifference)}` : ''}
                     </td>
-                    <td className="text-right success-text bg-success-lightest divider-right">
+                    <td className="text-right success-text bg-success-lightest divider-right amount-cell-elite">
                       {report.onlineDifferenceSide === 'receipt' ? `₹${formatIndianNumber(report.onlineDifference)}` : ''}
                     </td>
                     
                     <td colSpan="4" className="text-right bg-danger-lightest">
                       {report.cashDifferenceSide === 'payment' || report.onlineDifferenceSide === 'payment' ? 'Closing Balance' : ''}
                     </td>
-                    <td className="text-right danger-text bg-danger-lightest">
+                    <td className="text-right danger-text bg-danger-lightest amount-cell-elite">
                       {report.cashDifferenceSide === 'payment' ? `₹${formatIndianNumber(report.cashDifference)}` : ''}
                     </td>
-                    <td className="text-right danger-text bg-danger-lightest">
+                    <td className="text-right danger-text bg-danger-lightest amount-cell-elite">
                       {report.onlineDifferenceSide === 'payment' ? `₹${formatIndianNumber(report.onlineDifference)}` : ''}
                     </td>
                   </tr>
