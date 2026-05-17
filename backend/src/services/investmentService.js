@@ -132,7 +132,7 @@ class InvestmentService {
     return { investment, installments, restructureHistory };
   }
 
-  async getInvestmentInstallments(filters = {}) {
+  async getInvestmentInstallments(filters = {}, role, clientId) {
     const { search, startDate, endDate, isPaid } = filters;
     const query = {};
 
@@ -155,16 +155,22 @@ class InvestmentService {
       })
       .sort('dateOfInstallment');
 
+    let resultInstallments = installments;
+    if (role === 'checker' && clientId) {
+      resultInstallments = resultInstallments.filter(inst => inst.investmentId?.clientId?._id?.toString() === clientId.toString());
+    }
+
     if (search) {
       const searchLower = search.toLowerCase();
-      return installments.filter(inst => 
+      return resultInstallments.filter(inst => 
         inst.investmentId?.investmentNumber?.toLowerCase().includes(searchLower) ||
         inst.investmentId?.clientId?.clientName?.toLowerCase().includes(searchLower)
       );
     }
 
-    return installments;
+    return resultInstallments;
   }
+
 
   async handleForeclosure(foreclosureData, userId) {
     const { investmentId, foreclosureDate, foreclosureAmount, paymentMode, bankId } = foreclosureData;

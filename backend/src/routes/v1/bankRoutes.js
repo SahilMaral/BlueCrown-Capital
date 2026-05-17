@@ -1,6 +1,6 @@
 const express = require('express');
 const bankController = require('../../controllers/bankController');
-const { protect } = require('../../middlewares/authMiddleware');
+const { protect, authorize } = require('../../middlewares/authMiddleware');
 
 const router = express.Router();
 
@@ -9,12 +9,13 @@ router.use(protect);
 router
   .route('/')
   .get(bankController.getBanks)
-  .post(bankController.createBank);
+  .post(authorize('maker', 'admin', 'super_admin'), bankController.createBank);
 
 router
   .route('/:id')
   .get(bankController.getBankById)
-  .put(bankController.updateBank)
-  .delete(bankController.deleteBank);
+  .put(authorize('maker', 'admin', 'super_admin'), bankController.updateBank)
+  .delete(authorize('maker', 'admin', 'super_admin'), bankController.deleteBank);
+
 
 module.exports = router;

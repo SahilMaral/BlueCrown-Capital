@@ -25,7 +25,9 @@
   100% { transform: scale(1.05); }
 }
 
-.animated-icon.breathe {
+.animated-icon:hover.breathe,
+.sidebar-link:hover .animated-icon.breathe,
+.sidebar-link.active .animated-icon.breathe {
   animation: breathe 3s ease-in-out infinite alternate;
 }
 
@@ -114,31 +116,44 @@
   50% { transform: translateY(-3px); }
 }
 
-/* --- Global Triggers --- */
+/* --- Global Triggers (Now actually on hover!) --- */
 
-.draw-on-hover {
+.animated-icon:hover .draw-on-hover,
+.sidebar-link:hover .draw-on-hover,
+.sidebar-link.active .draw-on-hover {
   stroke-dasharray: 100;
-  stroke-dashoffset: 0;  /* ALWAYS START VISIBLE */
-  animation: drawPathInfinite 6s ease-in-out infinite;
+  stroke-dashoffset: 0;
+  animation: drawPathInfinite 2s ease-in-out;
 }
 
-.pop-on-hover {
+.animated-icon:hover .pop-on-hover,
+.sidebar-link:hover .pop-on-hover,
+.sidebar-link.active .pop-on-hover {
   transform-origin: center;
-  animation: popPulse 2.5s ease-in-out infinite alternate;
+  animation: popPulse 1.5s ease-in-out infinite alternate;
 }
 
-.spin-on-hover {
+.animated-icon:hover .spin-on-hover,
+.sidebar-link:hover .spin-on-hover,
+.sidebar-link.active .spin-on-hover {
   transform-origin: center;
-  animation: rotateInfinite 12s linear infinite;
+  animation: rotateInfinite 4s linear infinite;
 }
 
-.float-on-hover {
-  animation: floatInfinite 3s ease-in-out infinite;
+.animated-icon:hover .float-on-hover,
+.sidebar-link:hover .float-on-hover,
+.sidebar-link.active .float-on-hover {
+  animation: floatInfinite 1.5s ease-in-out infinite;
 }
 
 .bounce-on-hover {
   display: inline-block;
-  animation: floatInfinite 2s ease-in-out infinite alternate;
+}
+
+.animated-icon:hover .bounce-on-hover,
+.sidebar-link:hover .bounce-on-hover,
+.sidebar-link.active .bounce-on-hover {
+  animation: floatInfinite 1s ease-in-out infinite alternate;
 }
 @keyframes bounceSmall {
   0%, 100% { transform: scale(1); }

@@ -1,11 +1,12 @@
 const express = require('express');
 const { getUsers, createUser, updateUser, deleteUser, toggleUserBlock } = require('../../controllers/userController');
-const { protect } = require('../../middlewares/authMiddleware');
+const { protect, authorize } = require('../../middlewares/authMiddleware');
 const upload = require('../../middlewares/uploadMiddleware');
 
 const router = express.Router();
 
 router.use(protect);
+router.use(authorize('admin', 'super_admin'));
 
 router.route('/')
   .get(getUsers)

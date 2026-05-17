@@ -29,6 +29,9 @@ const SelfTransfer = () => {
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [statusConfig, setStatusConfig] = useState({ title: '', message: '', type: 'success' });
 
+  const [balanceInfo, setBalanceInfo] = useState(null);
+  const [checkingBalance, setCheckingBalance] = useState(false);
+
   const [form, setForm] = useState({
     dateTime: new Date().toISOString().slice(0, 16),
     payerCompanyId: '',
@@ -47,6 +50,41 @@ const SelfTransfer = () => {
   useEffect(() => {
     fetchInitialData();
   }, []);
+
+  useEffect(() => {
+    const checkPayerBalance = async () => {
+      const entityId = form.payerPaymentMode === 'Bank' ? form.payerBankId : form.payerCompanyId;
+      if (!entityId) {
+        setBalanceInfo(null);
+        return;
+      }
+
+      try {
+        setCheckingBalance(true);
+        const token = localStorage.getItem('token');
+        const res = await axios.post(
+          `${import.meta.env.VITE_API_URL}/payments/check-balance`,
+          {
+            entityId,
+            accountModel: form.payerPaymentMode === 'Bank' ? 'Bank' : 'Company',
+            amount: parseFloat(form.amount) || 0
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setBalanceInfo(res.data.data);
+      } catch (err) {
+        console.error('Error checking balance', err);
+      } finally {
+        setCheckingBalance(false);
+      }
+    };
+
+    const timer = setTimeout(() => {
+      checkPayerBalance();
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [form.amount, form.payerCompanyId, form.payerPaymentMode, form.payerBankId]);
 
   const fetchInitialData = async () => {
     try {
@@ -79,6 +117,12 @@ const SelfTransfer = () => {
   const validateForm = () => {
     if (!form.amount || parseFloat(form.amount) <= 0) {
       setStatusConfig({ title: 'Invalid Amount', message: 'Please enter a valid transfer amount greater than zero.', type: 'error' });
+      setShowStatusModal(true);
+      return false;
+    }
+
+    if (balanceInfo && !balanceInfo.isSufficient) {
+      setStatusConfig({ title: 'Insufficient Balance', message: balanceInfo.message || 'There is not enough balance in the selected payer account to execute this transfer.', type: 'error' });
       setShowStatusModal(true);
       return false;
     }
@@ -154,6 +198,8 @@ const SelfTransfer = () => {
       setStatusConfig({ title: 'Transfer Successful', message: 'The self-transfer has been executed successfully and balances have been updated.', type: 'success' });
       setShowStatusModal(true);
       setForm(f => ({ ...f, amount: '', narration: '', paymentDetails: '' }));
+      // Refresh balance info after successful transfer
+      setBalanceInfo(null);
     } catch (err) {
       setStatusConfig({ title: 'Transfer Failed', message: err.response?.data?.message || 'There was an error executing the transfer.', type: 'error' });
       setShowStatusModal(true);
@@ -366,6 +412,22 @@ const SelfTransfer = () => {
                   required
                 />
               </div>
+              {checkingBalance ? (
+                <div style={{ fontSize: '12px', color: 'var(--elite-text-secondary)', marginTop: '6px' }}>Checking available balance...</div>
+              ) : balanceInfo ? (
+                <div style={{ 
+                  fontSize: '12px', 
+                  fontWeight: 700, 
+                  color: balanceInfo.isSufficient ? 'var(--success)' : 'var(--error)', 
+                  marginTop: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}>
+                  {balanceInfo.isSufficient ? '✓' : '⚠️'} Available Balance: ₹{balanceInfo.balance?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  {!balanceInfo.isSufficient && <span style={{ fontWeight: 400 }}> (Insufficient)</span>}
+                </div>
+              ) : null}
             </div>
 
             <div className="auth-input-group">

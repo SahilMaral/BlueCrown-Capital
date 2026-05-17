@@ -98,9 +98,11 @@ const Dashboard = () => {
             <p>Welcome back, {user?.name || 'Valued Member'}. Your portfolio is performing optimally.</p>
           </div>
           <div className="header-actions">
-             <button className="auth-button" style={{ width: 'auto', padding: '12px 24px', borderRadius: '12px', fontSize: '14px' }} onClick={() => window.location.href='/accounting/day-report'}>
+            {user?.role?.toLowerCase() !== 'checker' && (
+              <button className="auth-button" style={{ width: 'auto', padding: '12px 24px', borderRadius: '12px', fontSize: '14px' }} onClick={() => window.location.href='/accounting/day-report'}>
                 View Day Report
-             </button>
+              </button>
+            )}
           </div>
         </header>
 
@@ -193,25 +195,27 @@ const Dashboard = () => {
           </div>
         </section>
 
-        <section className="content-section" style={{ marginTop: '40px' }}>
-          <div className="section-header">
-            <h2>Quick Actions</h2>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
-            <button className="stat-card-elite" style={{ cursor: 'pointer', textAlign: 'left' }} onClick={() => window.location.href='/accounting/receipts/new'}>
-              <ReceiptIcon className="pop-on-hover" style={{ marginBottom: '12px', color: 'var(--success)', display: 'block' }} />
-              <h4 style={{ margin: 0 }}>New Receipt</h4>
-            </button>
-            <button className="stat-card-elite" style={{ cursor: 'pointer', textAlign: 'left' }} onClick={() => window.location.href='/accounting/payments/new'}>
-              <PaymentIcon className="pop-on-hover" style={{ marginBottom: '12px', color: '#ef4444', display: 'block' }} />
-              <h4 style={{ margin: 0 }}>New Payment</h4>
-            </button>
-            <button className="stat-card-elite" style={{ cursor: 'pointer', textAlign: 'left' }} onClick={() => window.location.href='/accounting/self-transfer'}>
-              <WalletIcon className="pop-on-hover" style={{ marginBottom: '12px', color: 'var(--elite-blue)', display: 'block' }} />
-              <h4 style={{ margin: 0 }}>Self Transfer</h4>
-            </button>
-          </div>
-        </section>
+        {user?.role?.toLowerCase() !== 'checker' && (
+          <section className="content-section" style={{ marginTop: '40px' }}>
+            <div className="section-header">
+              <h2>Quick Actions</h2>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
+              <button className="stat-card-elite" style={{ cursor: 'pointer', textAlign: 'left' }} onClick={() => window.location.href='/accounting/receipts/new'}>
+                <ReceiptIcon className="pop-on-hover" style={{ marginBottom: '12px', color: 'var(--success)', display: 'block' }} />
+                <h4 style={{ margin: 0 }}>New Receipt</h4>
+              </button>
+              <button className="stat-card-elite" style={{ cursor: 'pointer', textAlign: 'left' }} onClick={() => window.location.href='/accounting/payments/new'}>
+                <PaymentIcon className="pop-on-hover" style={{ marginBottom: '12px', color: '#ef4444', display: 'block' }} />
+                <h4 style={{ margin: 0 }}>New Payment</h4>
+              </button>
+              <button className="stat-card-elite" style={{ cursor: 'pointer', textAlign: 'left' }} onClick={() => window.location.href='/accounting/self-transfer'}>
+                <WalletIcon className="pop-on-hover" style={{ marginBottom: '12px', color: 'var(--elite-blue)', display: 'block' }} />
+                <h4 style={{ margin: 0 }}>Self Transfer</h4>
+              </button>
+            </div>
+          </section>
+        )}
       </main>
   );
 };

@@ -179,25 +179,70 @@ const Sidebar = ({ isOpen, onClose }) => {
             Overview
           </NavLink>
 
-          {/* Day Book - Hidden for checker */}
+          {/* Day Book */}
+          <div
+            className="sidebar-section-label"
+            onClick={() => setIsDayBookOpen(!isDayBookOpen)}
+            style={{
+              cursor: 'pointer',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              userSelect: 'none'
+            }}
+          >
+            Day Book
+            <svg
+              width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
+              style={{
+                transform: isDayBookOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.3s ease'
+              }}
+            >
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+          <div style={{
+            maxHeight: isDayBookOpen ? '300px' : '0',
+            overflow: 'hidden',
+            transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+          }}>
+            <NavLink to="/accounting/receipts" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+              <ReceiptIcon />
+              Receipts
+            </NavLink>
+            <NavLink to="/accounting/payments" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+              <PaymentIcon />
+              Payments
+            </NavLink>
+            {user?.role?.toLowerCase() !== 'checker' && (
+              <NavLink to="/accounting/self-transfer" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+                <WalletIcon />
+                Self Transfer
+              </NavLink>
+            )}
+          </div>
+
+          {/* Investment Section */}
           {user?.role?.toLowerCase() !== 'checker' && (
             <>
               <div
                 className="sidebar-section-label"
-                onClick={() => setIsDayBookOpen(!isDayBookOpen)}
+                onClick={() => setIsInvestmentOpen(!isInvestmentOpen)}
                 style={{
                   cursor: 'pointer',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  userSelect: 'none'
+                  userSelect: 'none',
+                  marginTop: '8px'
                 }}
               >
-                Day Book
+                Investment
                 <svg
                   width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
                   style={{
-                    transform: isDayBookOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transform: isInvestmentOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                     transition: 'transform 0.3s ease'
                   }}
                 >
@@ -205,113 +250,69 @@ const Sidebar = ({ isOpen, onClose }) => {
                 </svg>
               </div>
               <div style={{
-                maxHeight: isDayBookOpen ? '300px' : '0',
+                maxHeight: isInvestmentOpen ? '250px' : '0',
                 overflow: 'hidden',
                 transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
               }}>
-                <NavLink to="/accounting/receipts" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+                <NavLink to="/investment/new" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+                  <PlusCircleIcon />
+                  Investment Entry
+                </NavLink>
+                <NavLink to="/investment/view" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+                  <PiggyBankIcon />
+                  Active Investments
+                </NavLink>
+                <NavLink to="/investment/collections" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                   <ReceiptIcon />
-                  Receipts
-                </NavLink>
-                <NavLink to="/accounting/payments" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
-                  <PaymentIcon />
-                  Payments
-                </NavLink>
-                <NavLink to="/accounting/self-transfer" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
-                  <WalletIcon />
-                  Self Transfer
+                  Investment Collection
                 </NavLink>
               </div>
             </>
           )}
 
-          {/* Investment Section */}
-          <div
-            className="sidebar-section-label"
-            onClick={() => setIsInvestmentOpen(!isInvestmentOpen)}
-            style={{
-              cursor: 'pointer',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              userSelect: 'none',
-              marginTop: '8px'
-            }}
-          >
-            Investment
-            <svg
-              width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
-              style={{
-                transform: isInvestmentOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                transition: 'transform 0.3s ease'
-              }}
-            >
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          </div>
-          <div style={{
-            maxHeight: isInvestmentOpen ? '250px' : '0',
-            overflow: 'hidden',
-            transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
-          }}>
-            {user?.role?.toLowerCase() !== 'checker' && (
-              <NavLink to="/investment/new" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
-                <PlusCircleIcon />
-                Investment Entry
-              </NavLink>
-            )}
-            <NavLink to="/investment/view" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
-              <PiggyBankIcon />
-              Active Investments
-            </NavLink>
-            {user?.role?.toLowerCase() !== 'checker' && (
-              <NavLink to="/investment/collections" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
-                <ReceiptIcon />
-                Investment Collection
-              </NavLink>
-            )}
-          </div>
-
           {/* Loans Section */}
-          <div
-            className="sidebar-section-label"
-            onClick={() => setIsLoansOpen(!isLoansOpen)}
-            style={{
-              cursor: 'pointer',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              userSelect: 'none',
-              marginTop: '8px'
-            }}
-          >
-            Loans
-            <svg
-              width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
-              style={{
-                transform: isLoansOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                transition: 'transform 0.3s ease'
-              }}
-            >
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          </div>
-          <div style={{
-            maxHeight: isLoansOpen ? '200px' : '0',
-            overflow: 'hidden',
-            transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
-          }}>
-            <NavLink to="/loan/view" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
-              <LoanIcon />
-              Loan
-            </NavLink>
-            {user?.role?.toLowerCase() !== 'checker' && (
-              <NavLink to="/loan/reminders" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
-                <CalendarIcon />
-                Loan Reminder
-              </NavLink>
-            )}
-          </div>
+          {user?.role?.toLowerCase() !== 'checker' && (
+            <>
+              <div
+                className="sidebar-section-label"
+                onClick={() => setIsLoansOpen(!isLoansOpen)}
+                style={{
+                  cursor: 'pointer',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  userSelect: 'none',
+                  marginTop: '8px'
+                }}
+              >
+                Loans
+                <svg
+                  width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
+                  style={{
+                    transform: isLoansOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.3s ease'
+                  }}
+                >
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+              <div style={{
+                maxHeight: isLoansOpen ? '200px' : '0',
+                overflow: 'hidden',
+                transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+              }}>
+                <NavLink to="/loan/view" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+                  <LoanIcon />
+                  Loan
+                </NavLink>
+                <NavLink to="/loan/reminders" onClick={handleLinkClick} className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+                  <CalendarIcon />
+                  Loan Reminder
+                </NavLink>
+              </div>
+            </>
+          )}
+
 
           {/* Reports Section */}
           <div

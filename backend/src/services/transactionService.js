@@ -505,11 +505,25 @@ const cancelReceipt = async (id) => {
       );
     }
 
-    // C. Loan Cancellation (if created from this receipt)
-    // In reference project, canceling a primary receipt might delete the loan?
-    // Let's check for any loans created with this receipt as "receiptId" (if we store it)
-    // The current createReceipt doesn't store receiptId on the Loan model, but uses pendingLoanData.
-    // If we want to be safe, we'd need a link. For now, we'll focus on the balance.
+    // C. Internal Transfer Linked Payment Cancellation
+    if (receipt.isInternal && receipt.paymentId) {
+      const payment = await Payment.findById(receipt.paymentId).session(session);
+      if (payment && !payment.isCancelled) {
+        // Revert payment passbook entry (inflow back)
+        const payPassbook = await Passbook.findOne({ payment: payment._id }).session(session).lean();
+        if (payPassbook) {
+          const { account, accountModel, amount } = payPassbook;
+          if (accountModel === 'Bank') {
+            await Bank.findByIdAndUpdate(account, { $inc: { currentBalance: -amount } }, { session });
+          } else {
+            await Company.findByIdAndUpdate(account, { $inc: { currentCashBalance: -amount } }, { session });
+          }
+          await Passbook.findByIdAndDelete(payPassbook._id).session(session);
+        }
+        payment.isCancelled = true;
+        await payment.save({ session });
+      }
+    }
 
     // 4. Mark Receipt as Cancelled
     receipt.isCancelled = true;
@@ -565,6 +579,26 @@ const cancelPayment = async (id) => {
         { isPaid: false, paymentId: null },
         { session }
       );
+    }
+
+    // Internal Transfer Linked Receipt Cancellation
+    if (payment.isInternal && payment.receiptId) {
+      const receipt = await Receipt.findById(payment.receiptId).session(session);
+      if (receipt && !receipt.isCancelled) {
+        // Revert receipt passbook entry
+        const recPassbook = await Passbook.findOne({ receipt: receipt._id }).session(session).lean();
+        if (recPassbook) {
+          const { account, accountModel, amount } = recPassbook;
+          if (accountModel === 'Bank') {
+            await Bank.findByIdAndUpdate(account, { $inc: { currentBalance: -amount } }, { session });
+          } else {
+            await Company.findByIdAndUpdate(account, { $inc: { currentCashBalance: -amount } }, { session });
+          }
+          await Passbook.findByIdAndDelete(recPassbook._id).session(session);
+        }
+        receipt.isCancelled = true;
+        await receipt.save({ session });
+      }
     }
 
     // 4. Mark Payment as Cancelled

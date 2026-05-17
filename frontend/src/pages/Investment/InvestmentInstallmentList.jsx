@@ -61,7 +61,7 @@ const InvestmentInstallmentList = () => {
           <div className="header-info-elite">
              <div className="title-with-badge-elite">
                <h2 style={{ margin: 0 }}>Pending Installments</h2>
-               <div style={{ width: '140px' }}>
+               <div style={{ minWidth: '160px', flexShrink: 0 }}>
                  <EliteSelect 
                    options={[
                      { value: 'false', label: 'Unpaid Only' },

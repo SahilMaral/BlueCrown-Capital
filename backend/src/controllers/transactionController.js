@@ -12,8 +12,12 @@ const createReceipt = asyncHandler(async (req, res) => {
 });
 
 const getReceipts = asyncHandler(async (req, res) => {
-  // Basic filtering can be added here
-  const receipts = await Receipt.find(req.query)
+  const filter = { ...req.query };
+  if (req.user.role === 'checker') {
+    filter.payer = req.user.clientId;
+    filter.isInternal = false;
+  }
+  const receipts = await Receipt.find(filter)
     .populate('payer')
     .populate('receiver')
     .populate('ledger')
@@ -25,7 +29,12 @@ const getReceipts = asyncHandler(async (req, res) => {
 });
 
 const getReceiptById = asyncHandler(async (req, res) => {
-  const receipt = await Receipt.findById(req.params.id)
+  const filter = { _id: req.params.id };
+  if (req.user.role === 'checker') {
+    filter.payer = req.user.clientId;
+    filter.isInternal = false;
+  }
+  const receipt = await Receipt.findOne(filter)
     .populate('payer')
     .populate('receiver')
     .populate('ledger')
@@ -47,7 +56,12 @@ const createPayment = asyncHandler(async (req, res) => {
 });
 
 const getPayments = asyncHandler(async (req, res) => {
-  const payments = await Payment.find(req.query)
+  const filter = { ...req.query };
+  if (req.user.role === 'checker') {
+    filter.receiver = req.user.clientId;
+    filter.isInternal = false;
+  }
+  const payments = await Payment.find(filter)
     .populate('payer')
     .populate('receiver')
     .populate('ledger')
@@ -59,7 +73,12 @@ const getPayments = asyncHandler(async (req, res) => {
 });
 
 const getPaymentById = asyncHandler(async (req, res) => {
-  const payment = await Payment.findById(req.params.id)
+  const filter = { _id: req.params.id };
+  if (req.user.role === 'checker') {
+    filter.receiver = req.user.clientId;
+    filter.isInternal = false;
+  }
+  const payment = await Payment.findOne(filter)
     .populate('payer')
     .populate('receiver')
     .populate('ledger')
@@ -72,6 +91,7 @@ const getPaymentById = asyncHandler(async (req, res) => {
   }
   res.status(200).json(new ApiResponse(200, payment, 'Payment retrieved successfully'));
 });
+
 
 const createSelfTransfer = asyncHandler(async (req, res) => {
   // Add processedBy from logged in user

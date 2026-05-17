@@ -11,7 +11,7 @@ const Footer = () => {
           <p>&copy; {currentYear} BlueCrown Capital. All rights reserved.</p>
         </div>
         <div className="footer-right">
-          <p>Created with 😁 by <span className="author-name">Sahil Maral</span></p>
+          <p>Created with <strong>AbhinavDCS </strong> by <span className="author-name">Sahil</span></p>
         </div>
       </div>
     </footer>
